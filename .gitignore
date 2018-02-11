@@ -1,0 +1,8 @@
+# project
+build/
+# python
+env/
+# npm
+node_modules/
+# vim
+*.swp
