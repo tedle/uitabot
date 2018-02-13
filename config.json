@@ -2,5 +2,9 @@
     "bot_domain": "localhost",
     "bot_port": 3189,
     "client_domain": "localhost",
-    "client_port": 8080
+    "client_port": 8080,
+    "ssl": {
+        "cert_file": "",
+        "key_file": ""
+    }
 }

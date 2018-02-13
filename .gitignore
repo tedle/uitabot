@@ -2,7 +2,10 @@
 build/
 # python
 env/
+*.pyc
 # npm
 node_modules/
 # vim
 *.swp
+# ssl
+*.pem
