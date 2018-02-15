@@ -4,6 +4,9 @@ import asyncio
 import ssl
 import websockets
 
+import logging
+log = logging.getLogger(__name__)
+
 
 class Server():
     """Manages connections from UI frontend.
@@ -39,6 +42,7 @@ class Server():
         self._server.close()
         await self._server.wait_closed()
         self._server = None
+        log.info("Server closed successfully")
 
     async def serve(self, host, port, origins=None, ssl_cert_file=None, ssl_key_file=None):
         """Creates a new listen server.
@@ -78,18 +82,22 @@ class Server():
             self._on_connect, host=host, port=port,
             loop=self.loop, origins=origins, ssl=ssl_context
         )
+        log.info("Server listening on ws{}://{}:{}".format(
+            "s" if ssl_context is not None else "",
+            host, port
+        ))
 
     async def _on_connect(self, websocket, path):
-        print("websocket connected")
-        while True:
-            try:
+        log.debug("Websocket connected {} {}".format(websocket.remote_address[0], path))
+        try:
+            while True:
                 await websocket.recv()
-            except websockets.exceptions.ConnectionClosed as err:
-                print("websocket lost: {},{}".format(err.code, err.reason))
-                return
-            except asyncio.CancelledError:
-                print("websocket cancelled")
-                return
-            finally:
-                await websocket.close()
-                print("websocket closed")
+        except websockets.exceptions.ConnectionClosed as err:
+            log.debug("Websocket disconnected: code {},reason {}".format(err.code, err.reason))
+            return
+        except asyncio.CancelledError:
+            log.debug("Websocket cancelled")
+            return
+        finally:
+            await websocket.close()
+            log.debug("Websocket closed")
