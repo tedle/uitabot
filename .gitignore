@@ -2,6 +2,7 @@
 build/
 # python
 env/
+_build/
 *.pyc
 # npm
 node_modules/

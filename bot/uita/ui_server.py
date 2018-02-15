@@ -1,14 +1,39 @@
+"""Manages connections from UI frontend."""
+
 import asyncio
 import ssl
 import websockets
 
 
 class Server():
+    """Manages connections from UI frontend.
+
+    Requires asynchronous programming, loop management expected from user.
+
+    Parameters
+    ----------
+    loop : asyncio.AbstractEventLoop, optional
+        Event loop to attach listen server to, defaults to `asyncio.get_event_loop()`.
+
+    Attributes
+    ----------
+    loop : asyncio.AbstractEventLoop
+           Event loop that listen server will attach to.
+
+    """
     def __init__(self, loop=None):
         self.loop = loop if loop is not None else asyncio.get_event_loop()
         self._server = None
 
     async def close(self):
+        """Closes all active connections and destroys listen server.
+
+        Raises
+        ------
+        RuntimeError
+            If called while the server is not running.
+
+        """
         if self._server is None:
             raise RuntimeError("Server.close() called while not running")
         self._server.close()
@@ -16,6 +41,31 @@ class Server():
         self._server = None
 
     async def serve(self, host, port, origins=None, ssl_cert_file=None, ssl_key_file=None):
+        """Creates a new listen server.
+
+        Accepts connections from UI frontend.
+
+        Parameters
+        ----------
+        host : str
+            Host to bind server to.
+        port : int
+            Port to bind server to.
+        origins : str, optional
+            Refuses connections from clients with origin HTTP headers that do not match given
+            value.
+        ssl_cert_file : str, optional
+            Filename of SSL cert chain to load, if not provided will create unencrypted
+            connections.
+        ssl_key_file : str, optional
+            Filename of SSL keyfile to load.
+
+        Raises
+        ------
+        RuntimeError
+            If called while the server is already running.
+
+        """
         if self._server is not None:
             raise RuntimeError("Server.serve() called while already running")
         ssl_context = None
