@@ -18,6 +18,7 @@ def load(filename):
     -------
     namedtuple
         Object containing config file values as attributes.
+
     """
     with open(filename, "r") as f:
         def hook(obj):

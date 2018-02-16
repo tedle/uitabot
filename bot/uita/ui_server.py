@@ -4,6 +4,9 @@ import asyncio
 import ssl
 import websockets
 
+import uita.auth
+import uita.exceptions
+
 import logging
 log = logging.getLogger(__name__)
 
@@ -15,16 +18,21 @@ class Server():
 
     Parameters
     ----------
+    database : uita.database.Database
+        Contains user authentication data.
     loop : asyncio.AbstractEventLoop, optional
         Event loop to attach listen server to, defaults to `asyncio.get_event_loop()`.
 
     Attributes
     ----------
+    database : uita.database.Database
+        Database containing user authentication data.
     loop : asyncio.AbstractEventLoop
-           Event loop that listen server will attach to.
+        Event loop that listen server will attach to.
 
     """
-    def __init__(self, loop=None):
+    def __init__(self, database, loop=None):
+        self.database = database
         self.loop = loop if loop is not None else asyncio.get_event_loop()
         self._server = None
 
@@ -33,12 +41,12 @@ class Server():
 
         Raises
         ------
-        RuntimeError
+        uita.exceptions.ServerError
             If called while the server is not running.
 
         """
         if self._server is None:
-            raise RuntimeError("Server.close() called while not running")
+            raise uita.exceptions.ServerError("Server.close() called while not running")
         self._server.close()
         await self._server.wait_closed()
         self._server = None
@@ -66,12 +74,12 @@ class Server():
 
         Raises
         ------
-        RuntimeError
+        uita.exceptions.ServerError
             If called while the server is already running.
 
         """
         if self._server is not None:
-            raise RuntimeError("Server.serve() called while already running")
+            raise uita.exceptions.ServerError("Server.serve() called while already running")
         ssl_context = None
         # Don't need to check ssl_key_file
         # If it is None load_cert_chain will attempt to find it in the cert file
@@ -87,17 +95,22 @@ class Server():
             host, port
         ))
 
+    async def _authenticate(self, websocket):
+        return uita.auth.verify_session("me", "12345", self.database)
+
     async def _on_connect(self, websocket, path):
         log.debug("Websocket connected {} {}".format(websocket.remote_address[0], path))
         try:
+            user = await self._authenticate(websocket)
+            log.info("{} connected".format(user.id))
             while True:
                 await websocket.recv()
         except websockets.exceptions.ConnectionClosed as err:
             log.debug("Websocket disconnected: code {},reason {}".format(err.code, err.reason))
-            return
         except asyncio.CancelledError:
             log.debug("Websocket cancelled")
-            return
+        except uita.exceptions.AuthenticationError:
+            log.debug("Websocket failed to authenticate")
         finally:
             await websocket.close()
             log.debug("Websocket closed")

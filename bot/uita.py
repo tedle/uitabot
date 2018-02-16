@@ -1,6 +1,7 @@
 import asyncio
 
 import uita.config
+import uita.database
 import uita.ui_server
 
 import logging
@@ -17,8 +18,9 @@ def initialize_logging(level=logging.DEBUG):
 if __name__ == "__main__":
     initialize_logging()
     config = uita.config.load("../config.json")
-    ui_server = uita.ui_server.Server()
+    database = uita.database.Database(":memory:")
     loop = asyncio.get_event_loop()
+    ui_server = uita.ui_server.Server(database, loop=loop)
     loop.run_until_complete(ui_server.serve(
         config.bot_domain, config.bot_port,
         ssl_cert_file=config.ssl.cert_file, ssl_key_file=config.ssl.key_file
