@@ -3,11 +3,11 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 const config = require("../config.json");
 
 const bot_url = `ws${config.ssl.cert_file.length > 0 ? "s" : ""}://`
-                + `${config.bot_domain}`
-                + `${config.bot_port == 80 ? "" : ":" + config.bot_port}`;
+                + `${config.bot.domain}`
+                + `${config.bot.port == 80 ? "" : ":" + config.bot.port}`;
 const client_url = `http${config.ssl.cert_file.length > 0 ? "s" : ""}://`
-                   + `${config.client_domain}`
-                   + `${config.client_port == 80 ? "" : ":" + config.client_port}`;
+                   + `${config.client.domain}`
+                   + `${config.client.port == 80 ? "" : ":" + config.client.port}`;
 
 module.exports = {
     entry: ["./src/index.js"],

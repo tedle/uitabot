@@ -22,7 +22,7 @@ if __name__ == "__main__":
     loop = asyncio.get_event_loop()
     ui_server = uita.ui_server.Server(database, loop=loop)
     loop.run_until_complete(ui_server.serve(
-        config.bot_domain, config.bot_port,
+        config.bot.domain, config.bot.port,
         ssl_cert_file=config.ssl.cert_file, ssl_key_file=config.ssl.key_file
     ))
     try:
