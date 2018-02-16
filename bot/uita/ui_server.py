@@ -1,6 +1,7 @@
 """Manages connections from UI frontend."""
 
 import asyncio
+import json
 import ssl
 import websockets
 
@@ -95,14 +96,43 @@ class Server():
             host, port
         ))
 
+    def _parse_message(self, message):
+        """Parse and validate raw message strings"""
+        try:
+            msg = json.loads(message)
+        except json.JSONDecoderError:
+            raise uita.exceptions.MalformedMessage("Expected JSON encoded object")
+
+        if "header" not in msg or not isinstance(msg["header"], str) or not len(msg["header"]):
+            raise uita.exceptions.MalformedMessage("Has no header property")
+
+        try:
+            expected_properties = {
+                "auth_session": ["session", "user"]
+            }
+            for prop in expected_properties[msg["header"]]:
+                if prop not in msg:
+                    raise uita.exceptions.MalformedMessage("Missing {} property".format(prop))
+        except KeyError:
+            raise uita.exceptions.MalformedMessage("Invalid header")
+        return msg
+
     async def _authenticate(self, websocket):
-        return uita.auth.verify_session("me", "12345", self.database)
+        try:
+            data = await asyncio.wait_for(websocket.recv(), timeout=5)
+        except asyncio.TimeoutError:
+            raise uita.exceptions.AuthenticationError("Authentication timed out")
+        message = self._parse_message(data)
+        if message["header"] == "auth_session":
+            return uita.auth.verify_session(message["user"], message["session"], self.database)
+        else:
+            raise uita.exceptions.AuthenticationError("Expected auth_session message")
 
     async def _on_connect(self, websocket, path):
         log.debug("Websocket connected {} {}".format(websocket.remote_address[0], path))
         try:
             user = await self._authenticate(websocket)
-            log.info("{} connected".format(user.id))
+            log.info("{} connected".format(user.name))
             while True:
                 await websocket.recv()
         except websockets.exceptions.ConnectionClosed as err:

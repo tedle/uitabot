@@ -1,6 +1,7 @@
 """Authenticates Discord users."""
 
 import uita.exceptions
+import uita.user
 
 
 def verify_session(user_id, session_id, database):
@@ -26,8 +27,9 @@ def verify_session(user_id, session_id, database):
         If authentication fails.
 
     """
+    if user_id == "me" and session_id == "12345":
+        return uita.user.User(name="me")
     raise uita.exceptions.AuthenticationError("Not implemented yet")
-    return None
 
 
 def verify_token(token, database):

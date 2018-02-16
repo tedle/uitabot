@@ -1,19 +1,19 @@
 """Defines Discord user data."""
 
-import namedtuple
+from collections import namedtuple
 
 
-User = namedtuple("User", ["id"])
+User = namedtuple("User", ["name"])
 User.__doc__ = """Contains Discord user data
 
     Parameters
     ----------
-    id : str
-        User ID
+    name : str
+        User name
 
     Attributes
     ----------
-    id : str
-        User ID
+    name : str
+        User name
 
     """

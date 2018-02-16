@@ -10,6 +10,7 @@ class App extends React.Component {
             this.socket.onmessage = e => console.log(e);
             this.socket.onerror = e => console.log(e);
             this.socket.onclose = e => console.log(e);
+            this.socket.onopen = e => this.socket.send('{"header":"auth_session","user":"me","session":"12345"}');
         }
         catch (e) {
             console.log(e);

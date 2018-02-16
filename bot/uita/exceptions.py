@@ -6,6 +6,11 @@ class AuthenticationError(Exception):
     pass
 
 
+class MalformedMessage(Exception):
+    """Occurs when a parsed websocket message is malformed"""
+    pass
+
+
 class ServerError(Exception):
     """Occurs when a `uita.ui_server.Server` is configured or used incorrectly"""
     pass
