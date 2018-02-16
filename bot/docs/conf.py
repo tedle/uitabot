@@ -19,14 +19,15 @@ sys.path.insert(0, os.path.abspath('../'))
 
 # -- Project information -----------------------------------------------------
 
+import uita
 project = u'uitabot'
-copyright = u'2018, Dominic Bowden'
-author = u'Dominic Bowden'
+copyright = uita.__copyright__
+author = uita.__author__
 
 # The short X.Y version
 version = u''
 # The full version, including alpha/beta/rc tags
-release = u'0.0.1'
+release = uita.__version__
 
 
 # -- General configuration ---------------------------------------------------
