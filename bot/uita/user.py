@@ -4,16 +4,16 @@ from collections import namedtuple
 
 
 User = namedtuple("User", ["name"])
-User.__doc__ = """Contains Discord user data
+"""Contains Discord user data
 
-    Parameters
-    ----------
-    name : str
-        User name
+Parameters
+----------
+name : str
+    User name
 
-    Attributes
-    ----------
-    name : str
-        User name
+Attributes
+----------
+name : str
+    User name
 
-    """
+"""

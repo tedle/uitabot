@@ -14,3 +14,4 @@ UI Server
 .. module:: uita.ui_server
 .. autoclass:: Server
    :members:
+.. autodata:: VALID_MESSAGES

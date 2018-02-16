@@ -11,6 +11,25 @@ import uita.exceptions
 import logging
 log = logging.getLogger(__name__)
 
+VALID_MESSAGES = {
+    "auth.session": ["session", "user"],
+    "auth.token": ["code"]
+}
+"""Valid messages that can be sent by the client.
+
+Attributes
+----------
+auth.session
+    session : str
+        Session ID as stored in database.
+    user : str
+        User ID as stored in database.
+auth.token
+    code : str
+        Token request code to be sent to Discord API
+
+"""
+
 
 class Server():
     """Manages connections from UI frontend.
@@ -107,10 +126,7 @@ class Server():
             raise uita.exceptions.MalformedMessage("Has no header property")
 
         try:
-            expected_properties = {
-                "auth_session": ["session", "user"]
-            }
-            for prop in expected_properties[msg["header"]]:
+            for prop in VALID_MESSAGES[msg["header"]]:
                 if prop not in msg:
                     raise uita.exceptions.MalformedMessage("Missing {} property".format(prop))
         except KeyError:
@@ -123,10 +139,10 @@ class Server():
         except asyncio.TimeoutError:
             raise uita.exceptions.AuthenticationError("Authentication timed out")
         message = self._parse_message(data)
-        if message["header"] == "auth_session":
+        if message["header"] == "auth.session":
             return uita.auth.verify_session(message["user"], message["session"], self.database)
         else:
-            raise uita.exceptions.AuthenticationError("Expected auth_session message")
+            raise uita.exceptions.AuthenticationError("Expected auth.session message")
 
     async def _on_connect(self, websocket, path):
         log.debug("Websocket connected {} {}".format(websocket.remote_address[0], path))
