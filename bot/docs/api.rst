@@ -4,14 +4,40 @@ uitabot API Reference
 
 Details usage of the uitabot module
 
+Authentication
+--------------
+.. automodule:: uita.auth
+.. autofunction:: verify_session
+.. autofunction:: verify_token
+
 Config
 ------
-.. module:: uita.config
+.. automodule:: uita.config
 .. autofunction:: load
+
+Database
+--------
+.. automodule:: uita.database
+.. autoclass:: Database
+    :members:
+
+Exceptions
+----------
+.. automodule:: uita.exceptions
+    :members:
+
+Messages
+--------
+.. automodule:: uita.message
+    :members:
 
 UI Server
 ---------
-.. module:: uita.ui_server
+.. automodule:: uita.ui_server
 .. autoclass:: Server
    :members:
-.. autodata:: VALID_MESSAGES
+
+User
+----
+.. automodule:: uita.user
+.. autoclass:: User

@@ -5,7 +5,7 @@ import uita.user
 
 
 def verify_session(user_id, session_id, database):
-    """Authenticates a user using a session ID.
+    """Authenticates a user session ID against sessions database.
 
     Parameters
     ----------
@@ -34,6 +34,8 @@ def verify_session(user_id, session_id, database):
 
 def verify_token(token, database):
     """Authenticates a user by passing a token to the Discord API.
+
+    On success, creates and stores a session in the sessions database.
 
     Parameters
     ----------

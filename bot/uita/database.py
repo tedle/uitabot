@@ -9,7 +9,7 @@ class Database():
     Parameters
     ----------
     uri : str
-        URI pointing to database resource. Can either be a filename or `:memory:`
+        URI pointing to database resource. Can either be a filename or `:memory:`.
 
     """
     def __init__(self, uri):

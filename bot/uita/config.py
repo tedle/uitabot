@@ -1,4 +1,4 @@
-"""Loads JSON configuration files"""
+"""Loads JSON configuration files."""
 
 import json
 from collections import namedtuple

@@ -4,16 +4,16 @@ from collections import namedtuple
 
 
 User = namedtuple("User", ["name"])
-"""Contains Discord user data
+"""Contains Discord user data.
 
 Parameters
 ----------
 name : str
-    User name
+    User name.
 
 Attributes
 ----------
 name : str
-    User name
+    User name.
 
 """
