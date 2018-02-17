@@ -120,6 +120,13 @@ class Server():
             log.debug("Websocket cancelled")
         except uita.exceptions.AuthenticationError:
             log.debug("Websocket failed to authenticate")
+            try:
+                await asyncio.wait_for(websocket.send(
+                    str(uita.message.AuthFailMessage())),
+                    timeout=5
+                )
+            except asyncio.TimeoutError:
+                pass
         finally:
             await websocket.close()
             log.debug("Websocket closed")

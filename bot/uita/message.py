@@ -60,6 +60,12 @@ class AbstractMessage():
         return json.dumps(dict({"header": self.header}, **self.__dict__))
 
 
+class AuthFailMessage(AbstractMessage):
+    """Sent by server when authentication fails."""
+    header = "auth.fail"
+    """"""
+
+
 class AuthSessionMessage(AbstractMessage):
     """Sent by client when authenticating by session ID.
 
@@ -95,6 +101,7 @@ class AuthTokenMessage(AbstractMessage):
 
 
 VALID_MESSAGES = {
+    AuthFailMessage.header: (AuthFailMessage, []),
     AuthSessionMessage.header: (AuthSessionMessage, ["session", "user"]),
     AuthTokenMessage.header: (AuthTokenMessage, ["code"])
 }
