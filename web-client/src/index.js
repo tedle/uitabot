@@ -12,7 +12,7 @@ class App extends React.Component {
         console.log(`Connecting to ${Config.bot_url}`);
         try {
             this.socket = new WebSocket(Config.bot_url);
-            this.socket.onmessage = e => dispatchMessage(message);
+            this.socket.onmessage = e => dispatchMessage(e);
             this.socket.onerror = e => console.log(e);
             this.socket.onclose = e => console.log(e);
             this.socket.onopen = e => authenticate(this.socket);
