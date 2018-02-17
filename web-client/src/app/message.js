@@ -1,9 +1,3 @@
-const VALID_MESSAGES = {
-    "auth.fail": [AuthFailMessage, ["session","user"]],
-    "auth.session": [AuthSessionMessage, ["session","user"]],
-    "auth.token": [AuthTokenMessage, ["code"]]
-};
-
 export class AbstractMessage {
     static get header() {
         return "base";
@@ -48,6 +42,32 @@ export class AuthTokenMessage extends AbstractMessage {
     }
 }
 
+const VALID_MESSAGES = {
+    "auth.fail": [AuthFailMessage, []],
+    "auth.session": [AuthSessionMessage, ["session","user"]],
+    "auth.token": [AuthTokenMessage, ["code"]]
+};
+
+export class EventDispatcher {
+    constructor() {
+        this.onAuthFail = m => {}
+    }
+
+    dispatch(message) {
+        if (!message instanceof AbstractMessage) {
+            throw new TypeError("EventDispatcher.dispatch requires a subclass of AbstractMessage");
+        }
+        switch(message.constructor) {
+            case AuthFailMessage:
+                this.onAuthFail(message);
+                break;
+            default:
+                throw new InternalError("EventDispatcher.dispatch has not implemented this message");
+                break;
+        }
+    }
+}
+
 export function parse(message) {
     let obj = JSON.parse(message);
     let args = Array();
@@ -60,6 +80,5 @@ export function parse(message) {
         }
     }
     // This is what modern javascript looks like
-    // (it's constructing a class from an array of arguments)
-    return new (Function.prototype.bind.apply(VALID_MESSAGES[obj.header][0], [null].concat(args)));
+    return new (Function.prototype.bind.call(VALID_MESSAGES[obj.header][0], null, ...args));
 }
