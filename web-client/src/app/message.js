@@ -13,6 +13,17 @@ export class AbstractMessage {
     }
 }
 
+export class AuthCodeMessage extends AbstractMessage {
+    static get header() {
+        return "auth.code";
+    }
+
+    constructor(code) {
+        super();
+        this.code = code;
+    }
+}
+
 export class AuthFailMessage extends AbstractMessage {
     static get header() {
         return "auth.fail";
@@ -24,33 +35,37 @@ export class AuthSessionMessage extends AbstractMessage {
         return "auth.session";
     }
 
-    constructor(session, user) {
+    constructor(session, name) {
         super();
         this.session = session;
-        this.user = user;
+        this.name = name;
     }
 }
 
-export class AuthTokenMessage extends AbstractMessage {
+export class AuthSucceedMessage extends AbstractMessage {
     static get header() {
-        return "auth.token";
+        return "auth.succeed";
     }
 
-    constructor(code) {
+    constructor(username, session_id, session_name) {
         super();
-        this.code = code;
+        this.username = username;
+        this.session_id = session_id;
+        this.session_name = session_name;
     }
 }
 
 const VALID_MESSAGES = {
+    "auth.code": [AuthCodeMessage, ["code"]],
     "auth.fail": [AuthFailMessage, []],
-    "auth.session": [AuthSessionMessage, ["session","user"]],
-    "auth.token": [AuthTokenMessage, ["code"]]
+    "auth.session": [AuthSessionMessage, ["session","name"]],
+    "auth.succeed": [AuthSucceedMessage, ["username", "session_id", "session_name"]]
 };
 
 export class EventDispatcher {
     constructor() {
         this.onAuthFail = m => {}
+        this.onAuthSucceed = m => {}
     }
 
     dispatch(message) {
@@ -60,6 +75,9 @@ export class EventDispatcher {
         switch(message.constructor) {
             case AuthFailMessage:
                 this.onAuthFail(message);
+                break;
+            case AuthSucceedMessage:
+                this.onAuthSucceed(message);
                 break;
             default:
                 throw new InternalError("EventDispatcher.dispatch has not implemented this message");

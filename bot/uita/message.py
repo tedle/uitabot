@@ -60,32 +60,7 @@ class AbstractMessage():
         return json.dumps(dict({"header": self.header}, **self.__dict__))
 
 
-class AuthFailMessage(AbstractMessage):
-    """Sent by server when authentication fails."""
-    header = "auth.fail"
-    """"""
-
-
-class AuthSessionMessage(AbstractMessage):
-    """Sent by client when authenticating by session ID.
-
-    Attributes
-    ----------
-    session : str
-        Session ID as stored in database.
-    user : str
-        User ID as stored in database.
-
-    """
-    header = "auth.session"
-    """"""
-
-    def __init__(self, session, user):
-        self.session = session
-        self.user = user
-
-
-class AuthTokenMessage(AbstractMessage):
+class AuthCodeMessage(AbstractMessage):
     """Sent by client when authenticating by token request code.
 
     Attributes
@@ -93,15 +68,68 @@ class AuthTokenMessage(AbstractMessage):
     code : str
         Token request code to be sent to Discord API.
     """
-    header = "auth.token"
+    header = "auth.code"
     """"""
 
     def __init__(self, code):
         self.code = code
 
 
+class AuthFailMessage(AbstractMessage):
+    """Sent by server when authentication fails."""
+    header = "auth.fail"
+    """"""
+
+
+class AuthSessionMessage(AbstractMessage):
+    """Sent by client when authenticating by session.
+
+    Attributes
+    ----------
+    session : str
+        Session ID as stored in database.
+    name : str
+        Session name as stored in database.
+
+    """
+    header = "auth.session"
+    """"""
+
+    def __init__(self, session, name):
+        self.session = session
+        self.name = name
+
+
+class AuthSucceedMessage(AbstractMessage):
+    """Sent by server when authentication succeeds.
+
+    Parameters
+    ----------
+    user : uita.user.User
+        User object to encode.
+
+    Attributes
+    ----------
+    username : str
+        Username for display.
+    session_id : str
+        Session authentication ID.
+    session_name : str
+        Session authentication name.
+
+    """
+    header = "auth.succeed"
+    """"""
+
+    def __init__(self, user):
+        self.username = user.name
+        self.session_id = user.session.id
+        self.session_name = user.session.name
+
+
 VALID_MESSAGES = {
+    AuthCodeMessage.header: (AuthCodeMessage, ["code"]),
     AuthFailMessage.header: (AuthFailMessage, []),
-    AuthSessionMessage.header: (AuthSessionMessage, ["session", "user"]),
-    AuthTokenMessage.header: (AuthTokenMessage, ["code"])
+    AuthSessionMessage.header: (AuthSessionMessage, ["session", "name"]),
+    AuthSucceedMessage.header: (AuthSucceedMessage, ["username", "session_id", "session_name"])
 }

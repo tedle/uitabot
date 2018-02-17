@@ -103,7 +103,13 @@ class Server():
             raise uita.exceptions.AuthenticationError("Authentication timed out")
         message = uita.message.parse(data)
         if isinstance(message, uita.message.AuthSessionMessage):
-            return uita.auth.verify_session(message.user, message.session, self.database)
+            return uita.auth.verify_session(
+                uita.auth.Session(message.session, message.name),
+                self.database
+            )
+        elif isinstance(message, uita.message.AuthCodeMessage):
+            session = uita.auth.verify_code(message.code, self.database)
+            return uita.auth.verify_session(session, self.database)
         else:
             raise uita.exceptions.AuthenticationError("Expected auth.session message")
 
@@ -111,6 +117,7 @@ class Server():
         log.debug("Websocket connected {} {}".format(websocket.remote_address[0], path))
         try:
             user = await self._authenticate(websocket)
+            await websocket.send(str(uita.message.AuthSucceedMessage(user)))
             log.info("{} connected".format(user.name))
             while True:
                 await websocket.recv()
@@ -125,7 +132,11 @@ class Server():
                     str(uita.message.AuthFailMessage())),
                     timeout=5
                 )
-            except asyncio.TimeoutError:
+            except (
+                asyncio.TimeoutError,
+                asyncio.CancelledError,
+                websockets.exceptions.ConnectionClosed
+            ):
                 pass
         finally:
             await websocket.close()

@@ -8,7 +8,7 @@ Authentication
 --------------
 .. automodule:: uita.auth
 .. autofunction:: verify_session
-.. autofunction:: verify_token
+.. autofunction:: verify_code
 
 Config
 ------

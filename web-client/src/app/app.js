@@ -1,6 +1,7 @@
 import React from "react";
 import * as Config from "config";
 import * as Message from "./message.js";
+import * as Session from "./session.js";
 import Authenticate from "./authenticate.js";
 
 export default class App extends React.Component {
@@ -8,10 +9,15 @@ export default class App extends React.Component {
         super(props);
         this.state = {
             authenticated: false,
-            connection: WebSocket.CLOSED
+            connection: WebSocket.CLOSED,
+            need_login: false
         };
         this.eventDispatcher = new Message.EventDispatcher();
-        this.eventDispatcher.onAuthFail = m => console.log("Authentication failed");
+        this.eventDispatcher.onAuthFail = m => this.setState({need_login: true});
+        this.eventDispatcher.onAuthSucceed = m => {
+            Session.store({id: m.session_id, name: m.session_name});
+            this.setState({authenticated: true});
+        };
     }
 
     componentDidMount() {
@@ -35,14 +41,20 @@ export default class App extends React.Component {
     }
 
     render() {
+        if (this.state.need_login) {
+            return <p>need to <a href="/?code=access-code">login</a></p>;
+        }
         if (this.state.connection == WebSocket.CONNECTING) {
             return <p>connecting</p>;
         }
-        else if (this.state.connection != WebSocket.OPEN) {
+        if (this.state.connection != WebSocket.OPEN) {
             return <p>connection error</p>;
         }
         if (!this.state.authenticated) {
-            return <Authenticate socket={this.socket}/>;
+            return <Authenticate
+                socket={this.socket}
+                onAuthFail={() => this.setState({need_login: true})}
+            />;
         }
         return <p>hello</p>;
     }

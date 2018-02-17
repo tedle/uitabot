@@ -1,6 +1,7 @@
 import React from "react";
 import * as QueryString from "query-string";
 import * as Message from "./message.js";
+import * as Session from "./session.js";
 
 export default class Authenticate extends React.Component {
     constructor(props) {
@@ -14,9 +15,18 @@ export default class Authenticate extends React.Component {
     auth(socket) {
         const query = QueryString.parse(location.search);
         if ('code' in query) {
-            socket.send(new Message.AuthTokenMessage(code).str());
+            socket.send(new Message.AuthCodeMessage(query.code).str());
+            // Strip query string from URL
+            window.history.replaceState(null, null, window.location.pathname);
+            return;
         }
-        socket.send(new Message.AuthSessionMessage("12345", "me").str());
+        let session = Session.load();
+        if (session === null) {
+            this.props.onAuthFail();
+            socket.close(1000, "No session cookie");
+            return;
+        }
+        socket.send(new Message.AuthSessionMessage(session.id, session.name).str());
     }
 
     render() {
