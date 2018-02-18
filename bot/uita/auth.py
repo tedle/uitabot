@@ -6,22 +6,22 @@ import uita.exceptions
 import uita.user
 
 
-Session = namedtuple("Session", ["id", "name"])
+Session = namedtuple("Session", ["handle", "secret"])
 """Contains session authentication data.
 
 Parameters
 ----------
-id : str
-    Session ID.
-name : str
-    Session name.
+handle : str
+    Session handle.
+secret : str
+    Session secret.
 
 Attributes
 ----------
-id : str
-    Session ID.
-name : str
-    Session name.
+handle : str
+    Session handle.
+secret : str
+    Session secret.
 
 """
 
@@ -34,7 +34,7 @@ def verify_session(session, database):
     session : uita.auth.Session
         Session to compare against database.
     database : uita.database.Database
-        Database containing user and session ID pairs.
+        Database containing valid sessions.
 
     Returns
     -------
@@ -47,9 +47,9 @@ def verify_session(session, database):
         If authentication fails.
 
     """
-    if session.name == "obfuscated_me" and session.id == "12345":
+    if database.verify_session(session):
         return uita.user.User(name="me", session=session)
-    raise uita.exceptions.AuthenticationError("Not implemented yet")
+    raise uita.exceptions.AuthenticationError("Session authentication failed")
 
 
 def verify_code(code, database):
@@ -62,7 +62,7 @@ def verify_code(code, database):
     code : str
         Access code to authenticate.
     database : uita.database.Database
-        Database containing user and session ID pairs.
+        Database containing valid sessions.
 
     Returns
     -------
@@ -76,5 +76,6 @@ def verify_code(code, database):
 
     """
     if code == "access-code":
-        return Session("12345", "obfuscated_me")
-    raise uita.exceptions.AuthenticationError("Not implemented yet")
+        token = "we_got_this_from_the_discord_api"
+        return database.add_session(token)
+    raise uita.exceptions.AuthenticationError("Invalid access code")

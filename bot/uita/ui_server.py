@@ -104,7 +104,7 @@ class Server():
         message = uita.message.parse(data)
         if isinstance(message, uita.message.AuthSessionMessage):
             return uita.auth.verify_session(
-                uita.auth.Session(message.session, message.name),
+                uita.auth.Session(handle=message.handle, secret=message.secret),
                 self.database
             )
         elif isinstance(message, uita.message.AuthCodeMessage):

@@ -26,7 +26,7 @@ export default class Authenticate extends React.Component {
             socket.close(1000, "No session cookie");
             return;
         }
-        socket.send(new Message.AuthSessionMessage(session.id, session.name).str());
+        socket.send(new Message.AuthSessionMessage(session.handle, session.secret).str());
     }
 
     render() {

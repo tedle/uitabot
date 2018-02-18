@@ -15,7 +15,7 @@ export default class App extends React.Component {
         this.eventDispatcher = new Message.EventDispatcher();
         this.eventDispatcher.onAuthFail = m => this.setState({need_login: true});
         this.eventDispatcher.onAuthSucceed = m => {
-            Session.store({id: m.session_id, name: m.session_name});
+            Session.store({handle: m.session_handle, secret: m.session_secret});
             this.setState({authenticated: true});
         };
     }

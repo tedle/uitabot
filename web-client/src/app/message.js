@@ -35,10 +35,10 @@ export class AuthSessionMessage extends AbstractMessage {
         return "auth.session";
     }
 
-    constructor(session, name) {
+    constructor(handle, secret) {
         super();
-        this.session = session;
-        this.name = name;
+        this.handle = handle;
+        this.secret = secret;
     }
 }
 
@@ -47,19 +47,19 @@ export class AuthSucceedMessage extends AbstractMessage {
         return "auth.succeed";
     }
 
-    constructor(username, session_id, session_name) {
+    constructor(username, session_handle, session_secret) {
         super();
         this.username = username;
-        this.session_id = session_id;
-        this.session_name = session_name;
+        this.session_handle = session_handle;
+        this.session_secret = session_secret;
     }
 }
 
 const VALID_MESSAGES = {
     "auth.code": [AuthCodeMessage, ["code"]],
     "auth.fail": [AuthFailMessage, []],
-    "auth.session": [AuthSessionMessage, ["session","name"]],
-    "auth.succeed": [AuthSucceedMessage, ["username", "session_id", "session_name"]]
+    "auth.session": [AuthSessionMessage, ["handle", "secret"]],
+    "auth.succeed": [AuthSucceedMessage, ["username", "session_handle", "session_secret"]]
 };
 
 export class EventDispatcher {
