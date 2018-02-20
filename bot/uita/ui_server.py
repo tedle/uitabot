@@ -49,6 +49,7 @@ class Server():
     def __init__(self):
         self._server = None
         self._event_callbacks = {}
+        self._active_events = set()
         self.users = set()
 
     async def start(
@@ -114,6 +115,7 @@ class Server():
         """
         if self._server is None:
             raise uita.exceptions.ServerError("Server.stop() called while not running")
+        await self._cancel_active_events()
         self._server.close()
         await self._server.wait_closed()
         self._server = None
@@ -121,23 +123,6 @@ class Server():
         self.loop = None
         self.users.clear()
         log.info("Server closed successfully")
-
-    async def _authenticate(self, websocket):
-        try:
-            data = await asyncio.wait_for(websocket.recv(), timeout=5)
-        except asyncio.TimeoutError:
-            raise uita.exceptions.AuthenticationError("Authentication timed out")
-        message = uita.message.parse(data)
-        if isinstance(message, uita.message.AuthSessionMessage):
-            return uita.auth.verify_session(
-                uita.auth.Session(handle=message.handle, secret=message.secret),
-                self.database
-            )
-        elif isinstance(message, uita.message.AuthCodeMessage):
-            session = uita.auth.verify_code(message.code, self.database)
-            return uita.auth.verify_session(session, self.database)
-        else:
-            raise uita.exceptions.AuthenticationError("Expected auth.session message")
 
     def on_message(self, header):
         """Decorator to bind event callbacks.
@@ -155,9 +140,38 @@ class Server():
             return function
         return decorator
 
+    async def _authenticate(self, websocket):
+        try:
+            data = await asyncio.wait_for(websocket.recv(), timeout=5, loop=self.loop)
+        except asyncio.TimeoutError:
+            raise uita.exceptions.AuthenticationError("Authentication timed out")
+        message = uita.message.parse(data)
+        if isinstance(message, uita.message.AuthSessionMessage):
+            return uita.auth.verify_session(
+                uita.auth.Session(handle=message.handle, secret=message.secret),
+                self.database
+            )
+        elif isinstance(message, uita.message.AuthCodeMessage):
+            session = uita.auth.verify_code(message.code, self.database)
+            return uita.auth.verify_session(session, self.database)
+        else:
+            raise uita.exceptions.AuthenticationError("Expected auth.session message")
+
+    async def _cancel_active_events(self):
+        tasks = asyncio.gather(*self._active_events, loop=self.loop)
+        tasks.cancel()
+        await tasks
+
     def _dispatch_event(self, event):
         if event.message.header in self._event_callbacks:
-            self.loop.create_task(self._event_callbacks[event.message.header](event))
+            async def wrapper():
+                try:
+                    await self._event_callbacks[event.message.header](event)
+                except asyncio.CancelledError:
+                    pass
+            task = self.loop.create_task(wrapper())
+            task.add_done_callback(lambda f: self._active_events.remove(f))
+            self._active_events.add(task)
 
     async def _on_connect(self, websocket, path):
         log.debug("Websocket connected {} {}".format(websocket.remote_address[0], path))
@@ -180,7 +194,8 @@ class Server():
             try:
                 await asyncio.wait_for(websocket.send(
                     str(uita.message.AuthFailMessage())),
-                    timeout=5
+                    timeout=5,
+                    loop=self.loop
                 )
             except (
                 asyncio.TimeoutError,
