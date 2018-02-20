@@ -3,6 +3,7 @@ import * as Config from "config";
 import * as Message from "./message.js";
 import * as Session from "./session.js";
 import Authenticate from "./authenticate.js";
+import LivePlaylist from "./live-playlist.js";
 
 export default class App extends React.Component {
     constructor(props) {
@@ -10,10 +11,10 @@ export default class App extends React.Component {
         this.state = {
             authenticated: false,
             connection: WebSocket.CLOSED,
-            need_login: false
+            needLogin: false
         };
         this.eventDispatcher = new Message.EventDispatcher();
-        this.eventDispatcher.onAuthFail = m => this.setState({need_login: true});
+        this.eventDispatcher.onAuthFail = m => this.setState({needLogin: true});
         this.eventDispatcher.onAuthSucceed = m => {
             Session.store({handle: m.session_handle, secret: m.session_secret});
             this.setState({authenticated: true});
@@ -41,7 +42,7 @@ export default class App extends React.Component {
     }
 
     render() {
-        if (this.state.need_login) {
+        if (this.state.needLogin) {
             return <p>need to <a href="/?code=access-code">login</a></p>;
         }
         if (this.state.connection == WebSocket.CONNECTING) {
@@ -53,9 +54,12 @@ export default class App extends React.Component {
         if (!this.state.authenticated) {
             return <Authenticate
                 socket={this.socket}
-                onAuthFail={() => this.setState({need_login: true})}
+                onAuthFail={() => this.setState({needLogin: true})}
             />;
         }
-        return <p>hello</p>;
+        return <LivePlaylist
+            socket={this.socket}
+            eventDispatcher={this.eventDispatcher}
+        />;
     }
 }

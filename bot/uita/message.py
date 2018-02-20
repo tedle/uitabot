@@ -127,11 +127,28 @@ class AuthSucceedMessage(AbstractMessage):
         self.session_secret = user.session.secret
 
 
+class PlayURLMessage(AbstractMessage):
+    """Sent by client requesting a remote song be played.
+
+    Attributes
+    ----------
+    url : str
+        URL to audio resource.
+
+    """
+    header = "play.url"
+    """"""
+
+    def __init__(self, url):
+        self.url = url
+
+
 VALID_MESSAGES = {
     AuthCodeMessage.header: (AuthCodeMessage, ["code"]),
     AuthFailMessage.header: (AuthFailMessage, []),
     AuthSessionMessage.header: (AuthSessionMessage, ["handle", "secret"]),
     AuthSucceedMessage.header: (AuthSucceedMessage, [
         "username", "session_handle", "session_secret"
-    ])
+    ]),
+    PlayURLMessage.header: (PlayURLMessage, ["url"])
 }

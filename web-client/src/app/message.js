@@ -55,11 +55,23 @@ export class AuthSucceedMessage extends AbstractMessage {
     }
 }
 
+export class PlayURLMessage extends AbstractMessage {
+    static get header() {
+        return "play.url";
+    }
+
+    constructor(url) {
+        super();
+        this.url = url;
+    }
+}
+
 const VALID_MESSAGES = {
     "auth.code": [AuthCodeMessage, ["code"]],
     "auth.fail": [AuthFailMessage, []],
     "auth.session": [AuthSessionMessage, ["handle", "secret"]],
-    "auth.succeed": [AuthSucceedMessage, ["username", "session_handle", "session_secret"]]
+    "auth.succeed": [AuthSucceedMessage, ["username", "session_handle", "session_secret"]],
+    "play.url": [PlayURLMessage, ["url"]]
 };
 
 export class EventDispatcher {
