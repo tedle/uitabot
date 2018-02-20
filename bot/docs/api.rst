@@ -34,6 +34,7 @@ Messages
 UI Server
 ---------
 .. automodule:: uita.ui_server
+.. autoclass:: Event
 .. autoclass:: Server
    :members:
 

@@ -4,7 +4,7 @@ from collections import namedtuple
 
 
 User = namedtuple("User", ["name", "session"])
-"""Contains Discord user data.
+"""Container for Discord user data.
 
 Parameters
 ----------
