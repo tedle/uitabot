@@ -105,7 +105,7 @@ class AuthSucceedMessage(AbstractMessage):
 
     Parameters
     ----------
-    user : uita.user.User
+    user : uita.types.DiscordUser
         User object to encode.
 
     Attributes
@@ -143,6 +143,28 @@ class PlayURLMessage(AbstractMessage):
         self.url = url
 
 
+class ServerListGetMessage(AbstractMessage):
+    """Sent by client requesting a list of every server it can connect to."""
+    header = "server.list.get"
+    """"""
+
+
+class ServerListSendMessage(AbstractMessage):
+    """Sent by server containing a list of every server a user can connect to.
+
+    Attributes
+    ----------
+    servers : list(uita.types.DiscordServer)
+        List of servers to connect to.
+
+    """
+    header = "server.list.send"
+    """"""
+
+    def __init__(self, servers):
+        self.servers = [server.__dict__ for server in servers]
+
+
 VALID_MESSAGES = {
     AuthCodeMessage.header: (AuthCodeMessage, ["code"]),
     AuthFailMessage.header: (AuthFailMessage, []),
@@ -150,5 +172,7 @@ VALID_MESSAGES = {
     AuthSucceedMessage.header: (AuthSucceedMessage, [
         "username", "session_handle", "session_secret"
     ]),
-    PlayURLMessage.header: (PlayURLMessage, ["url"])
+    PlayURLMessage.header: (PlayURLMessage, ["url"]),
+    ServerListGetMessage.header: (ServerListGetMessage, []),
+    ServerListSendMessage.header: (ServerListSendMessage, ["servers"])
 }

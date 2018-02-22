@@ -3,6 +3,7 @@ import * as Config from "config";
 import * as Message from "./message.js";
 import * as Session from "./session.js";
 import Authenticate from "./authenticate.js";
+import ServerSelect from "./server-select.js";
 import LivePlaylist from "./live-playlist.js";
 
 export default class App extends React.Component {
@@ -11,19 +12,20 @@ export default class App extends React.Component {
         this.state = {
             authenticated: false,
             connection: WebSocket.CLOSED,
-            needLogin: false
+            needLogin: false,
+            discordServer: null
         };
+    }
+
+    componentDidMount() {
         this.eventDispatcher = new Message.EventDispatcher();
         this.eventDispatcher.onAuthFail = m => this.setState({needLogin: true});
         this.eventDispatcher.onAuthSucceed = m => {
             Session.store({handle: m.session_handle, secret: m.session_secret});
             this.setState({authenticated: true});
         };
-    }
-
-    componentDidMount() {
-        console.log(`Connecting to ${Config.bot_url}`);
         try {
+            console.log(`Connecting to ${Config.bot_url}`);
             this.socket = new WebSocket(Config.bot_url);
             this.socket.onmessage = e => this.eventDispatcher.dispatch(Message.parse(e.data));
             this.socket.onerror = e => console.log(e);
@@ -55,6 +57,12 @@ export default class App extends React.Component {
             return <Authenticate
                 socket={this.socket}
                 onAuthFail={() => this.setState({needLogin: true})}
+            />;
+        }
+        if (this.state.discordServer === null) {
+            return <ServerSelect
+                socket={this.socket}
+                eventDispatcher={this.eventDispatcher}
             />;
         }
         return <LivePlaylist

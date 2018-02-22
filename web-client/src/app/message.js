@@ -66,18 +66,38 @@ export class PlayURLMessage extends AbstractMessage {
     }
 }
 
+export class ServerListGetMessage extends AbstractMessage {
+    static get header() {
+        return "server.list.get";
+    }
+}
+
+export class ServerListSendMessage extends AbstractMessage {
+    static get header() {
+        return "server.list.send";
+    }
+
+    constructor(servers) {
+        super();
+        this.servers = servers;
+    }
+}
+
 const VALID_MESSAGES = {
     "auth.code": [AuthCodeMessage, ["code"]],
     "auth.fail": [AuthFailMessage, []],
     "auth.session": [AuthSessionMessage, ["handle", "secret"]],
     "auth.succeed": [AuthSucceedMessage, ["username", "session_handle", "session_secret"]],
-    "play.url": [PlayURLMessage, ["url"]]
+    "play.url": [PlayURLMessage, ["url"]],
+    "server.list.get": [ServerListGetMessage, []],
+    "server.list.send": [ServerListSendMessage, ["servers"]]
 };
 
 export class EventDispatcher {
     constructor() {
         this.onAuthFail = m => {}
         this.onAuthSucceed = m => {}
+        this.onServerListSend = m => {}
     }
 
     dispatch(message) {
@@ -90,6 +110,9 @@ export class EventDispatcher {
                 break;
             case AuthSucceedMessage:
                 this.onAuthSucceed(message);
+                break;
+            case ServerListSendMessage:
+                this.onServerListSend(message);
                 break;
             default:
                 throw new InternalError("EventDispatcher.dispatch has not implemented this message");

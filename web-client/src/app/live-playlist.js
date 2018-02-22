@@ -7,11 +7,6 @@ export default class LivePlaylist extends React.Component {
         this.state = {
             searchBox: ""
         };
-        // Set event callbacks here because we probably want to subscribe asap
-    }
-
-    componentDidMount() {
-        // Do a get full player state request here
     }
 
     handleChange(event) {

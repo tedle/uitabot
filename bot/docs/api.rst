@@ -38,7 +38,8 @@ UI Server
 .. autoclass:: Server
    :members:
 
-User
-----
-.. automodule:: uita.user
-.. autoclass:: User
+Types
+-----
+.. automodule:: uita.types
+.. autoclass:: DiscordServer
+.. autoclass:: DiscordUser

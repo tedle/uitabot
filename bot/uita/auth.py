@@ -3,7 +3,7 @@
 from collections import namedtuple
 
 import uita.exceptions
-import uita.user
+import uita.types
 
 
 Session = namedtuple("Session", ["handle", "secret"])
@@ -38,7 +38,7 @@ def verify_session(session, database):
 
     Returns
     -------
-    uita.user.User
+    uita.types.DiscordUser
         User object of authenticated user.
 
     Raises
@@ -48,7 +48,12 @@ def verify_session(session, database):
 
     """
     if database.verify_session(session):
-        return uita.user.User(name="me", session=session)
+        return uita.types.DiscordUser(
+            id="98435789",
+            name="me",
+            session=session,
+            active_server=None
+        )
     raise uita.exceptions.AuthenticationError("Session authentication failed")
 
 

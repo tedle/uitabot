@@ -2,7 +2,7 @@
 
 
 class AuthenticationError(Exception):
-    """Occurs when a `uita.user.User` resource is accessed without proper credentials."""
+    """Occurs when a `uita.types.DiscordUser` resource is accessed without proper credentials."""
     pass
 
 

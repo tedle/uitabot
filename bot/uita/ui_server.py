@@ -13,21 +13,41 @@ import logging
 log = logging.getLogger(__name__)
 
 
-Event = namedtuple("Event", ["message", "user"])
+Connection = namedtuple("Connection", ["user", "socket"])
+"""Container for Server connections.
+
+Parameters
+----------
+user : uita.types.DiscordUser
+    User connected to server.
+socket : websockets.WebSocketCommonProtocol
+    Websocket connected to user.
+
+Attributes
+----------
+user : uita.types.DiscordUser
+    User connected to server.
+socket : websockets.WebSocketCommonProtocol
+    Websocket connected to user.
+
+"""
+
+
+Event = namedtuple("Event", ["message", "connection"])
 """Container for Server event callbacks.
 
 Parameters
 ----------
 message : uita.message.AbstractMessage
     Message that triggered event.
-user : uita.user.User
-    User that triggered event.
+connection : uita.ui_server.Connection
+    Connection that triggered event.
 
 Attributes
 ----------
 message : uita.message.AbstractMessage
     Message that triggered event.
-user : uita.user.User
+user : uita.types.DiscordUser
     User that triggered event.
 
 """
@@ -50,7 +70,7 @@ class Server():
         self._server = None
         self._event_callbacks = {}
         self._active_events = set()
-        self.users = set()
+        self.connections = {}
 
     async def start(
         self, host, port, database,
@@ -121,7 +141,7 @@ class Server():
         self._server = None
         self.database = None
         self.loop = None
-        self.users.clear()
+        self.connections.clear()
         log.info("Server closed successfully")
 
     def on_message(self, header):
@@ -139,6 +159,19 @@ class Server():
             self._event_callbacks[header] = function
             return function
         return decorator
+
+    async def send_all(self, message):
+        """Sends a `uita.message.AbstractMessage` to a `uita.types.DiscordUser`
+
+        Parameters
+        ----------
+        user : `uita.types.DiscordUser`
+            Connected user to send message to.
+        message : `uita.message.AbstractMessage`
+            Message to send to user.
+
+        """
+        await asyncio.wait([socket.send(str(message)) for socket in self.connections])
 
     async def _authenticate(self, websocket):
         try:
@@ -178,13 +211,14 @@ class Server():
         try:
             user = None  # If authentication throws we would get an UnboundLocalError otherwise
             user = await self._authenticate(websocket)
-            self.users.add(user)
+            conn = Connection(user, websocket)
+            self.connections[websocket] = conn
             await websocket.send(str(uita.message.AuthSucceedMessage(user)))
             log.info("{} connected".format(user.name))
             while True:
                 data = await websocket.recv()
                 message = uita.message.parse(data)
-                self._dispatch_event(Event(message, user))
+                self._dispatch_event(Event(message, conn))
         except websockets.exceptions.ConnectionClosed as err:
             log.debug("Websocket disconnected: code {},reason {}".format(err.code, err.reason))
         except asyncio.CancelledError:
@@ -205,6 +239,6 @@ class Server():
                 pass
         finally:
             if user is not None:
-                self.users.remove(user)
+                del self.connections[websocket]
             await websocket.close()
             log.debug("Websocket closed")
