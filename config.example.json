@@ -1,4 +1,11 @@
 {
+    "discord": {
+        "client": {
+            "id": "",
+            "secret": ""
+        },
+        "token": ""
+    },
     "bot": {
         "domain": "localhost",
         "port": 3189

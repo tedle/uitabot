@@ -5,8 +5,12 @@ __author__ = "Dominic Bowden"
 __copyright__ = "2018, Dominic Bowden"
 __license__ = "ISC"
 
+from discord import Client
 from uita.ui_server import Server
+import asyncio
 
+loop = asyncio.get_event_loop()
+bot = Client(loop=loop)
 server = Server()
 
-import uita.server_events  # noqa: E402,F401
+import uita.bot_events, uita.server_events  # noqa: E401,E402,F401
