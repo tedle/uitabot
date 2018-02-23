@@ -5,11 +5,16 @@ import uita.config
 import uita.database
 
 import logging
+import sys
 
 
 def initialize_logging(level=logging.DEBUG):
+    # Websockets uses the logging.lastResort handler which by default prints
+    # all of its uncatchable and unpreventable exception warnings to stderr
+    logging.getLogger("websockets").setLevel(logging.CRITICAL)
+
     log = logging.getLogger("uita")
-    log_handler = logging.StreamHandler()
+    log_handler = logging.StreamHandler(stream=sys.stdout)
     log_handler.setFormatter(logging.Formatter("[%(asctime)s](%(name)s)%(message)s"))
     log.setLevel(level)
     log.addHandler(log_handler)
