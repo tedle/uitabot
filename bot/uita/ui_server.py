@@ -160,18 +160,24 @@ class Server():
             return function
         return decorator
 
-    async def send_all(self, message):
-        """Sends a `uita.message.AbstractMessage` to a `uita.types.DiscordUser`
+    async def send_all(self, message, discord_server_id):
+        """Sends a `uita.message.AbstractMessage` to all `uita.types.DiscordUser`s in a server.
 
         Parameters
         ----------
-        user : `uita.types.DiscordUser`
+        user : uita.types.DiscordUser
             Connected user to send message to.
-        message : `uita.message.AbstractMessage`
+        message : uita.message.AbstractMessage
             Message to send to user.
+        discord_server_id : str
+            Server ID to broadcast to.
 
         """
-        await asyncio.wait([socket.send(str(message)) for socket in self.connections])
+        await asyncio.wait([
+            socket.send(str(message))
+            for socket, conn in self.connections.items()
+            if conn.user.active_server == discord_server_id
+        ])
 
     async def _authenticate(self, websocket):
         try:
