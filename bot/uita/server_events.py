@@ -11,14 +11,14 @@ log = logging.getLogger(__name__)
 @server.on_message("channel.list.get")
 async def channel_list_get(event):
     log.debug("channel list get")
-    server = bot.get_server(event.connection.user.active_server)
-    if server is None:
+    discord_server = bot.get_server(event.connection.user.active_server)
+    if discord_server is None:
         raise uita.exceptions.NoActiveServer
     discord_channels = [
         uita.types.DiscordChannel(
             discord_channel.id, discord_channel.name
         )
-        for discord_channel in server.channels
+        for discord_channel in discord_server.channels
         if discord_channel.type is discord.ChannelType.voice
     ]
     await event.connection.socket.send(str(uita.message.ChannelListSendMessage(discord_channels)))
