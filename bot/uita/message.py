@@ -1,5 +1,6 @@
 """Builds and parses messages for websocket API."""
 import json
+import math
 
 import uita.exceptions
 
@@ -22,6 +23,8 @@ def parse(message):
     uita.exceptions.MalformedMessage
         If the message string is invalid.
     """
+    if len(message) > MAX_CLIENT_MESSAGE_LENGTH:
+        raise uita.exceptions.MalformedMessage("Message exceeded maximum length")
     try:
         msg = json.loads(message, parse_int=str, parse_float=str)
     except json.JSONDecoderError:
@@ -29,6 +32,8 @@ def parse(message):
 
     if "header" not in msg or not isinstance(msg["header"], str) or not len(msg["header"]):
         raise uita.exceptions.MalformedMessage("Has no header property")
+    if len(msg["header"]) > MAX_HEADER_LENGTH:
+        raise uita.exceptions.MalformedMessage("Header exceeds maximum length")
 
     try:
         header = msg["header"]
@@ -98,6 +103,10 @@ class AuthSessionMessage(AbstractMessage):
     def __init__(self, handle, secret):
         self.handle = str(handle)
         self.secret = str(secret)
+        if len(self.handle) > MAX_DIGITS_64BIT:
+            raise uita.exceptions.MalformedMessage("Session handle exceeds 64-bit number")
+        if len(self.secret) > MAX_SESSION_LENGTH:
+            raise uita.exceptions.MalformedMessage("Session secret exceeds max possible length")
 
 
 class AuthSucceedMessage(AbstractMessage):
@@ -157,6 +166,8 @@ class ServerJoinMessage(AbstractMessage):
 
     def __init__(self, server_id):
         self.server_id = str(server_id)
+        if len(self.server_id) > MAX_DIGITS_64BIT:
+            raise uita.exceptions.MalformedMessage("Server ID exceeds 64-bit number")
 
 
 class ServerListGetMessage(AbstractMessage):
@@ -193,3 +204,9 @@ VALID_MESSAGES = {
     ServerListGetMessage.header: (ServerListGetMessage, []),
     ServerListSendMessage.header: (ServerListSendMessage, ["servers"])
 }
+
+# Mild length sanitization on any input that is used for indexing
+MAX_CLIENT_MESSAGE_LENGTH = 5000
+MAX_DIGITS_64BIT = math.ceil(64 * math.log10(2))  # 64 * log 2 = log (2^64)
+MAX_HEADER_LENGTH = 50
+MAX_SESSION_LENGTH = 64
