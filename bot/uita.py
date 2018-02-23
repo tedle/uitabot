@@ -25,7 +25,7 @@ if __name__ == "__main__":
         initialize_logging()
         config = uita.config.load("../config.json")
         database = uita.database.Database(":memory:")
-        uita.loop.run_until_complete(uita.server.start(
+        uita.loop.create_task(uita.server.start(
             config.bot.domain, config.bot.port, database,
             ssl_cert_file=config.ssl.cert_file, ssl_key_file=config.ssl.key_file,
             loop=uita.loop
@@ -35,10 +35,8 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         pass
     finally:
-        uita.loop.run_until_complete(asyncio.gather(
-            uita.server.stop(),
-            uita.bot.logout()
-        ))
+        uita.loop.run_until_complete(uita.server.stop())
+        uita.loop.run_until_complete(uita.bot.logout())
         task_list = asyncio.Task.all_tasks(loop=uita.loop)
         task_list_future = asyncio.gather(*task_list, loop=uita.loop)
         try:

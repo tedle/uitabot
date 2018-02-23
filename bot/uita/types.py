@@ -1,6 +1,29 @@
 """Defines various container types."""
 
 
+class DiscordChannel():
+    """Container for Discord channel data.
+
+    Parameters
+    ----------
+    id : str
+        Unique channel ID.
+    name : str
+        Channel name.
+
+    Attributes
+    ----------
+    id : str
+        Unique channel ID.
+    name : str
+        Channel name.
+
+    """
+    def __init__(self, id, name):
+        self.id = id
+        self.name = name
+
+
 class DiscordServer():
     """Container for Discord server data.
 

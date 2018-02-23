@@ -55,6 +55,23 @@ export class AuthSucceedMessage extends AbstractMessage {
     }
 }
 
+export class ChannelListGetMessage extends AbstractMessage {
+    static get header() {
+        return "channel.list.get";
+    }
+}
+
+export class ChannelListSendMessage extends AbstractMessage {
+    static get header() {
+        return "channel.list.send";
+    }
+
+    constructor(channels) {
+        super();
+        this.channels = channels;
+    }
+}
+
 export class PlayURLMessage extends AbstractMessage {
     static get header() {
         return "play.url";
@@ -99,6 +116,8 @@ const VALID_MESSAGES = {
     "auth.fail": [AuthFailMessage, []],
     "auth.session": [AuthSessionMessage, ["handle", "secret"]],
     "auth.succeed": [AuthSucceedMessage, ["username", "session_handle", "session_secret"]],
+    "channel.list.get": [ChannelListGetMessage, []],
+    "channel.list.send": [ChannelListSendMessage, ["channels"]],
     "play.url": [PlayURLMessage, ["url"]],
     "server.join": [ServerJoinMessage, ["server_id"]],
     "server.list.get": [ServerListGetMessage, []],
@@ -109,6 +128,7 @@ export class EventDispatcher {
     constructor() {
         this.onAuthFail = m => {}
         this.onAuthSucceed = m => {}
+        this.onChannelListSend = m => {}
         this.onServerListSend = m => {}
     }
 
@@ -122,6 +142,9 @@ export class EventDispatcher {
                 break;
             case AuthSucceedMessage:
                 this.onAuthSucceed(message);
+                break;
+            case ChannelListSendMessage:
+                this.onChannelListSend(message);
                 break;
             case ServerListSendMessage:
                 this.onServerListSend(message);

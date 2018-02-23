@@ -11,6 +11,11 @@ class MalformedMessage(Exception):
     pass
 
 
+class NoActiveServer(Exception):
+    """Occurs when an authenticated active server is needed but not set."""
+    pass
+
+
 class ServerError(Exception):
     """Occurs when a `uita.ui_server.Server` is configured or used incorrectly."""
     pass

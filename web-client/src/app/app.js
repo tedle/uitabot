@@ -3,8 +3,8 @@ import * as Config from "config";
 import * as Message from "./message.js";
 import * as Session from "./session.js";
 import Authenticate from "./authenticate.js";
+import Dashboard from "./dashboard.js";
 import ServerSelect from "./server-select.js";
-import LivePlaylist from "./live-playlist.js";
 
 export default class App extends React.Component {
     constructor(props) {
@@ -66,7 +66,7 @@ export default class App extends React.Component {
                 onServerSelect={(id) => this.setState({discordServer: id})}
             />;
         }
-        return <LivePlaylist
+        return <Dashboard
             socket={this.socket}
             eventDispatcher={this.eventDispatcher}
         />;

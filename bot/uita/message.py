@@ -136,6 +136,28 @@ class AuthSucceedMessage(AbstractMessage):
         self.session_secret = str(user.session.secret)
 
 
+class ChannelListGetMessage(AbstractMessage):
+    """Sent by client requesting a list of every channel the bot can connect to."""
+    header = "channel.list.get"
+    """"""
+
+
+class ChannelListSendMessage(AbstractMessage):
+    """Sent by server containing a list of every channel the bot can connect to.
+
+    Attributes
+    ----------
+    channels : list(uita.types.DiscordChannel)
+        List of channels to connect to.
+
+    """
+    header = "channel.list.send"
+    """"""
+
+    def __init__(self, channels):
+        self.channels = [channel.__dict__ for channel in channels]
+
+
 class PlayURLMessage(AbstractMessage):
     """Sent by client requesting a remote song be played.
 
@@ -199,6 +221,8 @@ VALID_MESSAGES = {
     AuthSucceedMessage.header: (AuthSucceedMessage, [
         "username", "session_handle", "session_secret"
     ]),
+    ChannelListGetMessage.header: (ChannelListGetMessage, []),
+    ChannelListSendMessage.header: (ChannelListSendMessage, ["channels"]),
     PlayURLMessage.header: (PlayURLMessage, ["url"]),
     ServerJoinMessage.header: (ServerJoinMessage, ["server_id"]),
     ServerListGetMessage.header: (ServerListGetMessage, []),
