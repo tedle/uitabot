@@ -6,4 +6,4 @@ log = logging.getLogger(__name__)
 
 @bot.event
 async def on_ready():
-    log.debug("Bot connected to Discord")
+    log.info("Bot connected to Discord")

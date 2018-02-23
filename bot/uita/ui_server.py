@@ -214,17 +214,17 @@ class Server():
             conn = Connection(user, websocket)
             self.connections[websocket] = conn
             await websocket.send(str(uita.message.AuthSucceedMessage(user)))
-            log.info("{} connected".format(user.name))
+            log.info("{}({}) connected".format(user.name, websocket.remote_address[0]))
             while True:
                 data = await websocket.recv()
                 message = uita.message.parse(data)
                 self._dispatch_event(Event(message, conn))
-        except websockets.exceptions.ConnectionClosed as err:
-            log.debug("Websocket disconnected: code {},reason {}".format(err.code, err.reason))
+        except websockets.exceptions.ConnectionClosed as error:
+            log.debug("Websocket disconnected: code {},reason {}".format(error.code, error.reason))
         except asyncio.CancelledError:
             log.debug("Websocket cancelled")
-        except uita.exceptions.AuthenticationError:
-            log.debug("Websocket failed to authenticate")
+        except uita.exceptions.AuthenticationError as error:
+            log.debug("Websocket failed to authenticate: {}".format(error))
             try:
                 await asyncio.wait_for(websocket.send(
                     str(uita.message.AuthFailMessage())),
@@ -237,8 +237,13 @@ class Server():
                 websockets.exceptions.ConnectionClosed
             ):
                 pass
+        except uita.exceptions.MalformedMessage as error:
+            log.debug("Websocket sent malformed message: {}".format(error))
+        except Exception:
+            log.warning("Uncaught exception", exc_info=True)
         finally:
             if user is not None:
                 del self.connections[websocket]
+                log.info("{} disconnected".format(user.name))
             await websocket.close()
             log.debug("Websocket closed")
