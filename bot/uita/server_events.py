@@ -6,6 +6,13 @@ import logging
 log = logging.getLogger(__name__)
 
 
+@server.on_message("server.join")
+async def server_join(event):
+    log.debug("server join {}".format(event.message.server_id))
+    log.warn("SERVER.JOIN USING UNSANITIZED, UNCHECKED USER INPUT")
+    event.connection.user.active_server = event.message.server_id
+
+
 @server.on_message("server.list.get")
 async def server_list_get(event):
     log.debug("server list get")

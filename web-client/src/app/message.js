@@ -66,6 +66,17 @@ export class PlayURLMessage extends AbstractMessage {
     }
 }
 
+export class ServerJoinMessage extends AbstractMessage {
+    static get header() {
+        return "server.join";
+    }
+
+    constructor(server_id) {
+        super();
+        this.server_id = server_id;
+    }
+}
+
 export class ServerListGetMessage extends AbstractMessage {
     static get header() {
         return "server.list.get";
@@ -89,6 +100,7 @@ const VALID_MESSAGES = {
     "auth.session": [AuthSessionMessage, ["handle", "secret"]],
     "auth.succeed": [AuthSucceedMessage, ["username", "session_handle", "session_secret"]],
     "play.url": [PlayURLMessage, ["url"]],
+    "server.join": [ServerJoinMessage, ["server_id"]],
     "server.list.get": [ServerListGetMessage, []],
     "server.list.send": [ServerListSendMessage, ["servers"]]
 };

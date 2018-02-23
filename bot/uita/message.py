@@ -72,7 +72,7 @@ class AuthCodeMessage(AbstractMessage):
     """"""
 
     def __init__(self, code):
-        self.code = code
+        self.code = str(code)
 
 
 class AuthFailMessage(AbstractMessage):
@@ -96,8 +96,8 @@ class AuthSessionMessage(AbstractMessage):
     """"""
 
     def __init__(self, handle, secret):
-        self.handle = handle
-        self.secret = secret
+        self.handle = str(handle)
+        self.secret = str(secret)
 
 
 class AuthSucceedMessage(AbstractMessage):
@@ -122,9 +122,9 @@ class AuthSucceedMessage(AbstractMessage):
     """"""
 
     def __init__(self, user):
-        self.username = user.name
-        self.session_handle = user.session.handle
-        self.session_secret = user.session.secret
+        self.username = str(user.name)
+        self.session_handle = str(user.session.handle)
+        self.session_secret = str(user.session.secret)
 
 
 class PlayURLMessage(AbstractMessage):
@@ -140,7 +140,23 @@ class PlayURLMessage(AbstractMessage):
     """"""
 
     def __init__(self, url):
-        self.url = url
+        self.url = str(url)
+
+
+class ServerJoinMessage(AbstractMessage):
+    """Sent by client containing a server ID to join.
+
+    Attributes
+    ----------
+    server_id : str
+        Server ID to join.
+
+    """
+    header = "server.join"
+    """"""
+
+    def __init__(self, server_id):
+        self.server_id = str(server_id)
 
 
 class ServerListGetMessage(AbstractMessage):
@@ -173,6 +189,7 @@ VALID_MESSAGES = {
         "username", "session_handle", "session_secret"
     ]),
     PlayURLMessage.header: (PlayURLMessage, ["url"]),
+    ServerJoinMessage.header: (ServerJoinMessage, ["server_id"]),
     ServerListGetMessage.header: (ServerListGetMessage, []),
     ServerListSendMessage.header: (ServerListSendMessage, ["servers"])
 }

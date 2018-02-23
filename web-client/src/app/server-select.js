@@ -11,16 +11,25 @@ export default class ServerSelect extends React.Component {
 
     componentDidMount() {
         this.props.eventDispatcher.onServerListSend = m => this.setState({servers: m.servers});
-        this.getServerList(this.props.socket);
+        this.getServerList();
     }
 
     getServerList(socket) {
-        socket.send(new Message.ServerListGetMessage().str());
+        this.props.socket.send(new Message.ServerListGetMessage().str());
+    }
+
+    joinServer(id) {
+        this.props.socket.send(new Message.ServerJoinMessage(id).str());
+        this.props.onServerSelect(id);
     }
 
     render() {
         const serverList = this.state.servers.map((server) => {
-            return <li key={server.id}>{server.name}</li>;
+            return (
+                <li key={server.id}>
+                    <button onClick={() => this.joinServer(server.id)}>{server.name}</button>
+                </li>
+            );
         });
         return (
             <div>
