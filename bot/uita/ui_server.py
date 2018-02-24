@@ -208,6 +208,12 @@ class Server():
                     await self._event_callbacks[event.message.header](event)
                 except asyncio.CancelledError:
                     pass
+                except Exception:
+                    log.warning("Uncaught exception in event", exc_info=True)
+                    await event.connection.socket.close(
+                        code=1001,
+                        reason="Event callback caused exception"
+                    )
             task = self.loop.create_task(wrapper())
             task.add_done_callback(lambda f: self._active_events.remove(f))
             self._active_events.add(task)
