@@ -157,7 +157,8 @@ class ChannelListSendMessage(AbstractMessage):
     def __init__(self, channels):
         self.channels = [{
             "id": channel.id,
-            "name": channel.name
+            "name": channel.name,
+            "position": channel.position
         } for channel in channels]
 
 

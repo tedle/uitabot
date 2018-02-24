@@ -19,7 +19,11 @@ export default class VoiceChannelSelect extends React.Component {
     }
 
     render() {
-        const channelList = this.state.channels.map((channel) => {
+        const channelList = this.state.channels
+            .sort((a, b) => {
+                return a.position - b.position;
+            })
+            .map((channel) => {
             return (
                 <li key={channel.id}>
                     <button onClick={() => this.joinServer(channel.id)}>{channel.name}</button>

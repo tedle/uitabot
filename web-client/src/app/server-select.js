@@ -24,7 +24,11 @@ export default class ServerSelect extends React.Component {
     }
 
     render() {
-        const serverList = this.state.servers.map((server) => {
+        const serverList = this.state.servers
+            .sort((a, b) => {
+                return a.name.localeCompare(b.name);
+            })
+            .map((server) => {
             return (
                 <li key={server.id}>
                     <button onClick={() => this.joinServer(server.id)}>{server.name}</button>

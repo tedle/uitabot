@@ -13,7 +13,10 @@ async def channel_list_get(event):
     log.debug("channel list get")
     discord_channels = [
         uita.types.DiscordChannel(
-            discord_channel.id, discord_channel.name, discord_channel.type
+            discord_channel.id,
+            discord_channel.name,
+            discord_channel.type,
+            discord_channel.position
         )
         for key, discord_channel in event.active_server.channels.items()
         if discord_channel.type is discord.ChannelType.voice

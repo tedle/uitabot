@@ -44,7 +44,9 @@ class DiscordState():
         log.debug("initialize_from_bot")
         for server in bot.servers:
             discord_channels = {
-                channel.id: DiscordChannel(channel.id, channel.name, channel.type)
+                channel.id: DiscordChannel(
+                    channel.id, channel.name, channel.type, channel.position
+                )
                 for channel in server.channels
             }
             discord_users = {user.id: user.name for user in server.members}
@@ -142,6 +144,7 @@ class DiscordState():
                 pass
 
 
+# TODO: Add category support if discord.py rewrite ever goes live
 class DiscordChannel():
     """Container for Discord channel data.
 
@@ -153,6 +156,8 @@ class DiscordChannel():
         Channel name.
     type : discord.ChannelType
         Channel type.
+    position : int
+        Ordered position in channel list.
 
     Attributes
     ----------
@@ -162,12 +167,15 @@ class DiscordChannel():
         Channel name.
     type : discord.ChannelType
         Channel type.
+    position : int
+        Ordered position in channel list.
 
     """
-    def __init__(self, id, name, type):
+    def __init__(self, id, name, type, position):
         self.id = id
         self.name = name
         self.type = type
+        self.position = position
 
 
 class DiscordServer():

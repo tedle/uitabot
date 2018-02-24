@@ -22,7 +22,9 @@ async def on_ready():
 @bot.event
 @bot_ready
 async def on_channel_create(channel):
-    discord_channel = uita.types.DiscordChannel(channel.id, channel.name, channel.type)
+    discord_channel = uita.types.DiscordChannel(
+        channel.id, channel.name, channel.type, channel.position
+    )
     state.channel_add(discord_channel, channel.server.id)
 
 
@@ -35,7 +37,9 @@ async def on_channel_delete(channel):
 @bot.event
 @bot_ready
 async def on_channel_update(before, after):
-    discord_channel = uita.types.DiscordChannel(after.id, after.name, after.type)
+    discord_channel = uita.types.DiscordChannel(
+        after.id, after.name, after.type, after.position
+    )
     state.channel_add(discord_channel, after.server.id)
 
 
@@ -61,7 +65,9 @@ async def on_member_update(before, after):
 @bot_ready
 async def on_server_join(server):
     channels = {
-        channel.id: uita.types.DiscordChannel(channel.id, channel.name, channel.type)
+        channel.id: uita.types.DiscordChannel(
+            channel.id, channel.name, channel.type, channel.position
+        )
         for channel in server.channels
     }
     users = {user.id: user.name for user in server.members}
@@ -79,7 +85,9 @@ async def on_server_remove(server):
 @bot_ready
 async def on_server_update(before, after):
     channels = {
-        channel.id: uita.types.DiscordChannel(channel.id, channel.name, channel.type)
+        channel.id: uita.types.DiscordChannel(
+            channel.id, channel.name, channel.type, channel.position
+        )
         for channel in after.channels
     }
     users = {user.id: user.name for user in after.members}
