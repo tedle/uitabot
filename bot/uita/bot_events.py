@@ -64,7 +64,8 @@ async def on_server_join(server):
         channel.id: uita.types.DiscordChannel(channel.id, channel.name, channel.type)
         for channel in server.channels
     }
-    discord_server = uita.types.DiscordServer(server.id, server.name, channels)
+    users = {user.id: user.name for user in server.members}
+    discord_server = uita.types.DiscordServer(server.id, server.name, channels, users)
     uita.state.server_add(discord_server)
 
 
@@ -81,5 +82,6 @@ async def on_server_update(before, after):
         channel.id: uita.types.DiscordChannel(channel.id, channel.name, channel.type)
         for channel in after.channels
     }
-    discord_server = uita.types.DiscordServer(after.id, after.name, channels)
+    users = {user.id: user.name for user in after.members}
+    discord_server = uita.types.DiscordServer(after.id, after.name, channels, users)
     uita.state.server_add(discord_server)
