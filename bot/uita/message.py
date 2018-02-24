@@ -155,7 +155,10 @@ class ChannelListSendMessage(AbstractMessage):
     """"""
 
     def __init__(self, channels):
-        self.channels = [channel.__dict__ for channel in channels]
+        self.channels = [{
+            "id": channel.id,
+            "name": channel.name
+        } for channel in channels]
 
 
 class PlayURLMessage(AbstractMessage):
@@ -211,7 +214,10 @@ class ServerListSendMessage(AbstractMessage):
     """"""
 
     def __init__(self, servers):
-        self.servers = [server.__dict__ for server in servers]
+        self.servers = [{
+            "id": server.id,
+            "name": server.name
+        } for server in servers]
 
 
 VALID_MESSAGES = {

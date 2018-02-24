@@ -7,10 +7,12 @@ __license__ = "ISC"
 
 from discord import Client
 from uita.ui_server import Server
+from uita.types import DiscordState
 import asyncio
 
 loop = asyncio.get_event_loop()
 bot = Client(loop=loop)
 server = Server()
+state = DiscordState()
 
 import uita.bot_events, uita.server_events  # noqa: E401,E402,F401

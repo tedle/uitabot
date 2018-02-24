@@ -8,7 +8,7 @@ from collections import namedtuple
 import uita.auth
 import uita.exceptions
 import uita.message
-import uita  # bot
+import uita
 
 import logging
 log = logging.getLogger(__name__)
@@ -34,22 +34,30 @@ socket : websockets.WebSocketCommonProtocol
 """
 
 
-Event = namedtuple("Event", ["message", "connection"])
+Event = namedtuple("Event", ["message", "user", "socket", "active_server"])
 """Container for Server event callbacks.
 
 Parameters
 ----------
 message : uita.message.AbstractMessage
     Message that triggered event.
-connection : uita.ui_server.Connection
+user : uita.types.DiscordUser
+    User that triggered event.
+socket : websockets.WebSocketProtocol
     Connection that triggered event.
+active_server : uita.types.DiscordServer
+    Server that user is active in. None if not yet selected.
 
 Attributes
 ----------
 message : uita.message.AbstractMessage
     Message that triggered event.
-connection : uita.ui_server.Connection
+user : uita.types.DiscordUser
+    User that triggered event.
+socket : websockets.WebSocketProtocol
     Connection that triggered event.
+active_server : uita.types.DiscordServer
+    Server that user is active in. None if not yet selected.
 
 """
 
@@ -155,25 +163,25 @@ class Server():
         header : str
             `uita.message.AbstractMessage` header to wait for.
         require_active_server : bool, optional
-            Verify that `event.connection.user.active_server` is valid, default `True`
+            Verify that `event.active_server` is valid, default `True`
 
         Raises
         ------
         uita.exceptions.NoActiveServer
             If `require_active_server` was set to `True` and callback is
-            sent an `event.connection.user.active_server` of `None`.
+            sent an `event.active_server` of `None`.
 
         """
         def decorator(function):
             async def wrapper(event):
-                if require_active_server is True and event.connection.user.active_server is None:
+                if require_active_server is True and event.active_server is None:
                     raise uita.exceptions.NoActiveServer
                 return await function(event)
             self._event_callbacks[header] = wrapper
             return wrapper
         return decorator
 
-    async def send_all(self, message, discord_server_id):
+    async def send_all(self, message, server_id):
         """Sends a `uita.message.AbstractMessage` to all `uita.types.DiscordUser`s in a server.
 
         Parameters
@@ -182,14 +190,14 @@ class Server():
             Connected user to send message to.
         message : uita.message.AbstractMessage
             Message to send to user.
-        discord_server_id : str
-            Server ID to broadcast to.
+        server_id : str
+            Discord server ID to broadcast to.
 
         """
         await asyncio.wait([
             socket.send(str(message))
             for socket, conn in self.connections.items()
-            if getattr(conn.user.active_server, "id", None) == discord_server_id
+            if conn.user.active_server_id == server_id
         ])
 
     async def _authenticate(self, websocket):
@@ -223,7 +231,7 @@ class Server():
                     pass
                 except Exception:
                     log.warning("Uncaught exception in event", exc_info=True)
-                    await event.connection.socket.close(
+                    await event.socket.close(
                         code=1001,
                         reason="Event callback caused exception"
                     )
@@ -243,7 +251,8 @@ class Server():
             while True:
                 data = await websocket.recv()
                 message = uita.message.parse(data)
-                self._dispatch_event(Event(message, conn))
+                active_server = uita.state.servers.get(user.active_server_id)
+                self._dispatch_event(Event(message, user, websocket, active_server))
         except websockets.exceptions.ConnectionClosed as error:
             log.debug("Websocket disconnected: code {},reason {}".format(error.code, error.reason))
         except asyncio.CancelledError:

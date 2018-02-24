@@ -1,6 +1,6 @@
 import discord
 
-from uita import bot, server
+from uita import server, state
 import uita.message
 import uita.types
 
@@ -13,19 +13,19 @@ async def channel_list_get(event):
     log.debug("channel list get")
     discord_channels = [
         uita.types.DiscordChannel(
-            discord_channel.id, discord_channel.name
+            discord_channel.id, discord_channel.name, discord_channel.type
         )
-        for discord_channel in event.connection.user.active_server.channels
+        for key, discord_channel in event.active_server.channels.items()
         if discord_channel.type is discord.ChannelType.voice
     ]
-    await event.connection.socket.send(str(uita.message.ChannelListSendMessage(discord_channels)))
+    await event.socket.send(str(uita.message.ChannelListSendMessage(discord_channels)))
 
 
 @server.on_message("server.join", require_active_server=False)
 async def server_join(event):
     log.debug("server join {}".format(event.message.server_id))
     log.warn("SERVER.JOIN USING UNSANITIZED, UNCHECKED USER INPUT")
-    event.connection.user.active_server = bot.get_server(event.message.server_id)
+    event.user.active_server_id = event.message.server_id
 
 
 @server.on_message("server.list.get", require_active_server=False)
@@ -33,14 +33,14 @@ async def server_list_get(event):
     log.debug("server list get")
     discord_servers = [
         uita.types.DiscordServer(
-            discord_server.id, discord_server.name
+            discord_server.id, discord_server.name, [], []
         )
-        for discord_server in bot.servers
+        for key, discord_server in state.servers.items()
     ]
     discord_servers.append(uita.types.DiscordServer(
-        "incredibly_fake", "FAKE SERVER - REMINDER TO CROSS REFERENCE USER SERVERS"
+        "incredibly_fake", "FAKE SERVER - REMINDER TO CROSS REFERENCE USER SERVERS", [], []
     ))
-    await event.connection.socket.send(str(uita.message.ServerListSendMessage(discord_servers)))
+    await event.socket.send(str(uita.message.ServerListSendMessage(discord_servers)))
 
 
 @server.on_message("play.url")

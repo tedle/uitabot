@@ -52,7 +52,7 @@ def verify_session(session, database):
             id="98435789",
             name="me",
             session=session,
-            active_server=None
+            active_server_id=None
         )
     raise uita.exceptions.AuthenticationError("Session authentication failed")
 
