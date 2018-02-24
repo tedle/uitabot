@@ -15,6 +15,7 @@ export default class App extends React.Component {
             needLogin: false,
             discordServer: null
         };
+        this.heartbeatInterval = null;
     }
 
     componentDidMount() {
@@ -23,20 +24,33 @@ export default class App extends React.Component {
         this.eventDispatcher.onAuthSucceed = m => {
             Session.store({handle: m.session_handle, secret: m.session_secret});
             this.setState({authenticated: true});
+            this.heartbeatInterval = setInterval(
+                () => this.socket.send(new Message.HeartbeatMessage().str()),
+                60000
+            );
         };
         try {
             console.log(`Connecting to ${Config.bot_url}`);
             this.socket = new WebSocket(Config.bot_url);
             this.socket.onmessage = e => this.eventDispatcher.dispatch(Message.parse(e.data));
             this.socket.onerror = e => console.log(e);
-            this.socket.onclose = e => this.setState({connection: WebSocket.CLOSED});
-            this.socket.onopen = e => this.setState({connection: WebSocket.OPEN});
+            this.socket.onclose = e => this.onSocketClose();
+            this.socket.onopen = e => this.onSocketOpen();
             this.setState({connection: this.socket.readyState});
         }
         catch (e) {
             console.log(e);
             this.setState({connection: WebSocket.CLOSED});
         }
+    }
+
+    onSocketOpen() {
+        this.setState({connection: WebSocket.OPEN});
+    }
+
+    onSocketClose() {
+        this.setState({connection: WebSocket.CLOSED});
+        clearInterval(this.heartbeatInterval);
     }
 
     componentWillUnmount() {

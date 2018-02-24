@@ -161,6 +161,12 @@ class ChannelListSendMessage(AbstractMessage):
         } for channel in channels]
 
 
+class HeartbeatMessage(AbstractMessage):
+    """Sent by client every 60 seconds to keep connection alive."""
+    header = "heartbeat"
+    """"""
+
+
 class PlayURLMessage(AbstractMessage):
     """Sent by client requesting a remote song be played.
 
@@ -229,6 +235,7 @@ VALID_MESSAGES = {
     ]),
     ChannelListGetMessage.header: (ChannelListGetMessage, []),
     ChannelListSendMessage.header: (ChannelListSendMessage, ["channels"]),
+    HeartbeatMessage.header: (HeartbeatMessage, []),
     PlayURLMessage.header: (PlayURLMessage, ["url"]),
     ServerJoinMessage.header: (ServerJoinMessage, ["server_id"]),
     ServerListGetMessage.header: (ServerListGetMessage, []),

@@ -72,6 +72,12 @@ export class ChannelListSendMessage extends AbstractMessage {
     }
 }
 
+export class HeartbeatMessage extends AbstractMessage {
+    static get header() {
+        return "heartbeat";
+    }
+}
+
 export class PlayURLMessage extends AbstractMessage {
     static get header() {
         return "play.url";
@@ -118,6 +124,7 @@ const VALID_MESSAGES = {
     "auth.succeed": [AuthSucceedMessage, ["username", "session_handle", "session_secret"]],
     "channel.list.get": [ChannelListGetMessage, []],
     "channel.list.send": [ChannelListSendMessage, ["channels"]],
+    "heartbeat": [HeartbeatMessage, []],
     "play.url": [PlayURLMessage, ["url"]],
     "server.join": [ServerJoinMessage, ["server_id"]],
     "server.list.get": [ServerListGetMessage, []],

@@ -249,7 +249,7 @@ class Server():
             await websocket.send(str(uita.message.AuthSucceedMessage(user)))
             log.info("{}({}) connected".format(user.name, websocket.remote_address[0]))
             while True:
-                data = await websocket.recv()
+                data = await asyncio.wait_for(websocket.recv(), 90)
                 message = uita.message.parse(data)
                 active_server = uita.state.servers.get(user.active_server_id)
                 self._dispatch_event(Event(message, user, websocket, active_server))
@@ -257,6 +257,8 @@ class Server():
             log.debug("Websocket disconnected: code {},reason {}".format(error.code, error.reason))
         except asyncio.CancelledError:
             log.debug("Websocket cancelled")
+        except asyncio.TimeoutError:
+            log.debug("Websocket missed heartbeat")
         except uita.exceptions.AuthenticationError as error:
             log.debug("Websocket failed to authenticate: {}".format(error))
             try:
