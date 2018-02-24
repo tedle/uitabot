@@ -25,11 +25,7 @@ if __name__ == "__main__":
         initialize_logging()
         config = uita.config.load("../config.json")
         database = uita.database.Database(":memory:")
-        uita.loop.create_task(uita.server.start(
-            config.bot.domain, config.bot.port, database,
-            ssl_cert_file=config.ssl.cert_file, ssl_key_file=config.ssl.key_file,
-            loop=uita.loop
-        ))
+        uita.loop.create_task(uita.server.start(database, config, loop=uita.loop))
         uita.loop.create_task(uita.bot.start(config.discord.token))
         uita.loop.run_forever()
     except KeyboardInterrupt:

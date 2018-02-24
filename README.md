@@ -9,3 +9,5 @@ Placeholder to write down dependencies as they're added to the project
 #### Package files:
 - (pip)uita/requirements.txt
 - (npm)web-client/package.json
+#### API:
+- need discord API keys, configure redirect URIs

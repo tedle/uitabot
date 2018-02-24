@@ -7,6 +7,7 @@ Details usage of the uitabot module
 Authentication
 --------------
 .. automodule:: uita.auth
+.. autoclass:: Session
 .. autofunction:: verify_session
 .. autofunction:: verify_code
 
@@ -21,6 +22,12 @@ Database
 .. autoclass:: Database
     :members:
 
+Discord API
+-----------
+.. automodule:: uita.discord_api
+.. autofunction:: auth
+.. autofunction:: get
+
 Exceptions
 ----------
 .. automodule:: uita.exceptions
@@ -31,15 +38,15 @@ Messages
 .. automodule:: uita.message
     :members:
 
-UI Server
----------
-.. automodule:: uita.ui_server
-.. autoclass:: Event
-.. autoclass:: Server
-   :members:
-
 Types
 -----
 .. automodule:: uita.types
-.. autoclass:: DiscordServer
-.. autoclass:: DiscordUser
+    :members:
+
+UI Server
+---------
+.. automodule:: uita.ui_server
+.. autoclass:: Connection
+.. autoclass:: Event
+.. autoclass:: Server
+   :members:

@@ -2,6 +2,7 @@
 
 from collections import namedtuple
 
+import uita.discord_api
 import uita.exceptions
 import uita.types
 
@@ -26,7 +27,7 @@ secret : str
 """
 
 
-def verify_session(session, database):
+async def verify_session(session, database, config, loop):
     """Authenticates a user session against sessions database.
 
     Parameters
@@ -35,6 +36,10 @@ def verify_session(session, database):
         Session to compare against database.
     database : uita.database.Database
         Database containing valid sessions.
+    config : uita.config.Config
+        Configuration options containing API keys.
+    loop : asyncio.AbstractEventLoop, optional
+        Event loop to attach blocking request threads to.
 
     Returns
     -------
@@ -47,17 +52,19 @@ def verify_session(session, database):
         If authentication fails.
 
     """
-    if database.verify_session(session):
+    token = database.get_access_token(session)
+    if token is not None:
+        user = await uita.discord_api.get("/users/@me", token, loop)
         return uita.types.DiscordUser(
-            id="98435789",
-            name="me",
+            id=user["id"],
+            name=user["username"],
             session=session,
             active_server_id=None
         )
     raise uita.exceptions.AuthenticationError("Session authentication failed")
 
 
-def verify_code(code, database):
+async def verify_code(code, database, config, loop):
     """Authenticates a user by passing an access code to the Discord API in exchange for a token.
 
     On success, creates and stores a session in the sessions database.
@@ -68,6 +75,10 @@ def verify_code(code, database):
         Access code to authenticate.
     database : uita.database.Database
         Database containing valid sessions.
+    config : uita.config.Config
+        Configuration options containing API keys.
+    loop : asyncio.AbstractEventLoop, optional
+        Event loop to attach blocking request threads to.
 
     Returns
     -------
@@ -80,7 +91,8 @@ def verify_code(code, database):
         If authentication fails.
 
     """
-    if code == "access-code":
-        token = "we_got_this_from_the_discord_api"
-        return database.add_session(token)
-    raise uita.exceptions.AuthenticationError("Invalid access code")
+    api_data = await uita.discord_api.auth(code, config, loop)
+    return database.add_session(
+        api_data["access_token"], api_data["refresh_token"], api_data["expires_in"]
+    )
+    raise uita.exceptions.AuthenticationError("Access code rejected")

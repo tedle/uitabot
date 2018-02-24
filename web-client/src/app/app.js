@@ -2,6 +2,7 @@ import React from "react";
 import * as Config from "config";
 import * as Message from "./message.js";
 import * as Session from "./session.js";
+import * as DiscordOauth from "./discord-oauth.js";
 import Authenticate from "./authenticate.js";
 import Dashboard from "./dashboard.js";
 import ServerSelect from "./server-select.js";
@@ -59,7 +60,8 @@ export default class App extends React.Component {
 
     render() {
         if (this.state.needLogin) {
-            return <p>need to <a href="/?code=access-code">login</a></p>;
+            const oauthUrl = DiscordOauth.createOauthUrl(Config.client_id, Config.client_url);
+            return <p>need to <a href={oauthUrl}>login</a></p>;
         }
         if (this.state.connection == WebSocket.CONNECTING) {
             return <p>connecting</p>;

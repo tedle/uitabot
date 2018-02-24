@@ -81,30 +81,20 @@ class Server():
         self._active_events = set()
         self.connections = {}
 
-    async def start(
-        self, host, port, database,
-        origins=None, ssl_cert_file=None, ssl_key_file=None, loop=None
-    ):
+    async def start(self, database, config, origins=None, loop=None):
         """Creates a new listen server.
 
         Accepts connections from UI frontend.
 
         Parameters
         ----------
-        host : str
-            Host to bind server to.
-        port : int
-            Port to bind server to.
         database : uita.database.Database
             Contains user authentication data.
+        config : uita.config.Config
+            Configuration options containing API keys.
         origins : str, optional
             Refuses connections from clients with origin HTTP headers that do not match given
             value.
-        ssl_cert_file : str, optional
-            Filename of SSL cert chain to load, if not provided will create unencrypted
-            connections.
-        ssl_key_file : str, optional
-            Filename of SSL keyfile to load.
         loop : asyncio.AbstractEventLoop, optional
             Event loop to attach listen server to, defaults to ``asyncio.get_event_loop()``.
 
@@ -117,20 +107,21 @@ class Server():
         if self._server is not None:
             raise uita.exceptions.ServerError("Server.start() called while already running")
         self.database = database
+        self.config = config
         self.loop = loop if loop is not None else asyncio.get_event_loop()
         ssl_context = None
         # Don't need to check ssl_key_file
         # If it is None load_cert_chain will attempt to find it in the cert file
-        if ssl_cert_file is not None:
+        if config.ssl.cert_file is not None:
             ssl_context = ssl.create_default_context(purpose=ssl.Purpose.CLIENT_AUTH)
-            ssl_context.load_cert_chain(ssl_cert_file, ssl_key_file)
+            ssl_context.load_cert_chain(config.ssl.cert_file, config.ssl.key_file)
         self._server = await websockets.serve(
-            self._on_connect, host=host, port=port,
+            self._on_connect, host=config.bot.domain, port=config.bot.port,
             loop=self.loop, origins=origins, ssl=ssl_context
         )
         log.info("Server listening on ws{}://{}:{}".format(
             "s" if ssl_context is not None else "",
-            host, port
+            config.bot.domain, config.bot.port
         ))
 
     async def stop(self):
@@ -182,7 +173,7 @@ class Server():
         return decorator
 
     async def send_all(self, message, server_id):
-        """Sends a `uita.message.AbstractMessage` to all `uita.types.DiscordUser`s in a server.
+        """Sends a `uita.message.AbstractMessage` to all `uita.types.DiscordUser` in a server.
 
         Parameters
         ----------
@@ -207,13 +198,19 @@ class Server():
             raise uita.exceptions.AuthenticationError("Authentication timed out")
         message = uita.message.parse(data)
         if isinstance(message, uita.message.AuthSessionMessage):
-            return uita.auth.verify_session(
+            return await uita.auth.verify_session(
                 uita.auth.Session(handle=message.handle, secret=message.secret),
-                self.database
+                self.database,
+                self.config,
+                self.loop
             )
         elif isinstance(message, uita.message.AuthCodeMessage):
-            session = uita.auth.verify_code(message.code, self.database)
-            return uita.auth.verify_session(session, self.database)
+            session = await uita.auth.verify_code(
+                message.code, self.database, self.config, self.loop
+            )
+            return await uita.auth.verify_session(
+                session, self.database, self.config, self.loop
+            )
         else:
             raise uita.exceptions.AuthenticationError("Expected auth.session message")
 

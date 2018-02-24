@@ -1,7 +1,7 @@
 import Cookie from "js-cookie";
 
 export function store(session) {
-    Cookie.set("session", {handle: session.handle, secret: session.secret});
+    Cookie.set("session", {handle: session.handle, secret: session.secret}, {expires: 7});
 }
 
 export function load() {

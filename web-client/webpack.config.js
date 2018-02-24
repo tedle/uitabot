@@ -33,6 +33,7 @@ module.exports = {
     ],
     externals: {
         config: JSON.stringify({
+            "client_id": config.discord.client.id,
             "bot_url": bot_url,
             "client_url": client_url
         })

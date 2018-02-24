@@ -23,13 +23,17 @@ class Database():
         c.execute(_INIT_DATABASE_QUERY)
         self._connection.commit()
 
-    def add_session(self, token):
+    def add_session(self, token, refresh_token, expiry):
         """Creates and inserts a new user session into database.
 
         Parameters
         ----------
         token : str
             User authentication token to associate new session with.
+        refresh_token : str
+            User refresh token to associate new session with.
+        expiry : int
+            Time from creation of token that it is valid for in seconds.
 
         Returns
         -------
@@ -39,11 +43,11 @@ class Database():
         """
         c = self._connection.cursor()
         secret = binascii.hexlify(os.urandom(32)).decode()
-        c.execute(_ADD_SESSION_QUERY, (secret, token))
+        c.execute(_ADD_SESSION_QUERY, (secret, token, refresh_token, expiry))
         return uita.auth.Session(handle=c.lastrowid, secret=secret)
 
-    def verify_session(self, session):
-        """Verifies whether a given session is valid.
+    def get_access_token(self, session):
+        """Verifies whether a given session is valid and returns an access token if so.
 
         Parameters
         ----------
@@ -52,16 +56,18 @@ class Database():
 
         Returns
         -------
-        bool
-            True if session is valid.
+        str
+            Access token if session is valid, `None` otherwise.
 
         """
         c = self._connection.cursor()
         c.execute(_GET_SESSION_QUERY, (session.handle,))
         db_session = c.fetchone()
         if db_session is None:
-            return False
-        return hmac.compare_digest(db_session[0], session.secret)
+            return None
+        if hmac.compare_digest(db_session[0], session.secret):
+            return db_session[1]
+        return None
 
 
 _INIT_DATABASE_QUERY = """
@@ -69,16 +75,20 @@ CREATE TABLE IF NOT EXISTS sessions (
     handle INTEGER PRIMARY KEY,
     secret TEXT UNIQUE,
     token TEXT UNIQUE,
-    created DATETIME DEFAULT CURRENT_TIMESTAMP
+    refresh_token TEXT UNIQUE,
+    created DATETIME DEFAULT CURRENT_TIMESTAMP,
+    expiry INT
 );"""
 
 _ADD_SESSION_QUERY = """
 INSERT OR REPLACE INTO sessions(
     secret,
-    token
+    token,
+    refresh_token,
+    expiry
 )
-VALUES(?, ?)"""
+VALUES(?, ?, ?, ?)"""
 
 _GET_SESSION_QUERY = """
-SELECT secret FROM sessions WHERE handle=?
+SELECT secret, token FROM sessions WHERE handle=?
 """
