@@ -8,6 +8,7 @@ from collections import namedtuple
 import uita.auth
 import uita.exceptions
 import uita.message
+import uita  # bot
 
 import logging
 log = logging.getLogger(__name__)
@@ -47,8 +48,8 @@ Attributes
 ----------
 message : uita.message.AbstractMessage
     Message that triggered event.
-user : uita.types.DiscordUser
-    User that triggered event.
+connection : uita.ui_server.Connection
+    Connection that triggered event.
 
 """
 
@@ -144,7 +145,7 @@ class Server():
         self.connections.clear()
         log.info("Server closed successfully")
 
-    def on_message(self, header):
+    def on_message(self, header, require_active_server=True):
         """Decorator to bind event callbacks.
 
         Callback function should accept a `uita.ui_server.Event` as its only parameter
@@ -153,11 +154,23 @@ class Server():
         ----------
         header : str
             `uita.message.AbstractMessage` header to wait for.
+        require_active_server : bool, optional
+            Verify that `event.connection.user.active_server` is valid, default `True`
+
+        Raises
+        ------
+        uita.exceptions.NoActiveServer
+            If `require_active_server` was set to `True` and callback is
+            sent an `event.connection.user.active_server` of `None`.
 
         """
         def decorator(function):
-            self._event_callbacks[header] = function
-            return function
+            async def wrapper(event):
+                if require_active_server is True and event.connection.user.active_server is None:
+                    raise uita.exceptions.NoActiveServer
+                return await function(event)
+            self._event_callbacks[header] = wrapper
+            return wrapper
         return decorator
 
     async def send_all(self, message, discord_server_id):
@@ -176,7 +189,7 @@ class Server():
         await asyncio.wait([
             socket.send(str(message))
             for socket, conn in self.connections.items()
-            if conn.user.active_server == discord_server_id
+            if getattr(conn.user.active_server, "id", None) == discord_server_id
         ])
 
     async def _authenticate(self, websocket):

@@ -11,27 +11,24 @@ log = logging.getLogger(__name__)
 @server.on_message("channel.list.get")
 async def channel_list_get(event):
     log.debug("channel list get")
-    discord_server = bot.get_server(event.connection.user.active_server)
-    if discord_server is None:
-        raise uita.exceptions.NoActiveServer
     discord_channels = [
         uita.types.DiscordChannel(
             discord_channel.id, discord_channel.name
         )
-        for discord_channel in discord_server.channels
+        for discord_channel in event.connection.user.active_server.channels
         if discord_channel.type is discord.ChannelType.voice
     ]
     await event.connection.socket.send(str(uita.message.ChannelListSendMessage(discord_channels)))
 
 
-@server.on_message("server.join")
+@server.on_message("server.join", require_active_server=False)
 async def server_join(event):
     log.debug("server join {}".format(event.message.server_id))
     log.warn("SERVER.JOIN USING UNSANITIZED, UNCHECKED USER INPUT")
-    event.connection.user.active_server = event.message.server_id
+    event.connection.user.active_server = bot.get_server(event.message.server_id)
 
 
-@server.on_message("server.list.get")
+@server.on_message("server.list.get", require_active_server=False)
 async def server_list_get(event):
     log.debug("server list get")
     discord_servers = [

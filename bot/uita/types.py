@@ -58,8 +58,8 @@ class DiscordUser():
         User name.
     session : uita.auth.Session
         Session authentication data.
-    active_server : str
-        Unique Discord server ID that user is connected to.
+    active_server : uita.types.DiscordServer
+        Discord server that user has joined. None if user has not joined a server yet.
 
     Attributes
     ----------
@@ -69,8 +69,8 @@ class DiscordUser():
         User name.
     session : uita.auth.Session
         Session authentication data.
-    active_server : str
-        Unique Discord server ID that user is connected to.
+    active_server : uita.types.DiscordServer
+        Discord server that user has joined. None if user has not joined a server yet.
 
     """
     def __init__(self, id, name, session, active_server):
