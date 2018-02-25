@@ -189,7 +189,7 @@ class Server():
             socket.send(str(message))
             for socket, conn in self.connections.items()
             if conn.user.active_server_id == server_id
-        ])
+        ], loop=self.loop)
 
     async def _authenticate(self, websocket):
         try:
@@ -246,7 +246,7 @@ class Server():
             await websocket.send(str(uita.message.AuthSucceedMessage(user)))
             log.info("{}({}) connected".format(user.name, websocket.remote_address[0]))
             while True:
-                data = await asyncio.wait_for(websocket.recv(), 90)
+                data = await asyncio.wait_for(websocket.recv(), 90, loop=self.loop)
                 message = uita.message.parse(data)
                 active_server = uita.state.servers.get(user.active_server_id)
                 self._dispatch_event(Event(message, user, websocket, active_server))
@@ -259,8 +259,8 @@ class Server():
         except uita.exceptions.AuthenticationError as error:
             log.debug("Websocket failed to authenticate: {}".format(error))
             try:
-                await asyncio.wait_for(websocket.send(
-                    str(uita.message.AuthFailMessage())),
+                await asyncio.wait_for(
+                    websocket.send(str(uita.message.AuthFailMessage())),
                     timeout=5,
                     loop=self.loop
                 )
