@@ -27,8 +27,10 @@ async def channel_list_get(event):
 @server.on_message("server.join", require_active_server=False)
 async def server_join(event):
     log.debug("server join {}".format(event.message.server_id))
-    log.warn("SERVER.JOIN USING UNSANITIZED, UNCHECKED USER INPUT")
-    event.user.active_server_id = event.message.server_id
+    if event.user.id in uita.state.servers[event.message.server_id].users:
+        event.user.active_server_id = event.message.server_id
+    else:
+        await event.socket.send(str(uita.message.ServerKickMessage()))
 
 
 @server.on_message("server.list.get", require_active_server=False)
@@ -39,10 +41,8 @@ async def server_list_get(event):
             discord_server.id, discord_server.name, [], []
         )
         for key, discord_server in state.servers.items()
+        if event.user.id in discord_server.users
     ]
-    discord_servers.append(uita.types.DiscordServer(
-        "incredibly_fake", "FAKE SERVER - REMINDER TO CROSS REFERENCE USER SERVERS", [], []
-    ))
     await event.socket.send(str(uita.message.ServerListSendMessage(discord_servers)))
 
 

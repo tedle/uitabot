@@ -1,5 +1,5 @@
 import uita.types
-from uita import bot, state
+from uita import bot
 
 import logging
 log = logging.getLogger(__name__)
@@ -16,7 +16,7 @@ def bot_ready(function):
 @bot.event
 async def on_ready():
     log.info("Bot connected to Discord")
-    state.initialize_from_bot(bot)
+    uita.state.initialize_from_bot(bot)
 
 
 @bot.event
@@ -25,13 +25,13 @@ async def on_channel_create(channel):
     discord_channel = uita.types.DiscordChannel(
         channel.id, channel.name, channel.type, channel.position
     )
-    state.channel_add(discord_channel, channel.server.id)
+    uita.state.channel_add(discord_channel, channel.server.id)
 
 
 @bot.event
 @bot_ready
 async def on_channel_delete(channel):
-    state.channel_remove(channel.id, channel.server.id)
+    uita.state.channel_remove(channel.id, channel.server.id)
 
 
 @bot.event
@@ -40,19 +40,21 @@ async def on_channel_update(before, after):
     discord_channel = uita.types.DiscordChannel(
         after.id, after.name, after.type, after.position
     )
-    state.channel_add(discord_channel, after.server.id)
+    uita.state.channel_add(discord_channel, after.server.id)
 
 
 @bot.event
 @bot_ready
 async def on_member_join(member):
-    state.user_add_server(member.id, member.name, member.server.id)
+    uita.state.user_add_server(member.id, member.name, member.server.id)
 
 
 @bot.event
 @bot_ready
 async def on_member_remove(member):
-    state.user_remove_server(member.id, member.server.id)
+    uita.state.user_remove_server(member.id, member.server.id)
+    # Kick any displaced users
+    await uita.server.verify_active_servers()
 
 
 @bot.event
@@ -79,6 +81,8 @@ async def on_server_join(server):
 @bot_ready
 async def on_server_remove(server):
     uita.state.server_remove(server.id)
+    # Kick any displaced users
+    await uita.server.verify_active_servers()
 
 
 @bot.event
@@ -93,3 +97,5 @@ async def on_server_update(before, after):
     users = {user.id: user.name for user in after.members}
     discord_server = uita.types.DiscordServer(after.id, after.name, channels, users)
     uita.state.server_add(discord_server)
+    # Kick any displaced users
+    await uita.server.verify_active_servers()

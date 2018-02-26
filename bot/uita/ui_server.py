@@ -191,6 +191,28 @@ class Server():
             if conn.user.active_server_id == server_id
         ], loop=self.loop)
 
+    async def verify_active_servers(self):
+        """Checks if any user is connected to an active server that is no longer accessible.
+
+        If so, will force them back to the server select screen.
+
+        """
+        # Might help to have an individual user check, but since connections aren't stored in a
+        # hash table (and the server lookups they need are), it probably wouldn't be much faster
+        # without reworking how data is stored. Also I don't expect many simultaneous active
+        # connections. So optimize this if it ever gets to be slow, but I don't think it will.
+        for socket, conn in self.connections.items():
+            if conn.user.active_server_id is None:
+                continue
+            if (
+                conn.user.active_server_id not in uita.state.servers
+                or conn.user.id not in uita.state.servers[conn.user.active_server_id].users
+            ):
+                conn.user.active_server_id = None
+                self._create_task(
+                    socket.send(str(uita.message.ServerKickMessage()))
+                )
+
     async def _authenticate(self, websocket):
         try:
             data = await asyncio.wait_for(websocket.recv(), timeout=5, loop=self.loop)
@@ -219,6 +241,11 @@ class Server():
         tasks.cancel()
         await tasks
 
+    def _create_task(self, coroutine):
+        task = self.loop.create_task(coroutine)
+        task.add_done_callback(lambda f: self._active_events.remove(f))
+        self._active_events.add(task)
+
     def _dispatch_event(self, event):
         if event.message.header in self._event_callbacks:
             async def wrapper():
@@ -232,9 +259,7 @@ class Server():
                         code=1001,
                         reason="Event callback caused exception"
                     )
-            task = self.loop.create_task(wrapper())
-            task.add_done_callback(lambda f: self._active_events.remove(f))
-            self._active_events.add(task)
+            self._create_task(wrapper())
 
     async def _on_connect(self, websocket, path):
         log.debug("Websocket connected {} {}".format(websocket.remote_address[0], path))

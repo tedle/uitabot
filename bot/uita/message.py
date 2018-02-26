@@ -200,6 +200,14 @@ class ServerJoinMessage(AbstractMessage):
         self.server_id = str(server_id)
         if len(self.server_id) > MAX_DIGITS_64BIT:
             raise uita.exceptions.MalformedMessage("Server ID exceeds 64-bit number")
+        if len(self.server_id) == 0:
+            raise uita.exceptions.MalformedMessage("Server ID is empty")
+
+
+class ServerKickMessage(AbstractMessage):
+    """Sent by server when user can no longer access their current Discord server.."""
+    header = "server.kick"
+    """"""
 
 
 class ServerListGetMessage(AbstractMessage):
@@ -239,6 +247,7 @@ VALID_MESSAGES = {
     HeartbeatMessage.header: (HeartbeatMessage, []),
     PlayURLMessage.header: (PlayURLMessage, ["url"]),
     ServerJoinMessage.header: (ServerJoinMessage, ["server_id"]),
+    ServerKickMessage.header: (ServerKickMessage, []),
     ServerListGetMessage.header: (ServerListGetMessage, []),
     ServerListSendMessage.header: (ServerListSendMessage, ["servers"])
 }

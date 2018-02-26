@@ -30,6 +30,7 @@ export default class App extends React.Component {
                 60000
             );
         };
+        this.eventDispatcher.onServerKick = m => this.setState({discordServer: null});
         try {
             console.log(`Connecting to ${Config.bot_url}`);
             this.socket = new WebSocket(Config.bot_url);

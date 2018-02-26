@@ -10,13 +10,10 @@ class DiscordState():
     ----------
     servers : list(uita.types.DiscordServer)
         List of servers bot is connected to.
-    user_servers : dict(user_id: set(server_id))
-        List of accessible servers for users that have at some point connected to UI server.
 
     """
     def __init__(self):
         self.servers = {}
-        self.user_servers = {}
 
     def __str__(self):
         dump_str = "DiscordState() {}:\n".format(hash(self))
@@ -26,10 +23,6 @@ class DiscordState():
                 dump_str += "\tchannel {}: {}\n".format(channel.id, channel.name)
             for user_id, user_name in server.users.items():
                 dump_str += "\tuser {}: {}\n".format(user_id, user_name)
-        for key, server_ids in self.user_servers.items():
-            dump_str += "user {}:\n".format(key)
-            for server_id in server_ids:
-                dump_str += "\tserver {}\n".format(server_id)
         return dump_str
 
     def initialize_from_bot(self, bot):
@@ -119,11 +112,6 @@ class DiscordState():
 
         """
         self.servers[server_id].users[user_id] = user_name
-        if user_id in self.user_servers:
-            try:
-                self.user_servers[user_id].server_ids.add(server_id)
-            except IndexError:
-                self.user_servers[user_id].server_ids = set([server_id])
 
     def user_remove_server(self, user_id, server_id):
         """Remove an inaccessible server for a user.
@@ -137,11 +125,6 @@ class DiscordState():
 
         """
         del self.servers[server_id].users[user_id]
-        if user_id in self.user_servers:
-            try:
-                self.users[user_id].server_ids.remove(server_id)
-            except IndexError:
-                pass
 
 
 # TODO: Add category support if discord.py rewrite ever goes live

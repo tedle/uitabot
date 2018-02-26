@@ -89,6 +89,12 @@ export class PlayURLMessage extends AbstractMessage {
     }
 }
 
+export class ServerKickMessage extends AbstractMessage {
+    static get header() {
+        return "server.kick";
+    }
+}
+
 export class ServerJoinMessage extends AbstractMessage {
     static get header() {
         return "server.join";
@@ -126,6 +132,7 @@ const VALID_MESSAGES = {
     "channel.list.send": [ChannelListSendMessage, ["channels"]],
     "heartbeat": [HeartbeatMessage, []],
     "play.url": [PlayURLMessage, ["url"]],
+    "server.kick": [ServerKickMessage, []],
     "server.join": [ServerJoinMessage, ["server_id"]],
     "server.list.get": [ServerListGetMessage, []],
     "server.list.send": [ServerListSendMessage, ["servers"]]
@@ -133,10 +140,11 @@ const VALID_MESSAGES = {
 
 export class EventDispatcher {
     constructor() {
-        this.onAuthFail = m => {}
-        this.onAuthSucceed = m => {}
-        this.onChannelListSend = m => {}
-        this.onServerListSend = m => {}
+        this.onAuthFail = m => {};
+        this.onAuthSucceed = m => {};
+        this.onChannelListSend = m => {};
+        this.onServerKick = m => {};
+        this.onServerListSend = m => {};
     }
 
     dispatch(message) {
@@ -152,6 +160,9 @@ export class EventDispatcher {
                 break;
             case ChannelListSendMessage:
                 this.onChannelListSend(message);
+                break;
+            case ServerKickMessage:
+                this.onServerKick(message);
                 break;
             case ServerListSendMessage:
                 this.onServerListSend(message);
