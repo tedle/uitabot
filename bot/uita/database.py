@@ -44,6 +44,7 @@ class Database():
         c = self._connection.cursor()
         secret = binascii.hexlify(os.urandom(32)).decode()
         c.execute(_ADD_SESSION_QUERY, (secret, token, refresh_token, expiry))
+        self._connection.commit()
         return uita.auth.Session(handle=c.lastrowid, secret=secret)
 
     def get_access_token(self, session):
