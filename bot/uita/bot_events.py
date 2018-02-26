@@ -1,5 +1,5 @@
 import uita.types
-from uita import bot
+import uita
 
 import logging
 log = logging.getLogger(__name__)
@@ -7,19 +7,19 @@ log = logging.getLogger(__name__)
 
 def bot_ready(function):
     async def wrapper(*args, **kwargs):
-        await bot.wait_until_ready()
+        await uita.bot.wait_until_ready()
         return await function(*args, **kwargs)
     wrapper.__name__ = function.__name__
     return wrapper
 
 
-@bot.event
+@uita.bot.event
 async def on_ready():
     log.info("Bot connected to Discord")
-    uita.state.initialize_from_bot(bot)
+    uita.state.initialize_from_bot(uita.bot)
 
 
-@bot.event
+@uita.bot.event
 @bot_ready
 async def on_channel_create(channel):
     discord_channel = uita.types.DiscordChannel(
@@ -28,13 +28,13 @@ async def on_channel_create(channel):
     uita.state.channel_add(discord_channel, channel.server.id)
 
 
-@bot.event
+@uita.bot.event
 @bot_ready
 async def on_channel_delete(channel):
     uita.state.channel_remove(channel.id, channel.server.id)
 
 
-@bot.event
+@uita.bot.event
 @bot_ready
 async def on_channel_update(before, after):
     discord_channel = uita.types.DiscordChannel(
@@ -43,13 +43,13 @@ async def on_channel_update(before, after):
     uita.state.channel_add(discord_channel, after.server.id)
 
 
-@bot.event
+@uita.bot.event
 @bot_ready
 async def on_member_join(member):
     uita.state.user_add_server(member.id, member.name, member.server.id)
 
 
-@bot.event
+@uita.bot.event
 @bot_ready
 async def on_member_remove(member):
     uita.state.user_remove_server(member.id, member.server.id)
@@ -57,13 +57,13 @@ async def on_member_remove(member):
     await uita.server.verify_active_servers()
 
 
-@bot.event
+@uita.bot.event
 @bot_ready
 async def on_member_update(before, after):
     return
 
 
-@bot.event
+@uita.bot.event
 @bot_ready
 async def on_server_join(server):
     channels = {
@@ -77,7 +77,7 @@ async def on_server_join(server):
     uita.state.server_add(discord_server)
 
 
-@bot.event
+@uita.bot.event
 @bot_ready
 async def on_server_remove(server):
     uita.state.server_remove(server.id)
@@ -85,7 +85,7 @@ async def on_server_remove(server):
     await uita.server.verify_active_servers()
 
 
-@bot.event
+@uita.bot.event
 @bot_ready
 async def on_server_update(before, after):
     channels = {
