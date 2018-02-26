@@ -28,7 +28,7 @@ secret : str
 
 
 async def verify_session(session, database, config, loop):
-    """Authenticates a user session against sessions database.
+    """Authenticates a user session against sessions database and Discord API.
 
     Parameters
     ----------
@@ -67,7 +67,7 @@ async def verify_session(session, database, config, loop):
 async def verify_code(code, database, config, loop):
     """Authenticates a user by passing an access code to the Discord API in exchange for a token.
 
-    On success, creates and stores a session in the sessions database.
+    On success, creates and stores a session in the local database.
 
     Parameters
     ----------
@@ -93,6 +93,7 @@ async def verify_code(code, database, config, loop):
     """
     api_data = await uita.discord_api.auth(code, config, loop)
     return database.add_session(
-        api_data["access_token"], api_data["refresh_token"], api_data["expires_in"]
+        api_data["access_token"],
+        api_data["refresh_token"],
+        api_data["expires_in"]
     )
-    raise uita.exceptions.AuthenticationError("Access code rejected")

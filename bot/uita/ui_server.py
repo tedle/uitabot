@@ -135,6 +135,7 @@ class Server():
         """
         if self._server is None:
             raise uita.exceptions.ServerError("Server.stop() called while not running")
+        # Cancel active events first so they can access server internals before they are reset
         await self._cancel_active_events()
         self._server.close()
         await self._server.wait_closed()
@@ -214,11 +215,15 @@ class Server():
                 )
 
     async def _authenticate(self, websocket):
+        """Hardcoded authentication handshake with web client."""
+        # Start by waiting for a data with either session info or an auth code for the Discord API
         try:
             data = await asyncio.wait_for(websocket.recv(), timeout=5, loop=self.loop)
+        # If it takes more than 5 seconds, kick them out
         except asyncio.TimeoutError:
             raise uita.exceptions.AuthenticationError("Authentication timed out")
         message = uita.message.parse(data)
+        # Authenticating by session data
         if isinstance(message, uita.message.AuthSessionMessage):
             return await uita.auth.verify_session(
                 uita.auth.Session(handle=message.handle, secret=message.secret),
@@ -226,6 +231,7 @@ class Server():
                 self.config,
                 self.loop
             )
+        # Authenticating by authorization code
         elif isinstance(message, uita.message.AuthCodeMessage):
             session = await uita.auth.verify_code(
                 message.code, self.database, self.config, self.loop
@@ -233,20 +239,28 @@ class Server():
             return await uita.auth.verify_session(
                 session, self.database, self.config, self.loop
             )
+        # Unexpected data (port scanners, etc)
         else:
-            raise uita.exceptions.AuthenticationError("Expected auth.session message")
+            raise uita.exceptions.AuthenticationError("Expected authentication message")
 
     async def _cancel_active_events(self):
+        """Cancels all events spawned by the UI server."""
         tasks = asyncio.gather(*self._active_events, loop=self.loop)
         tasks.cancel()
         await tasks
 
     def _create_task(self, coroutine):
+        """Creates a managed task that will be tracked and cancelled on server shutdown."""
         task = self.loop.create_task(coroutine)
         task.add_done_callback(lambda f: self._active_events.remove(f))
         self._active_events.add(task)
 
     def _dispatch_event(self, event):
+        """Finds and calls aproppriate callback for given event message.
+
+        If an event raises an exception it is logged and the connection is closed.
+
+        """
         if event.message.header in self._event_callbacks:
             async def wrapper():
                 try:
@@ -262,16 +276,22 @@ class Server():
             self._create_task(wrapper())
 
     async def _on_connect(self, websocket, path):
+        """Main loop for each connected client."""
         log.debug("Websocket connected {} {}".format(websocket.remote_address[0], path))
         try:
             user = None  # If authentication throws we would get an UnboundLocalError otherwise
+            # Initialize user and connection data
             user = await self._authenticate(websocket)
             conn = Connection(user, websocket)
             self.connections[websocket] = conn
+            # Notify client that they authenticated successfully
             await websocket.send(str(uita.message.AuthSucceedMessage(user)))
             log.info("{}({}) connected".format(user.name, websocket.remote_address[0]))
+            # Main loop, runs for the life of each connection
             while True:
+                # 90 second timeout to cull zombie connections, expects client heartbeats
                 data = await asyncio.wait_for(websocket.recv(), 90, loop=self.loop)
+                # Parse data into message and dispatch to aproppriate event callback
                 message = uita.message.parse(data)
                 active_server = uita.state.servers.get(user.active_server_id)
                 self._dispatch_event(Event(message, user, websocket, active_server))
@@ -284,6 +304,7 @@ class Server():
         except uita.exceptions.AuthenticationError as error:
             log.debug("Websocket failed to authenticate: {}".format(error))
             try:
+                # Notify client that their authentication failed before closing connection
                 await asyncio.wait_for(
                     websocket.send(str(uita.message.AuthFailMessage())),
                     timeout=5,
@@ -300,6 +321,7 @@ class Server():
         except Exception:
             log.warning("Uncaught exception", exc_info=True)
         finally:
+            # Close and cleanup connection
             if user is not None:
                 del self.connections[websocket]
                 log.info("{} disconnected".format(user.name))

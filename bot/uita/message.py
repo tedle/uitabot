@@ -30,6 +30,7 @@ def parse(message):
     except json.JSONDecoderError:
         raise uita.exceptions.MalformedMessage("Expected JSON encoded object")
 
+    # Ensure message header exists and is properly formatted
     if "header" not in msg or not isinstance(msg["header"], str) or not len(msg["header"]):
         raise uita.exceptions.MalformedMessage("Has no header property")
     if len(msg["header"]) > MAX_HEADER_LENGTH:
@@ -37,11 +38,12 @@ def parse(message):
 
     try:
         header = msg["header"]
-        # List of required properties
+        # Validate that all the required properties for a given message type are here
         for prop in VALID_MESSAGES[header][1]:
             if prop not in msg:
                 raise uita.exceptions.MalformedMessage("Missing {} property".format(prop))
-        # Message subclass constructor
+        # Construct a message directly with the JSON decoded dictionary
+        # Header is hardcoded in and constructor will not accept it
         del msg["header"]
         return VALID_MESSAGES[header][0](**msg)
     except KeyError:
@@ -235,6 +237,7 @@ class ServerListSendMessage(AbstractMessage):
         } for server in servers]
 
 
+# Dictionary for validating message data provided by clients
 VALID_MESSAGES = {
     AuthCodeMessage.header: (AuthCodeMessage, ["code"]),
     AuthFailMessage.header: (AuthFailMessage, []),

@@ -42,6 +42,7 @@ class Database():
 
         """
         c = self._connection.cursor()
+        # Generate cryptographically secure 64 char long hex string for session secret
         secret = binascii.hexlify(os.urandom(32)).decode()
         c.execute(_ADD_SESSION_QUERY, (secret, token, refresh_token, expiry))
         self._connection.commit()

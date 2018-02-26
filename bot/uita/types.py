@@ -1,4 +1,4 @@
-"""Defines various container and running state types."""
+"""Defines various container and running state types for the Discord API."""
 import logging
 log = logging.getLogger(__name__)
 

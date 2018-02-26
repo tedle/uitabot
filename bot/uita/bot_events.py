@@ -1,3 +1,4 @@
+"""Event triggers for Discord client to synchronize API state with uitabot."""
 import uita.types
 import uita
 
@@ -6,6 +7,7 @@ log = logging.getLogger(__name__)
 
 
 def bot_ready(function):
+    """Decorator that awaits execution of a function until Discord client is ready."""
     async def wrapper(*args, **kwargs):
         await uita.bot.wait_until_ready()
         return await function(*args, **kwargs)

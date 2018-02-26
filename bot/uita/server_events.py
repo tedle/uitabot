@@ -1,3 +1,4 @@
+"""Event triggers for web client to."""
 import discord
 
 from uita import server, state
@@ -10,6 +11,7 @@ log = logging.getLogger(__name__)
 
 @server.on_message("channel.list.get")
 async def channel_list_get(event):
+    """Provide a list of available voice channels to client."""
     log.debug("channel list get")
     discord_channels = [
         uita.types.DiscordChannel(
@@ -26,7 +28,9 @@ async def channel_list_get(event):
 
 @server.on_message("server.join", require_active_server=False)
 async def server_join(event):
+    """Connect a user to the web client interface for a given Discord server."""
     log.debug("server join {}".format(event.message.server_id))
+    # Check that user has access to this server
     if event.user.id in uita.state.servers[event.message.server_id].users:
         event.user.active_server_id = event.message.server_id
     else:
@@ -35,6 +39,7 @@ async def server_join(event):
 
 @server.on_message("server.list.get", require_active_server=False)
 async def server_list_get(event):
+    """Provide a list of all servers that the user and uitabot share membership in."""
     log.debug("server list get")
     discord_servers = [
         uita.types.DiscordServer(
@@ -48,6 +53,7 @@ async def server_list_get(event):
 
 @server.on_message("play.url")
 async def play_url(event):
+    """Still just a test function."""
     log.debug("play.url event:{}".format(event))
     try:
         import asyncio

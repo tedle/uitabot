@@ -6,6 +6,7 @@ import uita
 import uita.exceptions
 
 
+# API config definitions
 BASE_HEADERS = {
     "Content-Type": "application/x-www-form-urlencoded",
     "User-Agent": "uitabot (https://github.com/tedle, {})".format(uita.__version__)
@@ -39,8 +40,10 @@ async def auth(code, config, loop):
         If code is invalid.
 
     """
+    # Since these are passed by the client, sanitize to expected format
     if VALID_CODE_REGEX.match(code) is None:
         raise uita.exceptions.AuthenticationError("Passed an invalidly formatted auth code")
+    # Generate a redirect URL since it is required, even though we aren't being redirected anywhere
     redirect = "http{}://{}{}".format(
         "s" if config.ssl.cert_file is not None else "",
         config.client.domain,
@@ -53,6 +56,7 @@ async def auth(code, config, loop):
         "client_secret": config.discord.client.secret,
         "redirect_uri": redirect
     }
+    # requests is not asynchronous, so run in another thread and await it
     response = await loop.run_in_executor(
         None,
         lambda: requests.post(
@@ -91,6 +95,7 @@ async def get(end_point, token, loop):
     """
     headers = BASE_HEADERS.copy()
     headers["Authorization"] = "Bearer {}".format(token)
+    # requests is not asynchronous, so run in another thread and await it
     response = await loop.run_in_executor(
         None,
         lambda: requests.get(

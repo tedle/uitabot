@@ -22,17 +22,21 @@ def initialize_logging(level=logging.DEBUG):
 
 if __name__ == "__main__":
     try:
+        # Initialization
         initialize_logging()
         config = uita.config.load("../config.json")
         database = uita.database.Database(":memory:")
         uita.loop.create_task(uita.server.start(database, config, loop=uita.loop))
         uita.loop.create_task(uita.bot.start(config.discord.token))
+        # Main loop
         uita.loop.run_forever()
     except KeyboardInterrupt:
         pass
     finally:
+        # Stop running services
         uita.loop.run_until_complete(uita.server.stop())
         uita.loop.run_until_complete(uita.bot.logout())
+        # Find and cancel all remaining tasks (spawned by discord.py)
         task_list = asyncio.Task.all_tasks(loop=uita.loop)
         task_list_future = asyncio.gather(*task_list, loop=uita.loop)
         try:
@@ -40,4 +44,5 @@ if __name__ == "__main__":
             uita.loop.run_until_complete(task_list_future)
         except asyncio.CancelledError:
             pass
+        # Finalize shutdown
         uita.loop.close()
