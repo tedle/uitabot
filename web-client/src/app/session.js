@@ -1,3 +1,6 @@
+// --- session.js --------------------------------------------------------------
+// Utility functions for storing and retrieving session authentication data
+
 import Cookie from "js-cookie";
 
 export function store(session) {

@@ -1,3 +1,6 @@
+// --- voice-channel-select.js -------------------------------------------------
+// Component for commanding bot to join voice channels
+
 import React from "react";
 import * as Message from "./message.js";
 
@@ -10,6 +13,7 @@ export default class VoiceChannelSelect extends React.Component {
     }
 
     componentDidMount() {
+        // Once mounted, bind the event dispatchers callback for channel list queries
         this.props.eventDispatcher.onChannelListSend = m => this.setState({channels: m.channels});
         this.getChannelList();
     }
@@ -19,6 +23,8 @@ export default class VoiceChannelSelect extends React.Component {
     }
 
     render() {
+        // Sort the channels by position, even though discord.py doesn't generate them properly
+        // At least it's consistent
         const channelList = this.state.channels
             .sort((a, b) => {
                 return a.position - b.position;

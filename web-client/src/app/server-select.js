@@ -1,3 +1,6 @@
+// --- server-select.js --------------------------------------------------------
+// Component for selecting the server to play music in
+
 import React from "react";
 import * as Message from "./message.js";
 
@@ -10,6 +13,7 @@ export default class ServerSelect extends React.Component {
     }
 
     componentDidMount() {
+        // Once mounted, bind the event dispatchers callback for server list queries
         this.props.eventDispatcher.onServerListSend = m => this.setState({servers: m.servers});
         this.getServerList();
     }
@@ -24,6 +28,7 @@ export default class ServerSelect extends React.Component {
     }
 
     render() {
+        // Sort the servers alphabetically and then generate a list element with a join button
         const serverList = this.state.servers
             .sort((a, b) => {
                 return a.name.localeCompare(b.name);
@@ -35,6 +40,8 @@ export default class ServerSelect extends React.Component {
                 </li>
             );
         });
+
+        // Display the list and an amazing gaming culture reference. It is very funny
         return (
             <div>
                 <p>future server game</p>

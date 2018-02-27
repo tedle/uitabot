@@ -1,8 +1,14 @@
+// --- message.js --------------------------------------------------------------
+// Utility classes for parsing and building network packets
+// For detailed breakdown on protocol uses, see /bot/uita/message.py
+
+// Abstract base class for network messages
 export class AbstractMessage {
     static get header() {
         return "base";
     }
 
+    // Serializes object for network transfer
     str() {
         let obj = Object();
         obj.header = this.constructor.header;
@@ -123,6 +129,7 @@ export class ServerListSendMessage extends AbstractMessage {
     }
 }
 
+// Hash map linking message headers to class constructors, along with expected input values
 const VALID_MESSAGES = {
     "auth.code": [AuthCodeMessage, ["code"]],
     "auth.fail": [AuthFailMessage, []],
@@ -138,6 +145,7 @@ const VALID_MESSAGES = {
     "server.list.send": [ServerListSendMessage, ["servers"]]
 };
 
+// Translates input messages into client callbacks
 export class EventDispatcher {
     constructor() {
         this.onAuthFail = m => {};
@@ -174,9 +182,11 @@ export class EventDispatcher {
     }
 }
 
+// Turns raw network data into Message classes
 export function parse(message) {
     let obj = JSON.parse(message);
     let args = Array();
+    // Verify that the expected arguments match with what is in the message
     for (let arg of VALID_MESSAGES[obj.header][1]) {
         if (arg in obj) {
             args.push(obj[arg]);
@@ -185,6 +195,7 @@ export function parse(message) {
             throw new TypeError("Mismatched parmeters between parsed message and associated type");
         }
     }
+    // Call the aproppriate constructor with our array of arguments
     // This is what modern javascript looks like
     return new (Function.prototype.bind.call(VALID_MESSAGES[obj.header][0], null, ...args));
 }
