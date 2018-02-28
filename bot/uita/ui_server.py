@@ -15,24 +15,27 @@ import logging
 log = logging.getLogger(__name__)
 
 
-Connection = namedtuple("Connection", ["user", "socket"])
-"""Container for Server connections.
+class Connection():
+    """Container for Server connections.
 
-Parameters
-----------
-user : uita.types.DiscordUser
-    User connected to server.
-socket : websockets.WebSocketCommonProtocol
-    Websocket connected to user.
+    Parameters
+    ----------
+    user : uita.types.DiscordUser
+        User connected to server.
+    socket : websockets.WebSocketCommonProtocol
+        Websocket connected to user.
 
-Attributes
-----------
-user : uita.types.DiscordUser
-    User connected to server.
-socket : websockets.WebSocketCommonProtocol
-    Websocket connected to user.
+    Attributes
+    ----------
+    user : uita.types.DiscordUser
+        User connected to server.
+    socket : websockets.WebSocketCommonProtocol
+        Websocket connected to user.
 
-"""
+    """
+    def __init__(self, user, socket):
+        self.user = user
+        self.socket = socket
 
 
 Event = namedtuple("Event", ["message", "user", "socket", "active_server"])
@@ -148,6 +151,9 @@ class Server():
         await self._cancel_active_events()
         self._server.close()
         await self._server.wait_closed()
+        # Close all active connections
+        for conn in self.connections:
+            await conn.close()
         self._server = None
         self.database = None
         self.loop = None
@@ -288,11 +294,12 @@ class Server():
         """Main loop for each connected client."""
         log.debug("Websocket connected {} {}".format(websocket.remote_address[0], path))
         try:
-            user = None  # If authentication throws we would get an UnboundLocalError otherwise
+            # Connection stub in case server stops during authentication
+            conn = Connection(None, websocket)
+            self.connections[websocket] = conn
             # Initialize user and connection data
             user = await self._authenticate(websocket)
-            conn = Connection(user, websocket)
-            self.connections[websocket] = conn
+            conn.user = user
             # Notify client that they authenticated successfully
             await websocket.send(str(uita.message.AuthSucceedMessage(user)))
             log.info("{}({}) connected".format(user.name, websocket.remote_address[0]))
@@ -331,8 +338,8 @@ class Server():
             log.warning("Uncaught exception", exc_info=True)
         finally:
             # Close and cleanup connection
-            if user is not None:
+            if conn.user is not None:
                 del self.connections[websocket]
-                log.info("{} disconnected".format(user.name))
+                log.info("{} disconnected".format(conn.user.name))
             await websocket.close()
             log.debug("Websocket closed")
