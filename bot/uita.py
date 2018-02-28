@@ -36,7 +36,7 @@ if __name__ == "__main__":
         uita.loop.run_until_complete(uita.bot.logout())
         # Find and cancel all remaining tasks (spawned by discord.py)
         task_list = asyncio.Task.all_tasks(loop=uita.loop)
-        task_list_future = asyncio.gather(*task_list, loop=uita.loop)
+        task_list_future = asyncio.gather(*task_list, loop=uita.loop, return_exceptions=True)
         try:
             task_list_future.cancel()
             uita.loop.run_until_complete(task_list_future)
