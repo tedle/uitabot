@@ -54,13 +54,16 @@ async def verify_session(session, database, config, loop):
     """
     token = database.get_access_token(session)
     if token is not None:
-        user = await uita.discord_api.get("/users/@me", token, loop)
-        return uita.types.DiscordUser(
-            id=user["id"],
-            name=user["username"],
-            session=session,
-            active_server_id=None
-        )
+        try:
+            user = await uita.discord_api.get("/users/@me", token, loop)
+            return uita.types.DiscordUser(
+                id=user["id"],
+                name=user["username"],
+                session=session,
+                active_server_id=None
+            )
+        except uita.exceptions.AuthenticationError:
+            database.delete_session(session)
     raise uita.exceptions.AuthenticationError("Session authentication failed")
 
 
@@ -94,6 +97,5 @@ async def verify_code(code, database, config, loop):
     api_data = await uita.discord_api.auth(code, config, loop)
     return database.add_session(
         api_data["access_token"],
-        api_data["refresh_token"],
         api_data["expires_in"]
     )

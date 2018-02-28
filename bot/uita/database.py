@@ -23,15 +23,23 @@ class Database():
         c.execute(_INIT_DATABASE_QUERY)
         self._connection.commit()
 
-    def add_session(self, token, refresh_token, expiry):
+    def maintenance(self):
+        """Performs database maintenance.
+
+        Currently only deletes expired sessions.
+
+        """
+        c = self._connection.cursor()
+        c.execute(_PRUNE_OLD_SESSIONS_QUERY)
+        self._connection.commit()
+
+    def add_session(self, token, expiry):
         """Creates and inserts a new user session into database.
 
         Parameters
         ----------
         token : str
             User authentication token to associate new session with.
-        refresh_token : str
-            User refresh token to associate new session with.
         expiry : int
             Time from creation of token that it is valid for in seconds.
 
@@ -44,9 +52,24 @@ class Database():
         c = self._connection.cursor()
         # Generate cryptographically secure 64 char long hex string for session secret
         secret = binascii.hexlify(os.urandom(32)).decode()
-        c.execute(_ADD_SESSION_QUERY, (secret, token, refresh_token, expiry))
+        c.execute(_ADD_SESSION_QUERY, (secret, token, expiry))
         self._connection.commit()
         return uita.auth.Session(handle=c.lastrowid, secret=secret)
+
+    def delete_session(self, session):
+        """Deletes a given session from the database.
+
+        Useful for session expiry, user logout, etc.
+
+        Parameters
+        ----------
+        session : uita.auth.Session
+            Session object to be deleted.
+
+        """
+        c = self._connection.cursor()
+        c.execute(_DELETE_SESSION_QUERY, (session.handle,))
+        self._connection.commit()
 
     def get_access_token(self, session):
         """Verifies whether a given session is valid and returns an access token if so.
@@ -77,7 +100,6 @@ CREATE TABLE IF NOT EXISTS sessions (
     handle INTEGER PRIMARY KEY,
     secret TEXT UNIQUE,
     token TEXT UNIQUE,
-    refresh_token TEXT UNIQUE,
     created DATETIME DEFAULT CURRENT_TIMESTAMP,
     expiry INT
 );"""
@@ -86,11 +108,15 @@ _ADD_SESSION_QUERY = """
 INSERT OR REPLACE INTO sessions(
     secret,
     token,
-    refresh_token,
     expiry
 )
-VALUES(?, ?, ?, ?)"""
+VALUES(?, ?, ?)"""
+
+_DELETE_SESSION_QUERY = """
+DELETE FROM sessions WHERE handle=?"""
+
+_PRUNE_OLD_SESSIONS_QUERY = """
+DELETE FROM sessions WHERE ((strftime('%s', created) + expiry) - stftime('%s', 'now'))<=0"""
 
 _GET_SESSION_QUERY = """
-SELECT secret, token FROM sessions WHERE handle=?
-"""
+SELECT secret, token FROM sessions WHERE handle=?"""
