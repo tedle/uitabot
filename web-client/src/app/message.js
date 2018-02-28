@@ -61,6 +61,17 @@ export class AuthSucceedMessage extends AbstractMessage {
     }
 }
 
+export class ChannelJoinMessage extends AbstractMessage {
+    static get header() {
+        return "channel.join";
+    }
+
+    constructor(channel_id) {
+        super();
+        this.channel_id = channel_id;
+    }
+}
+
 export class ChannelListGetMessage extends AbstractMessage {
     static get header() {
         return "channel.list.get";
@@ -135,6 +146,7 @@ const VALID_MESSAGES = {
     "auth.fail": [AuthFailMessage, []],
     "auth.session": [AuthSessionMessage, ["handle", "secret"]],
     "auth.succeed": [AuthSucceedMessage, ["username", "session_handle", "session_secret"]],
+    "channel.join": [ChannelJoinMessage, ["channel_id"]],
     "channel.list.get": [ChannelListGetMessage, []],
     "channel.list.send": [ChannelListSendMessage, ["channels"]],
     "heartbeat": [HeartbeatMessage, []],

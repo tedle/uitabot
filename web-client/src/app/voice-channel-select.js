@@ -24,7 +24,11 @@ export default class VoiceChannelSelect extends React.Component {
         this.props.eventDispatcher.clearMessageHandler("channel.list.send");
     }
 
-    getChannelList(socket) {
+    joinChannel(id) {
+        this.props.socket.send(new Message.ChannelJoinMessage(id).str());
+    }
+
+    getChannelList() {
         this.props.socket.send(new Message.ChannelListGetMessage().str());
     }
 
@@ -38,7 +42,7 @@ export default class VoiceChannelSelect extends React.Component {
             .map((channel) => {
             return (
                 <li key={channel.id}>
-                    <button onClick={() => this.joinServer(channel.id)}>{channel.name}</button>
+                    <button onClick={() => this.joinChannel(channel.id)}>{channel.name}</button>
                 </li>
             );
         });

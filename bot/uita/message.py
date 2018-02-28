@@ -138,6 +138,26 @@ class AuthSucceedMessage(AbstractMessage):
         self.session_secret = str(user.session.secret)
 
 
+class ChannelJoinMessage(AbstractMessage):
+    """Sent by client containing a channel ID to join.
+
+    Attributes
+    ----------
+    channel_id : str
+        Channel ID to join.
+
+    """
+    header = "channel.join"
+    """"""
+
+    def __init__(self, channel_id):
+        self.channel_id = str(channel_id)
+        if len(self.channel_id) > MAX_DIGITS_64BIT:
+            raise uita.exceptions.MalformedMessage("Channel ID exceeds 64-bit number")
+        if len(self.channel_id) == 0:
+            raise uita.exceptions.MalformedMessage("Channel ID is empty")
+
+
 class ChannelListGetMessage(AbstractMessage):
     """Sent by client requesting a list of every channel the bot can connect to."""
     header = "channel.list.get"
@@ -245,6 +265,7 @@ VALID_MESSAGES = {
     AuthSucceedMessage.header: (AuthSucceedMessage, [
         "username", "session_handle", "session_secret"
     ]),
+    ChannelJoinMessage.header: (ChannelJoinMessage, ["channel_id"]),
     ChannelListGetMessage.header: (ChannelListGetMessage, []),
     ChannelListSendMessage.header: (ChannelListSendMessage, ["channels"]),
     HeartbeatMessage.header: (HeartbeatMessage, []),

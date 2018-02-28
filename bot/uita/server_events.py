@@ -9,6 +9,12 @@ import logging
 log = logging.getLogger(__name__)
 
 
+@server.on_message("channel.join")
+async def channel_join(event):
+    """Connect the bot to a given channel of a server."""
+    log.debug("channel join {}".format(event.message.channel_id))
+
+
 @server.on_message("channel.list.get")
 async def channel_list_get(event):
     """Provide a list of available voice channels to client."""
