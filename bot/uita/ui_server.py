@@ -245,7 +245,7 @@ class Server():
 
     async def _cancel_active_events(self):
         """Cancels all events spawned by the UI server."""
-        tasks = asyncio.gather(*self._active_events, loop=self.loop)
+        tasks = asyncio.gather(*self._active_events, loop=self.loop, return_exceptions=True)
         tasks.cancel()
         await tasks
 
