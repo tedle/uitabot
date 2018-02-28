@@ -1,7 +1,7 @@
 """Event triggers for web client to."""
 import discord
 
-from uita import server, state
+import uita
 import uita.message
 import uita.types
 
@@ -9,13 +9,13 @@ import logging
 log = logging.getLogger(__name__)
 
 
-@server.on_message("channel.join")
+@uita.server.on_message("channel.join")
 async def channel_join(event):
     """Connect the bot to a given channel of a server."""
     log.debug("channel join {}".format(event.message.channel_id))
 
 
-@server.on_message("channel.list.get")
+@uita.server.on_message("channel.list.get")
 async def channel_list_get(event):
     """Provide a list of available voice channels to client."""
     log.debug("channel list get")
@@ -32,7 +32,7 @@ async def channel_list_get(event):
     await event.socket.send(str(uita.message.ChannelListSendMessage(discord_channels)))
 
 
-@server.on_message("server.join", require_active_server=False)
+@uita.server.on_message("server.join", require_active_server=False)
 async def server_join(event):
     """Connect a user to the web client interface for a given Discord server."""
     log.debug("server join {}".format(event.message.server_id))
@@ -43,7 +43,7 @@ async def server_join(event):
         await event.socket.send(str(uita.message.ServerKickMessage()))
 
 
-@server.on_message("server.list.get", require_active_server=False)
+@uita.server.on_message("server.list.get", require_active_server=False)
 async def server_list_get(event):
     """Provide a list of all servers that the user and uitabot share membership in."""
     log.debug("server list get")
@@ -51,13 +51,13 @@ async def server_list_get(event):
         uita.types.DiscordServer(
             discord_server.id, discord_server.name, [], []
         )
-        for key, discord_server in state.servers.items()
+        for key, discord_server in uita.state.servers.items()
         if event.user.id in discord_server.users
     ]
     await event.socket.send(str(uita.message.ServerListSendMessage(discord_servers)))
 
 
-@server.on_message("play.url")
+@uita.server.on_message("play.url")
 async def play_url(event):
     """Still just a test function."""
     log.debug("play.url event:{}".format(event))
