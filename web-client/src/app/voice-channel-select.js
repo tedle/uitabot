@@ -14,8 +14,14 @@ export default class VoiceChannelSelect extends React.Component {
 
     componentDidMount() {
         // Once mounted, bind the event dispatchers callback for channel list queries
-        this.props.eventDispatcher.onChannelListSend = m => this.setState({channels: m.channels});
+        this.props.eventDispatcher.setMessageHandler("channel.list.send", m => {
+            this.setState({channels: m.channels})
+        });
         this.getChannelList();
+    }
+
+    componentWillUnmount() {
+        this.props.eventDispatcher.clearMessageHandler("channel.list.send");
     }
 
     getChannelList(socket) {

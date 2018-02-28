@@ -14,8 +14,14 @@ export default class ServerSelect extends React.Component {
 
     componentDidMount() {
         // Once mounted, bind the event dispatchers callback for server list queries
-        this.props.eventDispatcher.onServerListSend = m => this.setState({servers: m.servers});
+        this.props.eventDispatcher.setMessageHandler("server.list.send", m => {
+            this.setState({servers: m.servers})
+        });
         this.getServerList();
+    }
+
+    componentWillUnmount() {
+        this.props.eventDispatcher.clearMessageHandler("server.list.send");
     }
 
     getServerList(socket) {

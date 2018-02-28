@@ -148,36 +148,27 @@ const VALID_MESSAGES = {
 // Translates input messages into client callbacks
 export class EventDispatcher {
     constructor() {
-        this.onAuthFail = m => {};
-        this.onAuthSucceed = m => {};
-        this.onChannelListSend = m => {};
-        this.onServerKick = m => {};
-        this.onServerListSend = m => {};
+        this.handlers = [];
+    }
+
+    setMessageHandler(header, handler) {
+        this.handlers[header] = handler;
+    }
+
+    clearMessageHandler(header) {
+        delete this.handlers[header];
     }
 
     dispatch(message) {
         if (!message instanceof AbstractMessage) {
             throw new TypeError("EventDispatcher.dispatch requires a subclass of AbstractMessage");
         }
-        switch(message.constructor) {
-            case AuthFailMessage:
-                this.onAuthFail(message);
-                break;
-            case AuthSucceedMessage:
-                this.onAuthSucceed(message);
-                break;
-            case ChannelListSendMessage:
-                this.onChannelListSend(message);
-                break;
-            case ServerKickMessage:
-                this.onServerKick(message);
-                break;
-            case ServerListSendMessage:
-                this.onServerListSend(message);
-                break;
-            default:
-                throw new InternalError("EventDispatcher.dispatch has not implemented this message");
-                break;
+
+        // Javascript makes you access an instances constructor to get at its static methods
+        // whats up with that?
+        const header = message.constructor.header;
+        if (header in this.handlers) {
+            this.handlers[header](message);
         }
     }
 }

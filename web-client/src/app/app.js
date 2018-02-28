@@ -29,8 +29,14 @@ export default class App extends React.Component {
     componentDidMount() {
         // Initialize server event callbacks that need to be handled at the root level
         this.eventDispatcher = new Message.EventDispatcher();
-        this.eventDispatcher.onAuthFail = m => this.setState({needLogin: true});
-        this.eventDispatcher.onAuthSucceed = m => {
+
+        // Handler for authentication failure
+        this.eventDispatcher.setMessageHandler("auth.fail", m => {
+            this.setState({needLogin: true})
+        });
+
+        // Handler for authentication success
+        this.eventDispatcher.setMessageHandler("auth.succeed", m => {
             Session.store({handle: m.session_handle, secret: m.session_secret});
             this.setState({authenticated: true});
             // Server will close connection if it doesn't receive a packet after 90 seconds
@@ -38,8 +44,12 @@ export default class App extends React.Component {
                 () => this.socket.send(new Message.HeartbeatMessage().str()),
                 60000
             );
-        };
-        this.eventDispatcher.onServerKick = m => this.setState({discordServer: null});
+        });
+
+        // Handler for server kick messages
+        this.eventDispatcher.setMessageHandler("server.kick", m => {
+            this.setState({discordServer: null})
+        });
 
         // Setup the websocket after we're ready to receive and act on messages
         try {
@@ -68,6 +78,9 @@ export default class App extends React.Component {
 
     componentWillUnmount() {
         this.socket.close();
+        this.eventDispatcher.clearMessageHandler("auth.fail");
+        this.eventDispatcher.clearMessageHandler("auth.succeed");
+        this.eventDispatcher.clearMessageHandler("server.kick");
     }
 
     // Big, messy state machine acting as a view router
