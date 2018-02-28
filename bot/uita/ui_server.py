@@ -6,6 +6,7 @@ import websockets
 from collections import namedtuple
 
 import uita.auth
+import uita.database
 import uita.exceptions
 import uita.message
 import uita
@@ -81,15 +82,15 @@ class Server():
         self._active_events = set()
         self.connections = {}
 
-    async def start(self, database, config, origins=None, loop=None):
+    async def start(self, database_uri, config, origins=None, loop=None):
         """Creates a new listen server.
 
         Accepts connections from UI frontend.
 
         Parameters
         ----------
-        database : uita.database.Database
-            Contains user authentication data.
+        database_uri : str
+            URI to database containing user authentication data.
         config : uita.config.Config
             Configuration options containing API keys.
         origins : str, optional
@@ -106,9 +107,17 @@ class Server():
         """
         if self._server is not None:
             raise uita.exceptions.ServerError("Server.start() called while already running")
-        self.database = database
+        self.database = uita.database.Database(database_uri)
         self.config = config
         self.loop = loop if loop is not None else asyncio.get_event_loop()
+
+        # Setup an endless database maintenance task to run every 10 minutes
+        async def database_maintenance():
+            while True:
+                self.database.maintenance()
+                await asyncio.sleep(600, loop=self.loop)
+        self._create_task(database_maintenance())
+
         ssl_context = None
         # Don't need to check ssl_key_file
         # If it is None load_cert_chain will attempt to find it in the cert file

@@ -2,7 +2,6 @@ import asyncio
 
 import uita
 import uita.config
-import uita.database
 
 import logging
 import sys
@@ -25,8 +24,7 @@ if __name__ == "__main__":
         # Initialization
         initialize_logging()
         config = uita.config.load("../config.json")
-        database = uita.database.Database(":memory:")
-        uita.loop.create_task(uita.server.start(database, config, loop=uita.loop))
+        uita.loop.create_task(uita.server.start(":memory:", config, loop=uita.loop))
         uita.loop.create_task(uita.bot.start(config.discord.token))
         # Main loop
         uita.loop.run_forever()

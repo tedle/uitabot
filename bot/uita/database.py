@@ -116,7 +116,7 @@ _DELETE_SESSION_QUERY = """
 DELETE FROM sessions WHERE handle=?"""
 
 _PRUNE_OLD_SESSIONS_QUERY = """
-DELETE FROM sessions WHERE ((strftime('%s', created) + expiry) - stftime('%s', 'now'))<=0"""
+DELETE FROM sessions WHERE ((strftime('%s', created) + expiry) - strftime('%s', 'now'))<=0"""
 
 _GET_SESSION_QUERY = """
 SELECT secret, token FROM sessions WHERE handle=?"""
