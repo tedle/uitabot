@@ -28,6 +28,10 @@ export default class VoiceChannelSelect extends React.Component {
         this.props.socket.send(new Message.ChannelJoinMessage(id).str());
     }
 
+    leaveChannel() {
+        this.props.socket.send(new Message.ChannelLeaveMessage().str());
+    }
+
     getChannelList() {
         this.props.socket.send(new Message.ChannelListGetMessage().str());
     }
@@ -50,6 +54,7 @@ export default class VoiceChannelSelect extends React.Component {
             <div>
                 <p>voice channel select</p>
                 <ul>{channelList}</ul>
+                <button onClick={() => this.leaveChannel()}>disconnect</button>
             </div>
         );
     }

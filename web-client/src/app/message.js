@@ -72,6 +72,12 @@ export class ChannelJoinMessage extends AbstractMessage {
     }
 }
 
+export class ChannelLeaveMessage extends AbstractMessage {
+    static get header() {
+        return "channel.leave";
+    }
+}
+
 export class ChannelListGetMessage extends AbstractMessage {
     static get header() {
         return "channel.list.get";
@@ -147,6 +153,7 @@ const VALID_MESSAGES = {
     "auth.session": [AuthSessionMessage, ["handle", "secret"]],
     "auth.succeed": [AuthSucceedMessage, ["username", "session_handle", "session_secret"]],
     "channel.join": [ChannelJoinMessage, ["channel_id"]],
+    "channel.leave": [ChannelLeaveMessage, []],
     "channel.list.get": [ChannelListGetMessage, []],
     "channel.list.send": [ChannelListSendMessage, ["channels"]],
     "heartbeat": [HeartbeatMessage, []],

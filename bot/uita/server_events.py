@@ -11,8 +11,16 @@ log = logging.getLogger(__name__)
 
 @uita.server.on_message("channel.join")
 async def channel_join(event):
-    """Connect the bot to a given channel of a server."""
+    """Connect the bot to a given channel of the active server."""
     log.debug("channel join {}".format(event.message.channel_id))
+    await event.active_server.voice_connect(uita.bot, event.message.channel_id)
+
+
+@uita.server.on_message("channel.leave")
+async def channel_leave(event):
+    """Disconnect the bot from the voice channel of the active server."""
+    log.debug("channel leave")
+    await event.active_server.voice_disconnect()
 
 
 @uita.server.on_message("channel.list.get")

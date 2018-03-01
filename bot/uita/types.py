@@ -1,4 +1,6 @@
 """Defines various container and running state types for the Discord API."""
+import asyncio
+
 import logging
 log = logging.getLogger(__name__)
 
@@ -185,6 +187,11 @@ class DiscordServer():
         Dictionary of channels in server.
     users : dict(user_id: user_name)
         Dictionary of users in server.
+    voice : discord.voice_client.VoiceClient
+        Discord.py object for interfacing with voice output in a channel.
+        `None` when not currently in a channel.
+    voice_lock : asyncio.Lock
+        Synchronizing lock for dealing with Discord gateway connections safely.
 
     """
     def __init__(self, id, name, channels, users):
@@ -192,6 +199,33 @@ class DiscordServer():
         self.name = name
         self.channels = channels
         self.users = users
+        self._voice = None
+        self._voice_lock = asyncio.Lock()
+
+    async def voice_connect(self, bot, channel_id):
+        """Connect bot to a voice a voice channel in this server.
+
+        Parameters
+        ----------
+        bot : discord.Client
+            Bot to connect with.
+        channel_id : str
+            ID of channel to connect to.
+
+        """
+        bot_channel = bot.get_server(self.id).get_channel(channel_id)
+        with await self._voice_lock:
+            if self._voice is None:
+                self._voice = await bot.join_voice_channel(bot_channel)
+            else:
+                await self._voice.move_to(bot_channel)
+
+    async def voice_disconnect(self):
+        """Disconnect bot from the voice channels in this server."""
+        with await self._voice_lock:
+            if self._voice is not None:
+                await self._voice.disconnect()
+                self._voice = None
 
 
 class DiscordUser():

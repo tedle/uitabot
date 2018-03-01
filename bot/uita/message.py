@@ -158,6 +158,12 @@ class ChannelJoinMessage(AbstractMessage):
             raise uita.exceptions.MalformedMessage("Channel ID is empty")
 
 
+class ChannelLeaveMessage(AbstractMessage):
+    """Sent by client containing when leaving a channel."""
+    header = "channel.leave"
+    """"""
+
+
 class ChannelListGetMessage(AbstractMessage):
     """Sent by client requesting a list of every channel the bot can connect to."""
     header = "channel.list.get"
@@ -266,6 +272,7 @@ VALID_MESSAGES = {
         "username", "session_handle", "session_secret"
     ]),
     ChannelJoinMessage.header: (ChannelJoinMessage, ["channel_id"]),
+    ChannelLeaveMessage.header: (ChannelLeaveMessage, []),
     ChannelListGetMessage.header: (ChannelListGetMessage, []),
     ChannelListSendMessage.header: (ChannelListSendMessage, ["channels"]),
     HeartbeatMessage.header: (HeartbeatMessage, []),
