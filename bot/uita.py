@@ -10,7 +10,7 @@ import sys
 def initialize_logging(level=logging.DEBUG):
     # Websockets uses the logging.lastResort handler which by default prints
     # all of its uncatchable and unpreventable exception warnings to stderr
-    logging.getLogger("websockets").setLevel(logging.CRITICAL)
+    logging.getLogger("websockets").addHandler(logging.NullHandler())
 
     log = logging.getLogger("uita")
     log_handler = logging.StreamHandler(stream=sys.stdout)
