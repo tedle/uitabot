@@ -210,6 +210,8 @@ class PlayURLMessage(AbstractMessage):
 
     def __init__(self, url):
         self.url = str(url)
+        if len(self.url) > MAX_URL_LENGTH:
+            raise uita.exceptions.MalformedMessage("Play URL exceeds max length")
 
 
 class ServerJoinMessage(AbstractMessage):
@@ -288,3 +290,4 @@ MAX_CLIENT_MESSAGE_LENGTH = 5000
 MAX_DIGITS_64BIT = math.ceil(64 * math.log10(2))  # 64 * log 2 = log (2^64)
 MAX_HEADER_LENGTH = 50
 MAX_SESSION_LENGTH = 64
+MAX_URL_LENGTH = 2000

@@ -4,6 +4,13 @@ uitabot API Reference
 
 Details usage of the uitabot module
 
+Audio
+-----
+.. automodule:: uita.audio
+.. autoclass:: Track
+.. autoclass:: Queue
+    :members:
+
 Authentication
 --------------
 .. automodule:: uita.auth

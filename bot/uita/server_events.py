@@ -13,14 +13,16 @@ log = logging.getLogger(__name__)
 async def channel_join(event):
     """Connect the bot to a given channel of the active server."""
     log.debug("channel join {}".format(event.message.channel_id))
-    await event.active_server.voice_connect(uita.bot, event.message.channel_id)
+    voice = uita.state.voice_connections[event.active_server.id]
+    await voice.connect(uita.bot, event.message.channel_id)
 
 
 @uita.server.on_message("channel.leave")
 async def channel_leave(event):
     """Disconnect the bot from the voice channel of the active server."""
     log.debug("channel leave")
-    await event.active_server.voice_disconnect()
+    voice = uita.state.voice_connections[event.active_server.id]
+    await voice.disconnect()
 
 
 @uita.server.on_message("channel.list.get")
@@ -68,12 +70,6 @@ async def server_list_get(event):
 @uita.server.on_message("play.url")
 async def play_url(event):
     """Still just a test function."""
-    log.debug("play.url event:{}".format(event))
-    try:
-        import asyncio
-        log.debug("sleep start")
-        await asyncio.sleep(10)
-    except asyncio.CancelledError:
-        log.debug("sleep cancelled")
-    finally:
-        log.debug("sleep end")
+    log.debug("play.url {}".format(event.message.url))
+    voice = uita.state.voice_connections[event.active_server.id]
+    await voice.enqueue(event.message.url)

@@ -38,7 +38,7 @@ class Connection():
         self.socket = socket
 
 
-Event = namedtuple("Event", ["message", "user", "socket", "active_server"])
+Event = namedtuple("Event", ["message", "user", "socket", "loop", "active_server"])
 """Container for Server event callbacks.
 
 Parameters
@@ -49,6 +49,8 @@ user : uita.types.DiscordUser
     User that triggered event.
 socket : websockets.WebSocketProtocol
     Connection that triggered event.
+loop : asyncio.AbstractEventLoop
+    Event loop that task is running in.
 active_server : uita.types.DiscordServer
     Server that user is active in. None if not yet selected.
 
@@ -60,6 +62,8 @@ user : uita.types.DiscordUser
     User that triggered event.
 socket : websockets.WebSocketProtocol
     Connection that triggered event.
+loop : asyncio.AbstractEventLoop
+    Event loop that task is running in.
 active_server : uita.types.DiscordServer
     Server that user is active in. None if not yet selected.
 
@@ -112,7 +116,7 @@ class Server():
             raise uita.exceptions.ServerError("Server.start() called while already running")
         self.database = uita.database.Database(database_uri)
         self.config = config
-        self.loop = loop if loop is not None else asyncio.get_event_loop()
+        self.loop = loop or asyncio.get_event_loop()
 
         # Setup an endless database maintenance task to run every 10 minutes
         async def database_maintenance():
@@ -310,7 +314,7 @@ class Server():
                 # Parse data into message and dispatch to aproppriate event callback
                 message = uita.message.parse(data)
                 active_server = uita.state.servers.get(user.active_server_id)
-                self._dispatch_event(Event(message, user, websocket, active_server))
+                self._dispatch_event(Event(message, user, websocket, self.loop, active_server))
         except websockets.exceptions.ConnectionClosed as error:
             log.debug("Websocket disconnected: code {},reason {}".format(error.code, error.reason))
         except asyncio.CancelledError:

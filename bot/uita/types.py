@@ -1,6 +1,8 @@
 """Defines various container and running state types for the Discord API."""
 import asyncio
 
+import uita.audio
+
 import logging
 log = logging.getLogger(__name__)
 
@@ -16,6 +18,7 @@ class DiscordState():
     """
     def __init__(self):
         self.servers = {}
+        self.voice_connections = {}
 
     def __str__(self):
         dump_str = "DiscordState() {}:\n".format(hash(self))
@@ -47,6 +50,7 @@ class DiscordState():
             discord_users = {user.id: user.name for user in server.members}
             discord_server = DiscordServer(server.id, server.name, discord_channels, discord_users)
             self.servers[server.id] = discord_server
+            self.voice_connections[server.id] = DiscordVoiceClient(server.id, bot.loop)
 
     def channel_add(self, channel, server_id):
         """Add a server channel to Discord state.
@@ -76,17 +80,22 @@ class DiscordState():
         log.debug("channel_remove {}".format(channel_id))
         del self.servers[server_id].channels[channel_id]
 
-    def server_add(self, server):
+    def server_add(self, server, bot):
         """Add an accessible server to Discord state.
 
         Parameters
         ----------
         server : uita.types.DiscordServer
             Server that bot has joined.
+        bot : discord.Client
+            Bot that handles voice client connections.
 
         """
         log.debug("server_add {}".format(server.id))
         self.servers[server.id] = server
+        # Non-POD type with persistent connections, doesn't need to be updated
+        if server.id not in self.voice_connections:
+            self.voice_connections[server.id] = DiscordVoiceClient(server.id, bot.loop)
 
     def server_remove(self, server_id):
         """Remove an accessible server from Discord state.
@@ -99,6 +108,7 @@ class DiscordState():
         """
         log.debug("server_remove {}".format(server_id))
         del self.servers[server_id]
+        del self.voice_connections[server_id]
 
     def user_add_server(self, user_id, user_name, server_id):
         """Add an accessible server for a user.
@@ -187,11 +197,6 @@ class DiscordServer():
         Dictionary of channels in server.
     users : dict(user_id: user_name)
         Dictionary of users in server.
-    voice : discord.voice_client.VoiceClient
-        Discord.py object for interfacing with voice output in a channel.
-        `None` when not currently in a channel.
-    voice_lock : asyncio.Lock
-        Synchronizing lock for dealing with Discord gateway connections safely.
 
     """
     def __init__(self, id, name, channels, users):
@@ -199,33 +204,6 @@ class DiscordServer():
         self.name = name
         self.channels = channels
         self.users = users
-        self._voice = None
-        self._voice_lock = asyncio.Lock()
-
-    async def voice_connect(self, bot, channel_id):
-        """Connect bot to a voice a voice channel in this server.
-
-        Parameters
-        ----------
-        bot : discord.Client
-            Bot to connect with.
-        channel_id : str
-            ID of channel to connect to.
-
-        """
-        bot_channel = bot.get_server(self.id).get_channel(channel_id)
-        with await self._voice_lock:
-            if self._voice is None:
-                self._voice = await bot.join_voice_channel(bot_channel)
-            else:
-                await self._voice.move_to(bot_channel)
-
-    async def voice_disconnect(self):
-        """Disconnect bot from the voice channels in this server."""
-        with await self._voice_lock:
-            if self._voice is not None:
-                await self._voice.disconnect()
-                self._voice = None
 
 
 class DiscordUser():
@@ -259,3 +237,74 @@ class DiscordUser():
         self.name = name
         self.session = session
         self.active_server_id = active_server_id
+
+
+class DiscordVoiceClient():
+    """Container for Discord voice connections.
+
+    Parameters
+    ----------
+    server_id : str
+        Server ID to connect to.
+    loop : asyncio.AbstractEventLoop, optional
+        Event loop for audio tasks to run in.
+
+    Attributes
+    ----------
+    server_id : str
+        Server ID to connect to.
+    loop : asyncio.AbstractEventLoop
+        Event loop for audio tasks to run in.
+
+    """
+    def __init__(self, server_id, loop=None):
+        self.server_id = server_id
+        self.loop = loop or asyncio.get_event_loop()
+        self._playlist = uita.audio.Queue(loop=self.loop)
+        self._voice = None
+        self._voice_lock = asyncio.Lock(loop=self.loop)
+
+    async def connect(self, bot, channel_id):
+        """Connect bot to a voice a voice channel in this server.
+
+        Parameters
+        ----------
+        bot : discord.Client
+            Bot to connect with.
+        channel_id : str
+            ID of channel to connect to.
+
+        """
+        bot_channel = bot.get_server(self.server_id).get_channel(channel_id)
+        with await self._voice_lock:
+            if self._voice is None:
+                self._voice = await bot.join_voice_channel(bot_channel)
+                # Set encoder options that are injected into ffmpeg
+                self._voice.encoder_options(sample_rate=48000, channels=2)
+                await self._playlist.play(self._voice)
+            else:
+                await self._voice.move_to(bot_channel)
+
+    async def disconnect(self):
+        """Disconnect bot from the voice channels in this server."""
+        with await self._voice_lock:
+            if self._voice is not None:
+                await self._playlist.stop()
+                await self._voice.disconnect()
+                self._voice = None
+
+    async def enqueue(self, url):
+        """Queues a URL to be played by the running playlist task.
+
+        Parameters
+        ----------
+        url : str
+            URL for audio resource to be played.
+
+        Raises
+        ------
+        uita.exceptions.MalformedMessage
+            If called with an unusable audio URL.
+
+        """
+        await self._playlist.enqueue(url)
