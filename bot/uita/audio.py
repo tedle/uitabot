@@ -99,7 +99,8 @@ class Queue():
         opts = {
             # bestaudio prefers videoless streams, which often have a lower bitrate
             # ironically not the best audio
-            "format": "best[abr>=192]/bestaudio/best",
+            # also highly values lower bitrate vorbis streams over higher bitrate opus?? why.
+            "format": "best[acodec=opus]/bestaudio[acodec=opus]/bestaudio/best",
             "quiet": True,
             "no_warnings": True,
             "extract_flat": "in_playlist",
@@ -123,9 +124,10 @@ class Queue():
             except youtube_dl.utils.DownloadError:
                 pass
         if extractor_used == "Youtube":
-            log.debug("Enqueue [YouTube]{}({}) {}abr, {}s".format(
+            log.debug("Enqueue [YouTube]{}({}) {}@{}abr, {}s".format(
                 info["title"],
                 info["id"],
+                info["acodec"],
                 info["abr"],
                 info["duration"]
             ))
