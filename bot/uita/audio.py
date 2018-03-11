@@ -1,5 +1,8 @@
 import asyncio
 import collections
+import queue
+import subprocess
+import threading
 import youtube_dl
 
 import uita.exceptions
@@ -51,7 +54,6 @@ class Queue():
 
     """
     def __init__(self, loop=None):
-        # Start queue loop here?
         self.loop = loop or asyncio.get_event_loop()
         self.now_playing = None
         self.queue = collections.deque()
@@ -133,7 +135,8 @@ class Queue():
             ))
             # is_live is either True or None?? Thanks ytdl
             if info["is_live"] is True:
-                raise uita.exceptions.MalformedMessage("Live YouTube URLs are unsupported")
+                # We'll want this information later... nice to have a reminder of how to get it
+                pass
             self.queue.append(Track(info["url"], info["title"], info["duration"]))
             self._queue_update_flag.set()
         elif extractor_used == "YoutubePlaylist":
@@ -155,15 +158,14 @@ class Queue():
                 if self.now_playing is None and len(self.queue) > 0:
                     self.now_playing = self.queue.popleft()
                     log.debug("Now playing {}".format(self.now_playing.title))
+                    # Set encoder options that are injected into ffmpeg
+                    voice.encoder_options(
+                        sample_rate=FfmpegStream.SAMPLE_RATE,
+                        channels=FfmpegStream.CHANNELS
+                    )
                     # Launch ffmpeg process
-                    player = voice.create_ffmpeg_player(
-                        self.now_playing.url,
-                        # before_options="-ss 60 -reconnect 1"
-                        # -reconnect_streamed 1 -reconnect_delay_max 3
-                        before_options="-reconnect 1",
-                        # options="-b:a 128k -bufsize 128k"
-                        # options="-f s16le -ac 2 -ar 48000 -acodec pcm_s16le -vn"
-                        options="-acodec pcm_s16le -vn",
+                    player = voice.create_stream_player(
+                        FfmpegStream(self.now_playing.url, voice.encoder.frame_size),
                         after=lambda: self.loop.call_soon_threadsafe(self._after_song)
                     )
                     # Gives ffmpeg a second to load and buffer audio before playing
@@ -174,3 +176,108 @@ class Queue():
                 await self._queue_update_flag.wait()
         except asyncio.CancelledError:
             pass
+        except Exception as e:
+            log.error("Unhandled exception: {}", e)
+
+
+class FfmpegStream():
+    """Provides a data stream interface from an ffmpeg process for a `discord.StreamPlayer`
+
+    Compared to the ffmpeg stream player provided by `discord.VoiceClient.create_ffmpeg_player()`,
+    this implementation will attempt to pre-fetch and cache (buffer) a sizable amount of audio
+    data in a concurrently running thread to minimize any hiccups while fetching audio data for
+    the consumer thread. This noticably cuts down on stuttering during playback, especially for
+    live streams.
+
+    Parameters
+    ----------
+    url : str
+        URL for audio resource to be played.
+    frame_size : int
+        Amount of bytes to be returned by `FfmpegStream.read()`. **Note that `FfmpegStream.read()`
+        actually ignores its byte input parameter as the buffered audio data chunks are of
+        uniform size.** This is because Python lacks a good ring buffer implementation, so this is
+        a hacky work around to avoid creating a new one. Judging by discord.py's implementation
+        it will always call `FfmpegStream.read()` with a size of
+        `discord.VoiceClient.encoder.frame_size`, so just pass that into the constructor and
+        things should be okay. Sorry.
+
+    """
+    SAMPLE_RATE = 48000
+    CHANNELS = 2
+
+    def __init__(self, url, frame_size):
+        self._process = subprocess.Popen([
+            "ffmpeg",
+            "-reconnect", "1",
+            # "-ss", 60,
+            "-i", url,
+            "-f", "s16le",
+            "-ac", str(FfmpegStream.CHANNELS),
+            "-ar", str(FfmpegStream.SAMPLE_RATE),
+            "-acodec", "pcm_s16le",
+            "-vn",
+            "-loglevel", "quiet",
+            "pipe:1"
+        ], stdout=subprocess.PIPE)
+        self._frame_size = frame_size
+
+        # Expecting a frame size of 3840 currently, queue should max out at 3.5MB~ of memory
+        self._buffer = queue.Queue(maxsize=1000)
+        # Run audio production and consumption in separate threads, buffering as much as possible
+        # This cuts down on audio dropping out during playback (especially for livestreams)
+        self._buffer_thread = threading.Thread(target=self._buffer_audio_packets)
+        self._buffer_thread.start()
+
+    def read(self, size):
+        """Returns a `bytes` array of raw audio data.
+
+        Parameters
+        ----------
+        size : int
+            Ignored. See the `frame_size` parameter of `FfmpegStream()` for the terrifying details.
+
+        Returns
+        -------
+        bytes
+            Array of raw audio data. Size of array is equal to (or less than if EOF has been
+            reached) the `frame_size` parameter passed into the object constructor.
+
+        """
+        try:
+            return self._buffer.get(timeout=10)
+        except queue.Empty:
+            log.warn("Audio process queue is not being produced")
+            self.stop()
+            # Empty read indicates completion
+            return b""
+
+    def stop(self):
+        """Stops any currently running processes."""
+        try:
+            # We don't need to kill the thread here since it auto terminates after 10 seconds
+            # without buffer consumption
+            self._process.kill()
+        except Exception:
+            # subprocess.kill() can throw if the process has already ended...
+            # But I forget what type of exception it is and it's seemingly undocumented
+            pass
+
+    def _buffer_audio_packets(self):
+        # Read from process stdout until an empty byte string is returned
+        for data in iter(lambda: self._process.stdout.read(self._frame_size), b""):
+            try:
+                # If the buffer fills and times out it means the queue is no longer being
+                # consumed, this likely means we're running in a zombie thread and should terminate
+                self._buffer.put(data, timeout=10)
+            except queue.Full:
+                log.warn("Audio process queue is not being consumed")
+                self.stop()
+                return
+        try:
+            # self.read returning an empty byte string indicates EOF
+            self._buffer.put(b"", timeout=10)
+        except queue.Full:
+            pass
+        finally:
+            self.stop()

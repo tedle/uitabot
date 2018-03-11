@@ -10,6 +10,8 @@ Audio
 .. autoclass:: Track
 .. autoclass:: Queue
     :members:
+.. autoclass:: FfmpegStream
+    :members:
 
 Authentication
 --------------

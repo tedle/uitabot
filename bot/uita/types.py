@@ -279,8 +279,6 @@ class DiscordVoiceClient():
         with await self._voice_lock:
             if self._voice is None:
                 self._voice = await bot.join_voice_channel(bot_channel)
-                # Set encoder options that are injected into ffmpeg
-                self._voice.encoder_options(sample_rate=48000, channels=2)
                 await self._playlist.play(self._voice)
             else:
                 await self._voice.move_to(bot_channel)
