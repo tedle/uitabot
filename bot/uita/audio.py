@@ -177,7 +177,7 @@ class Queue():
 
     async def _play_loop(self, voice):
         try:
-            while True:
+            while voice.is_connected():
                 self._queue_update_flag.clear()
                 if self.now_playing is None and len(self.queue) > 0:
                     self.now_playing = self.queue.popleft()
