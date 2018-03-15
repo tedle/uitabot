@@ -260,6 +260,9 @@ class FfmpegStream():
             reached) the `frame_size` parameter passed into the object constructor.
 
         """
+        if size != self._frame_size:
+            log.error("Audio process queue has mismatched frame_size and read size.")
+            return b""
         try:
             return self._buffer.get(timeout=10)
         except queue.Empty:
