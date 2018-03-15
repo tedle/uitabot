@@ -3,6 +3,7 @@ import collections
 import queue
 import subprocess
 import threading
+import time
 import youtube_dl
 
 import uita.exceptions
@@ -35,6 +36,8 @@ class Track():
         Track duration in seconds.
     live : bool
         Determines if the track is a remote livestream.
+    offset : float
+        Offset in seconds to start track from.
 
     """
     def __init__(self, url, title, duration, live):
@@ -42,6 +45,7 @@ class Track():
         self.title = title
         self.duration = duration
         self.live = live
+        self.offset = 0.0
 
 
 class Queue():
@@ -64,6 +68,7 @@ class Queue():
         self.queue = collections.deque()
         self._queue_update_flag = asyncio.Event(loop=self.loop)
         self._play_task = None
+        self._play_start_time = None
 
     async def play(self, voice):
         """Starts a new playlist task that awaits and plays new queue inputs.
@@ -85,6 +90,14 @@ class Queue():
         if self._play_task is not None:
             # If we stop during a song, add it to the front of the queue to be resumed later
             if self.now_playing is not None:
+                if self._play_start_time is not None:
+                    # Add the time spent playing this track to the starting offset, so it resumes
+                    # where it left off
+                    self.now_playing.offset += max(
+                        time.perf_counter() - self._play_start_time,
+                        0.0
+                    )
+                    self._play_start_time = None
                 self.queue.appendleft(self.now_playing)
                 self.now_playing = None
             self._play_task.cancel()
@@ -174,7 +187,11 @@ class Queue():
                         channels=FfmpegStream.CHANNELS
                     )
                     # Launch ffmpeg process
-                    stream = FfmpegStream(self.now_playing.url, voice.encoder.frame_size)
+                    stream = FfmpegStream(
+                        self.now_playing.url,
+                        voice.encoder.frame_size,
+                        offset=self.now_playing.offset if not self.now_playing.live else 0.0
+                    )
                     player = voice.create_stream_player(
                         stream,
                         after=lambda: self.loop.call_soon_threadsafe(self._after_song)
@@ -186,6 +203,8 @@ class Queue():
                         await asyncio.sleep(1, loop=self.loop)
                     # About the same as a max volume YouTube video, I think
                     player.volume = 0.5
+                    # Sync play start time to player start
+                    self._play_start_time = time.perf_counter()
                     player.start()
                 await self._queue_update_flag.wait()
         except asyncio.CancelledError:
@@ -215,16 +234,18 @@ class FfmpegStream():
         it will always call `FfmpegStream.read()` with a size of
         `discord.VoiceClient.encoder.frame_size`, so just pass that into the constructor and
         things should be okay. Sorry.
+    offset : float, optional
+        Time offset in fractional seconds to start playback of audio resource from.
 
     """
     SAMPLE_RATE = 48000
     CHANNELS = 2
 
-    def __init__(self, url, frame_size):
+    def __init__(self, url, frame_size, offset=0.0):
         self._process = subprocess.Popen([
             "ffmpeg",
             "-reconnect", "1",
-            # "-ss", 60,
+            "-ss", str(offset),
             "-i", url,
             "-f", "s16le",
             "-ac", str(FfmpegStream.CHANNELS),
