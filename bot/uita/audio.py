@@ -300,13 +300,16 @@ class FfmpegStream():
         for data in iter(lambda: self._process.stdout.read(self._frame_size), b""):
             try:
                 # If the buffer fills and times out it means the queue is no longer being
-                # consumed, this likely means we're running in a zombie thread and should terminate
+                # consumed, this likely means we're running in a zombie thread and should
+                # terminate. Ideally Python would let you send cancellation exceptions
+                # to child threads, much like how asyncio works, but hey who cares about
+                # consistency? Just let the timeout clean up our old resources instead...
                 self._buffer.put(data, timeout=10)
                 if need_set_ready is True:
                     self._is_ready.set()
                     need_set_ready = False
             except queue.Full:
-                log.warn("Audio process queue is not being consumed")
+                log.debug("Audio process queue is not being consumed, terminating")
                 self.stop()
                 return
         try:
