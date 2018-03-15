@@ -1,4 +1,5 @@
 import asyncio
+import atexit
 import collections
 import queue
 import subprocess
@@ -255,6 +256,8 @@ class FfmpegStream():
             "-loglevel", "quiet",
             "pipe:1"
         ], stdout=subprocess.PIPE)
+        # Ensure ffmpeg processes are cleaned up at exit, since Python handles this horribly
+        atexit.register(self.stop)
         self._frame_size = frame_size
 
         # Expecting a frame size of 3840 currently, queue should max out at 3.5MB~ of memory
@@ -262,6 +265,12 @@ class FfmpegStream():
         # Run audio production and consumption in separate threads, buffering as much as possible
         # This cuts down on audio dropping out during playback (especially for livestreams)
         self._buffer_thread = threading.Thread(target=self._buffer_audio_packets)
+        # Causes thread to force exit on shutdown without cleaning up resources
+        # Python is really pretty bad for concurrency, maybe they intend for you to use events to
+        # trigger resource cleanup except this totally defeats the purpose of being able to use
+        # blocking calls in threads which is exactly how most of these threadable data structures
+        # are meant to be used!! It's very poorly designed!!!
+        self._buffer_thread.daemon = True
         self._buffer_thread.start()
         # Set once queue has buffered audio data available
         self._is_ready = threading.Event()
@@ -302,6 +311,9 @@ class FfmpegStream():
             # subprocess.kill() can throw if the process has already ended...
             # But I forget what type of exception it is and it's seemingly undocumented
             pass
+        finally:
+            self._process = None
+            atexit.unregister(self.stop)
 
     async def wait_ready(self, loop=None):
         """Waits until the first packet of buffered audio data is available to be read.
@@ -325,6 +337,9 @@ class FfmpegStream():
                 # terminate. Ideally Python would let you send cancellation exceptions
                 # to child threads, much like how asyncio works, but hey who cares about
                 # consistency? Just let the timeout clean up our old resources instead...
+                # However! Since we use daemon threads, this method would just leave dangling
+                # ffmpeg processes on exit, and so we must register every spawned process to be
+                # cleaned up on exit. Python is really pretty terrible for concurrency. Chears.
                 self._buffer.put(data, timeout=10)
                 if need_set_ready is True:
                     self._is_ready.set()
