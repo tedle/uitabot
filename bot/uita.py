@@ -42,5 +42,9 @@ if __name__ == "__main__":
             uita.loop.run_until_complete(task_list_future)
         except asyncio.CancelledError:
             pass
+        finally:
+            # Additional cleanup to handle buggy asyncio cleanup
+            for task in task_list:
+                del task
         # Finalize shutdown
         uita.loop.close()
