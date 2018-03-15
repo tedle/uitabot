@@ -174,12 +174,16 @@ class Queue():
                         channels=FfmpegStream.CHANNELS
                     )
                     # Launch ffmpeg process
+                    stream = FfmpegStream(self.now_playing.url, voice.encoder.frame_size)
                     player = voice.create_stream_player(
-                        FfmpegStream(self.now_playing.url, voice.encoder.frame_size),
+                        stream,
                         after=lambda: self.loop.call_soon_threadsafe(self._after_song)
                     )
-                    # Gives ffmpeg a second to load and buffer audio before playing
-                    await asyncio.sleep(1, loop=self.loop)
+                    # Waits until ffmpeg has buffered audio before playing
+                    await stream.wait_ready(loop=self.loop)
+                    # Wait an extra second for livestreams to ensure player clock runs behind input
+                    if self.now_playing.live is True:
+                        await asyncio.sleep(1, loop=self.loop)
                     # About the same as a max volume YouTube video, I think
                     player.volume = 0.5
                     player.start()
@@ -238,6 +242,8 @@ class FfmpegStream():
         # This cuts down on audio dropping out during playback (especially for livestreams)
         self._buffer_thread = threading.Thread(target=self._buffer_audio_packets)
         self._buffer_thread.start()
+        # Set once queue has buffered audio data available
+        self._is_ready = threading.Event()
 
     def read(self, size):
         """Returns a `bytes` array of raw audio data.
@@ -273,13 +279,29 @@ class FfmpegStream():
             # But I forget what type of exception it is and it's seemingly undocumented
             pass
 
+    async def wait_ready(self, loop=None):
+        """Waits until the first packet of buffered audio data is available to be read.
+
+        Parameters
+        ----------
+        loop : asyncio.AbstractEventLoop, optional
+            Event loop to launch threaded blocking wait task from.
+
+        """
+        async_loop = loop or asyncio.get_event_loop()
+        await async_loop.run_in_executor(None, lambda: self._is_ready.wait())
+
     def _buffer_audio_packets(self):
+        need_set_ready = True
         # Read from process stdout until an empty byte string is returned
         for data in iter(lambda: self._process.stdout.read(self._frame_size), b""):
             try:
                 # If the buffer fills and times out it means the queue is no longer being
                 # consumed, this likely means we're running in a zombie thread and should terminate
                 self._buffer.put(data, timeout=10)
+                if need_set_ready is True:
+                    self._is_ready.set()
+                    need_set_ready = False
             except queue.Full:
                 log.warn("Audio process queue is not being consumed")
                 self.stop()
