@@ -83,6 +83,10 @@ class Queue():
     async def stop(self):
         """Stops and currently playing audio and cancels the running play task."""
         if self._play_task is not None:
+            # If we stop during a song, add it to the front of the queue to be resumed later
+            if self.now_playing is not None:
+                self.queue.appendleft(self.now_playing)
+                self.now_playing = None
             self._play_task.cancel()
             await self._play_task
 
