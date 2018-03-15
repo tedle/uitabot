@@ -22,6 +22,8 @@ class Track():
         Title of track.
     duration : int
         Track duration in seconds.
+    live : bool
+        Determines if the track is a remote livestream.
 
     Attributes
     ----------
@@ -31,12 +33,15 @@ class Track():
         Title of track.
     duration : int
         Track duration in seconds.
+    live : bool
+        Determines if the track is a remote livestream.
 
     """
-    def __init__(self, url, title, duration):
+    def __init__(self, url, title, duration, live):
         self.url = url
         self.title = title
         self.duration = duration
+        self.live = live
 
 
 class Queue():
@@ -133,11 +138,12 @@ class Queue():
                 info["abr"],
                 info["duration"]
             ))
-            # is_live is either True or None?? Thanks ytdl
-            if info["is_live"] is True:
-                # We'll want this information later... nice to have a reminder of how to get it
-                pass
-            self.queue.append(Track(info["url"], info["title"], info["duration"]))
+            self.queue.append(Track(
+                info["url"],
+                info["title"],
+                info["duration"],
+                info["is_live"] or False  # is_live is either True or None?? Thanks ytdl
+            ))
             self._queue_update_flag.set()
         elif extractor_used == "YoutubePlaylist":
             log.debug("YoutubePlaylists still unimplemented!")
