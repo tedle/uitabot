@@ -208,7 +208,7 @@ class Server():
         await asyncio.wait([
             socket.send(str(message))
             for socket, conn in self.connections.items()
-            if conn.user.active_server_id == server_id
+            if conn.user is not None and conn.user.active_server_id == server_id
         ], loop=self.loop)
 
     async def verify_active_servers(self):
@@ -222,6 +222,8 @@ class Server():
         # without reworking how data is stored. Also I don't expect many simultaneous active
         # connections. So optimize this if it ever gets to be slow, but I don't think it will.
         for socket, conn in self.connections.items():
+            if conn.user is None:
+                continue
             if conn.user.active_server_id is None:
                 continue
             if (
