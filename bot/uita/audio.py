@@ -5,6 +5,7 @@ import queue
 import subprocess
 import threading
 import time
+import uuid
 import youtube_dl
 
 import uita.exceptions
@@ -29,6 +30,8 @@ class Track():
 
     Attributes
     ----------
+    id : str
+        Unique 32 character long ID.
     url : str
         URL to audio resource for ffmpeg to load.
     title : str
@@ -42,6 +45,7 @@ class Track():
 
     """
     def __init__(self, url, title, duration, live):
+        self.id = uuid.uuid4().hex
         self.url = url
         self.title = title
         self.duration = duration
@@ -54,6 +58,9 @@ class Queue():
 
     Parameters
     ----------
+    on_queue_change : callback(list), optional
+        Callback that is triggered everytime the state of the playback queue changes. Function
+        accepts a list of `uita.audio.Track`s as its only argument.
     loop : asyncio.AbstractEventLoop, optional
         Event loop for audio tasks to run in.
 
@@ -63,13 +70,28 @@ class Queue():
         Event loop for audio tasks to run in.
 
     """
-    def __init__(self, loop=None):
+    def __init__(self, on_queue_change=None, loop=None):
+        # async lambdas don't exist
+        async def dummy_queue_change(q): pass
+        self._on_queue_change = on_queue_change or dummy_queue_change
+
         self.loop = loop or asyncio.get_event_loop()
-        self.now_playing = None
-        self.queue = collections.deque()
+        self._now_playing = None
+        self._queue = collections.deque()
         self._queue_update_flag = asyncio.Event(loop=self.loop)
         self._play_task = None
         self._play_start_time = None
+
+    def queue(self):
+        """Retrieves a list of currently queued audio resources.
+
+        Returns
+        -------
+        list
+            Ordered list of audio resources queued for playback.
+
+        """
+        return ([self._now_playing] if self._now_playing is not None else []) + list(self._queue)
 
     async def play(self, voice):
         """Starts a new playlist task that awaits and plays new queue inputs.
@@ -90,17 +112,17 @@ class Queue():
         """Stops and currently playing audio and cancels the running play task."""
         if self._play_task is not None:
             # If we stop during a song, add it to the front of the queue to be resumed later
-            if self.now_playing is not None:
+            if self._now_playing is not None:
                 if self._play_start_time is not None:
                     # Add the time spent playing this track to the starting offset, so it resumes
                     # where it left off
-                    self.now_playing.offset += max(
+                    self._now_playing.offset += max(
                         time.perf_counter() - self._play_start_time,
                         0.0
                     )
                     self._play_start_time = None
-                self.queue.appendleft(self.now_playing)
-                self.now_playing = None
+                self._queue.appendleft(self._now_playing)
+                self._now_playing = None
             self._play_task.cancel()
             await self._play_task
 
@@ -156,13 +178,14 @@ class Queue():
                 info["abr"],
                 info["duration"]
             ))
-            self.queue.append(Track(
+            self._queue.append(Track(
                 info["url"],
                 info["title"],
                 info["duration"],
                 info["is_live"] or False  # is_live is either True or None?? Thanks ytdl
             ))
             self._queue_update_flag.set()
+            self._on_queue_change(self.queue())
         elif extractor_used == "YoutubePlaylist":
             log.debug("YoutubePlaylists still unimplemented!")
             raise uita.exceptions.MalformedMessage("YoutubePlaylists unimplemented (but will be)")
@@ -172,16 +195,17 @@ class Queue():
             raise uita.exceptions.MalformedMessage("Unhandled extractor used")
 
     def _after_song(self):
-        self.now_playing = None
+        self._now_playing = None
         self._queue_update_flag.set()
+        self._on_queue_change(self.queue())
 
     async def _play_loop(self, voice):
         try:
             while voice.is_connected():
                 self._queue_update_flag.clear()
-                if self.now_playing is None and len(self.queue) > 0:
-                    self.now_playing = self.queue.popleft()
-                    log.debug("Now playing {}".format(self.now_playing.title))
+                if self._now_playing is None and len(self._queue) > 0:
+                    self._now_playing = self._queue.popleft()
+                    log.debug("Now playing {}".format(self._now_playing.title))
                     # Set encoder options that are injected into ffmpeg
                     voice.encoder_options(
                         sample_rate=FfmpegStream.SAMPLE_RATE,
@@ -189,9 +213,9 @@ class Queue():
                     )
                     # Launch ffmpeg process
                     stream = FfmpegStream(
-                        self.now_playing.url,
+                        self._now_playing.url,
                         voice.encoder.frame_size,
-                        offset=self.now_playing.offset if not self.now_playing.live else 0.0
+                        offset=self._now_playing.offset if not self._now_playing.live else 0.0
                     )
                     player = voice.create_stream_player(
                         stream,
@@ -200,7 +224,7 @@ class Queue():
                     # Waits until ffmpeg has buffered audio before playing
                     await stream.wait_ready(loop=self.loop)
                     # Wait an extra second for livestreams to ensure player clock runs behind input
-                    if self.now_playing.live is True:
+                    if self._now_playing.live is True:
                         await asyncio.sleep(1, loop=self.loop)
                     # About the same as a max volume YouTube video, I think
                     player.volume = 0.5

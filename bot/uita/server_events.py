@@ -67,9 +67,17 @@ async def server_list_get(event):
     await event.socket.send(str(uita.message.ServerListSendMessage(discord_servers)))
 
 
+@uita.server.on_message("play.queue.get")
+async def play_queue_get(event):
+    """Requests the queued playlist for the active server."""
+    log.debug("play.queue.get")
+    voice = uita.state.voice_connections[event.active_server.id]
+    await event.socket.send(str(uita.message.PlayQueueSendMessage(voice.queue())))
+
+
 @uita.server.on_message("play.url")
 async def play_url(event):
-    """Still just a test function."""
+    """Queues the audio from a given URL."""
     log.debug("play.url {}".format(event.message.url))
     voice = uita.state.voice_connections[event.active_server.id]
     await voice.enqueue(event.message.url)

@@ -192,7 +192,7 @@ class Server():
             return wrapper
         return decorator
 
-    async def send_all(self, message, server_id):
+    def send_all(self, message, server_id):
         """Sends a `uita.message.AbstractMessage` to all `uita.types.DiscordUser` in a server.
 
         Parameters
@@ -205,11 +205,9 @@ class Server():
             Discord server ID to broadcast to.
 
         """
-        await asyncio.wait([
-            socket.send(str(message))
-            for socket, conn in self.connections.items()
-            if conn.user is not None and conn.user.active_server_id == server_id
-        ], loop=self.loop)
+        for socket, conn in self.connections.items():
+            if conn.user is not None and conn.user.active_server_id == server_id:
+                self._create_task(socket.send(str(message)))
 
     async def verify_active_servers(self):
         """Checks if any user is connected to an active server that is no longer accessible.

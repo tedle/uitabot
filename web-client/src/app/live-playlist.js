@@ -1,5 +1,5 @@
 // --- live-playlist.js --------------------------------------------------------
-// Component for viewing, queueing and searching for music
+// Component for viewing queued music
 
 import React from "react";
 import * as Message from "./message.js";
@@ -8,36 +8,36 @@ export default class LivePlaylist extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            searchBox: ""
+            queue: Array()
         };
     }
 
-    handleChange(event) {
-        // Sync input box value with component state
-        this.setState({searchBox: event.target.value});
+    componentDidMount() {
+        // Once mounted, bind the event dispatchers callback for play queue queries
+        this.props.eventDispatcher.setMessageHandler("play.queue.send", m => {
+            this.setState({queue: m.queue})
+        });
+        // Request the initial queue state
+        this.props.socket.send(new Message.PlayQueueGetMessage().str());
     }
 
-    handleKeyDown(event) {
-        // Submit search query to backend
-        if (event.keyCode == 13) { // Enter
-            let file_url = this.state.searchBox;
-            this.props.socket.send(new Message.PlayURLMessage(file_url).str());
-            this.setState({searchBox: ""});
-        }
+    componentWillUnmount() {
+        this.props.eventDispatcher.clearMessageHandler("play.queue.send");
     }
 
     render() {
+        const queue = this.state.queue
+            .map((track) => {
+            return (
+                <li key={track.id}>
+                    <a href={track.url}>{track.title}</a>
+                </li>
+            );
+        });
         return (
             <div>
-                <p>music goes here</p>
-                <input
-                    type="text"
-                    autoComplete="off"
-                    placeholder="Sound file URL"
-                    onChange={e => this.handleChange(e)}
-                    onKeyDown={e => this.handleKeyDown(e)}
-                    value={this.state.searchBox}
-                />
+                <p>music queue</p>
+                <ul>{queue}</ul>
             </div>
         );
     }

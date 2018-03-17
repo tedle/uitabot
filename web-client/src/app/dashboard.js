@@ -3,6 +3,7 @@
 
 import React from "react";
 import LivePlaylist from "./live-playlist.js";
+import SearchBox from "./search-box.js";
 import VoiceChannelSelect from "./voice-channel-select.js";
 
 export default class Dashboard extends React.Component {
@@ -13,6 +14,11 @@ export default class Dashboard extends React.Component {
     render() {
         return (
             <div>
+                {/* Searches for and queues audio */}
+                <SearchBox
+                    socket={this.props.socket}
+                    eventDispatcher={this.props.eventDispatcher}
+                />
                 {/* Shows current music queue, handles song searches, etc */}
                 <LivePlaylist
                     socket={this.props.socket}

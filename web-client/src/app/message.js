@@ -101,6 +101,23 @@ export class HeartbeatMessage extends AbstractMessage {
     }
 }
 
+export class PlayQueueGetMessage extends AbstractMessage {
+    static get header() {
+        return "play.queue.get";
+    }
+}
+
+export class PlayQueueSendMessage extends AbstractMessage {
+    static get header() {
+        return "play.queue.send";
+    }
+
+    constructor(queue) {
+        super();
+        this.queue = queue;
+    }
+}
+
 export class PlayURLMessage extends AbstractMessage {
     static get header() {
         return "play.url";
@@ -157,6 +174,8 @@ const VALID_MESSAGES = {
     "channel.list.get": [ChannelListGetMessage, []],
     "channel.list.send": [ChannelListSendMessage, ["channels"]],
     "heartbeat": [HeartbeatMessage, []],
+    "play.queue.get": [PlayQueueGetMessage, []],
+    "play.queue.send": [PlayQueueSendMessage, ["queue"]],
     "play.url": [PlayURLMessage, ["url"]],
     "server.kick": [ServerKickMessage, []],
     "server.join": [ServerJoinMessage, ["server_id"]],

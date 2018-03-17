@@ -196,6 +196,34 @@ class HeartbeatMessage(AbstractMessage):
     """"""
 
 
+class PlayQueueGetMessage(AbstractMessage):
+    """Sent by client requesting playback queue state."""
+    header = "play.queue.get"
+    """"""
+
+
+class PlayQueueSendMessage(AbstractMessage):
+    """Sent by server containing playback queue state.
+
+    Attributes
+    ----------
+    queue : list(uita.audio.Track)
+        List of tracks that are currently queued.
+
+    """
+    header = "play.queue.send"
+    """"""
+
+    def __init__(self, queue):
+        self.queue = [{
+            "id": track.id,
+            "url": track.url,
+            "title": track.title,
+            "duration": track.duration,
+            "live": track.live
+        } for track in queue]
+
+
 class PlayURLMessage(AbstractMessage):
     """Sent by client requesting a remote song be played.
 
@@ -278,6 +306,8 @@ VALID_MESSAGES = {
     ChannelListGetMessage.header: (ChannelListGetMessage, []),
     ChannelListSendMessage.header: (ChannelListSendMessage, ["channels"]),
     HeartbeatMessage.header: (HeartbeatMessage, []),
+    PlayQueueGetMessage.header: (PlayQueueGetMessage, []),
+    PlayQueueSendMessage.header: (PlayQueueSendMessage, ["queue"]),
     PlayURLMessage.header: (PlayURLMessage, ["url"]),
     ServerJoinMessage.header: (ServerJoinMessage, ["server_id"]),
     ServerKickMessage.header: (ServerKickMessage, []),

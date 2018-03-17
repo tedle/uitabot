@@ -260,7 +260,12 @@ class DiscordVoiceClient():
     def __init__(self, server_id, loop=None):
         self.server_id = server_id
         self.loop = loop or asyncio.get_event_loop()
-        self._playlist = uita.audio.Queue(loop=self.loop)
+
+        def on_queue_change(queue):
+            message = uita.message.PlayQueueSendMessage(queue)
+            uita.server.send_all(message, self.server_id)
+        self._playlist = uita.audio.Queue(on_queue_change=on_queue_change, loop=self.loop)
+
         self._voice = None
         self._voice_lock = asyncio.Lock(loop=self.loop)
 
@@ -306,3 +311,14 @@ class DiscordVoiceClient():
 
         """
         await self._playlist.enqueue(url)
+
+    def queue(self):
+        """Retrieves a list of currently queued audio resources for this connection.
+
+        Returns
+        -------
+        list
+            Ordered list of audio resources queued for playback.
+
+        """
+        return self._playlist.queue()
