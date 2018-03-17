@@ -336,7 +336,6 @@ class FfmpegStream():
             # But I forget what type of exception it is and it's seemingly undocumented
             pass
         finally:
-            self._process = None
             atexit.unregister(self.stop)
 
     async def wait_ready(self, loop=None):
