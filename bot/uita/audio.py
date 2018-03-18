@@ -81,6 +81,7 @@ class Queue():
         self._queue_update_flag = asyncio.Event(loop=self.loop)
         self._play_task = None
         self._play_start_time = None
+        self._stream = None
 
     def queue(self):
         """Retrieves a list of currently queued audio resources.
@@ -125,6 +126,9 @@ class Queue():
                 self._now_playing = None
             self._play_task.cancel()
             await self._play_task
+        if self._stream is not None:
+            self._stream.stop()
+            self._stream = None
 
     async def enqueue(self, url):
         """Queues a URL to be played by the running playlist task.
@@ -198,6 +202,9 @@ class Queue():
         self._now_playing = None
         self._queue_update_flag.set()
         self._on_queue_change(self.queue())
+        if self._stream is not None:
+            self._stream.stop()
+            self._stream = None
 
     async def _play_loop(self, voice):
         try:
@@ -212,17 +219,17 @@ class Queue():
                         channels=FfmpegStream.CHANNELS
                     )
                     # Launch ffmpeg process
-                    stream = FfmpegStream(
+                    self._stream = FfmpegStream(
                         self._now_playing.url,
                         voice.encoder.frame_size,
                         offset=self._now_playing.offset if not self._now_playing.live else 0.0
                     )
                     player = voice.create_stream_player(
-                        stream,
+                        self._stream,
                         after=lambda: self.loop.call_soon_threadsafe(self._after_song)
                     )
                     # Waits until ffmpeg has buffered audio before playing
-                    await stream.wait_ready(loop=self.loop)
+                    await self._stream.wait_ready(loop=self.loop)
                     # Wait an extra second for livestreams to ensure player clock runs behind input
                     if self._now_playing.live is True:
                         await asyncio.sleep(1, loop=self.loop)
@@ -318,7 +325,7 @@ class FfmpegStream():
             log.error("Audio process queue has mismatched frame_size and read size.")
             return b""
         try:
-            return self._buffer.get(timeout=10)
+            return self._buffer.get(timeout=5)
         except queue.Empty:
             log.warn("Audio process queue is not being produced")
             self.stop()
@@ -363,17 +370,16 @@ class FfmpegStream():
                 # However! Since we use daemon threads, this method would just leave dangling
                 # ffmpeg processes on exit, and so we must register every spawned process to be
                 # cleaned up on exit. Python is really pretty terrible for concurrency. Chears.
-                self._buffer.put(data, timeout=10)
+                self._buffer.put(data, timeout=5)
                 if need_set_ready is True:
                     self._is_ready.set()
                     need_set_ready = False
             except queue.Full:
-                log.debug("Audio process queue is not being consumed, terminating")
                 self.stop()
                 return
         try:
             # self.read returning an empty byte string indicates EOF
-            self._buffer.put(b"", timeout=10)
+            self._buffer.put(b"", timeout=5)
         except queue.Full:
             pass
         finally:
