@@ -326,3 +326,14 @@ class DiscordVoiceClient():
 
         """
         return self._playlist.queue()
+
+    def remove(self, track_id):
+        """Removes a track from the playback queue.
+
+        Parameters
+        ----------
+        track_id : str
+            Track ID of audio resource to be removed.
+
+        """
+        self._playlist.remove(track_id)

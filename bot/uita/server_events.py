@@ -75,6 +75,14 @@ async def play_queue_get(event):
     await event.socket.send(str(uita.message.PlayQueueSendMessage(voice.queue())))
 
 
+@uita.server.on_message("play.queue.remove")
+async def play_queue_remove(event):
+    """Removes the supplied track from the play queue."""
+    log.debug("play.queue.remove {}".format(event.message.id))
+    voice = uita.state.voice_connections[event.active_server.id]
+    voice.remove(event.message.id)
+
+
 @uita.server.on_message("play.url")
 async def play_url(event):
     """Queues the audio from a given URL."""

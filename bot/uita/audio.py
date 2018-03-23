@@ -85,6 +85,7 @@ class Queue():
         self._play_task = None
         self._play_start_time = None
         self._stream = None
+        self._player = None
 
     def queue(self):
         """Retrieves a list of currently queued audio resources.
@@ -129,9 +130,7 @@ class Queue():
                 self._now_playing = None
             self._play_task.cancel()
             await self._play_task
-        if self._stream is not None:
-            self._stream.stop()
-            self._stream = None
+        self._end_stream()
 
     async def enqueue(self, url):
         """Queues a URL to be played by the running playlist task.
@@ -196,8 +195,7 @@ class Queue():
                 info["duration"],
                 info["is_live"] or False  # is_live is either True or None?? Thanks ytdl
             ))
-            self._queue_update_flag.set()
-            self._on_queue_change(self.queue())
+            self._notify_queue_change()
         elif extractor_used == "YoutubePlaylist":
             log.debug("YoutubePlaylists still unimplemented!")
             raise uita.exceptions.MalformedMessage("YoutubePlaylists unimplemented (but will be)")
@@ -206,13 +204,29 @@ class Queue():
         else:
             raise uita.exceptions.MalformedMessage("Unhandled extractor used")
 
+    def remove(self, track_id):
+        """Removes a track from the playback queue.
+
+        Parameters
+        ----------
+        track_id : str
+            Track ID of audio resource to be removed.
+
+        """
+        if self._now_playing is not None and self._now_playing.id == track_id:
+            if self._player is not None:
+                self._player.stop()
+            return
+        for track in self._queue:
+            if track.id == track_id:
+                self._queue.remove(track)
+                self._notify_queue_change()
+                return
+
     def _after_song(self):
         self._now_playing = None
-        self._queue_update_flag.set()
-        self._on_queue_change(self.queue())
-        if self._stream is not None:
-            self._stream.stop()
-            self._stream = None
+        self._notify_queue_change()
+        self._end_stream()
 
     async def _play_loop(self, voice):
         try:
@@ -232,7 +246,7 @@ class Queue():
                         voice.encoder.frame_size,
                         offset=self._now_playing.offset if not self._now_playing.live else 0.0
                     )
-                    player = voice.create_stream_player(
+                    self._player = voice.create_stream_player(
                         self._stream,
                         after=lambda: self.loop.call_soon_threadsafe(self._after_song)
                     )
@@ -242,15 +256,27 @@ class Queue():
                     if self._now_playing.live is True:
                         await asyncio.sleep(1, loop=self.loop)
                     # About the same as a max volume YouTube video, I think
-                    player.volume = 0.5
+                    self._player.volume = 0.5
                     # Sync play start time to player start
                     self._play_start_time = time.perf_counter()
-                    player.start()
+                    self._player.start()
                 await self._queue_update_flag.wait()
         except asyncio.CancelledError:
             pass
         except Exception as e:
             log.error("Unhandled exception: {}", e)
+
+    def _notify_queue_change(self):
+        self._queue_update_flag.set()
+        self._on_queue_change(self.queue())
+
+    def _end_stream(self):
+        if self._stream is not None:
+            self._stream.stop()
+            self._stream = None
+        if self._player is not None:
+            self._player.stop()
+            self._player = None
 
 
 class FfmpegStream():

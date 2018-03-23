@@ -25,12 +25,17 @@ export default class LivePlaylist extends React.Component {
         this.props.eventDispatcher.clearMessageHandler("play.queue.send");
     }
 
+    queueRemove(track_id) {
+        this.props.socket.send(new Message.PlayQueueRemoveMessage(track_id).str());
+    }
+
     render() {
         const queue = this.state.queue
             .map((track) => {
             return (
                 <li key={track.id}>
                     <a href={track.url}>{track.title}</a>
+                    <button onClick={() => this.queueRemove(track.id)}>x</button>
                 </li>
             );
         });

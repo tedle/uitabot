@@ -202,6 +202,24 @@ class PlayQueueGetMessage(AbstractMessage):
     """"""
 
 
+class PlayQueueRemoveMessage(AbstractMessage):
+    """Sent by client containing track ID to be removed.
+
+    Attributes
+    ----------
+    id : str
+        ID of track to be removed.
+
+    """
+    header = "play.queue.remove"
+    """"""
+
+    def __init__(self, id):
+        self.id = str(id)
+        if len(self.id) > MAX_TRACK_ID_LENGTH:
+            raise uita.exceptions.MalformedMessage("Track ID exceeds max possible length")
+
+
 class PlayQueueSendMessage(AbstractMessage):
     """Sent by server containing playback queue state.
 
@@ -307,6 +325,7 @@ VALID_MESSAGES = {
     ChannelListSendMessage.header: (ChannelListSendMessage, ["channels"]),
     HeartbeatMessage.header: (HeartbeatMessage, []),
     PlayQueueGetMessage.header: (PlayQueueGetMessage, []),
+    PlayQueueRemoveMessage.header: (PlayQueueRemoveMessage, ["id"]),
     PlayQueueSendMessage.header: (PlayQueueSendMessage, ["queue"]),
     PlayURLMessage.header: (PlayURLMessage, ["url"]),
     ServerJoinMessage.header: (ServerJoinMessage, ["server_id"]),
@@ -320,4 +339,5 @@ MAX_CLIENT_MESSAGE_LENGTH = 5000
 MAX_DIGITS_64BIT = math.ceil(64 * math.log10(2))  # 64 * log 2 = log (2^64)
 MAX_HEADER_LENGTH = 50
 MAX_SESSION_LENGTH = 64
+MAX_TRACK_ID_LENGTH = 32
 MAX_URL_LENGTH = 2000

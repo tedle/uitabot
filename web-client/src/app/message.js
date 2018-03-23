@@ -107,6 +107,17 @@ export class PlayQueueGetMessage extends AbstractMessage {
     }
 }
 
+export class PlayQueueRemoveMessage extends AbstractMessage {
+    static get header() {
+        return "play.queue.remove";
+    }
+
+    constructor(id) {
+        super();
+        this.id = id;
+    }
+}
+
 export class PlayQueueSendMessage extends AbstractMessage {
     static get header() {
         return "play.queue.send";
@@ -175,6 +186,7 @@ const VALID_MESSAGES = {
     "channel.list.send": [ChannelListSendMessage, ["channels"]],
     "heartbeat": [HeartbeatMessage, []],
     "play.queue.get": [PlayQueueGetMessage, []],
+    "play.queue.remove": [PlayQueueRemoveMessage, ["id"]],
     "play.queue.send": [PlayQueueSendMessage, ["queue"]],
     "play.url": [PlayURLMessage, ["url"]],
     "server.kick": [ServerKickMessage, []],
