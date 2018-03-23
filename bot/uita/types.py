@@ -264,7 +264,11 @@ class DiscordVoiceClient():
         def on_queue_change(queue):
             message = uita.message.PlayQueueSendMessage(queue)
             uita.server.send_all(message, self.server_id)
-        self._playlist = uita.audio.Queue(on_queue_change=on_queue_change, loop=self.loop)
+        self._playlist = uita.audio.Queue(
+            maxlen=100,
+            on_queue_change=on_queue_change,
+            loop=self.loop
+        )
 
         self._voice = None
         self._voice_lock = asyncio.Lock(loop=self.loop)

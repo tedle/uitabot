@@ -58,6 +58,8 @@ class Queue():
 
     Parameters
     ----------
+    maxlen : int, optional
+        Maximum queue size. Default is `None`, which is unlimited.
     on_queue_change : callback(list), optional
         Callback that is triggered everytime the state of the playback queue changes. Function
         accepts a list of `uita.audio.Track`s as its only argument.
@@ -70,7 +72,7 @@ class Queue():
         Event loop for audio tasks to run in.
 
     """
-    def __init__(self, on_queue_change=None, loop=None):
+    def __init__(self, maxlen=None, on_queue_change=None, loop=None):
         # async lambdas don't exist
         async def dummy_queue_change(q): pass
         self._on_queue_change = on_queue_change or dummy_queue_change
@@ -79,6 +81,7 @@ class Queue():
         self._now_playing = None
         self._queue = collections.deque()
         self._queue_update_flag = asyncio.Event(loop=self.loop)
+        self._queue_maxlen = maxlen
         self._play_task = None
         self._play_start_time = None
         self._stream = None
@@ -174,6 +177,11 @@ class Queue():
             # Triggers when URL doesnt match extractor used
             except youtube_dl.utils.DownloadError:
                 pass
+        # This check cannot have any awaits between it and the following queue.append()s
+        if self._queue_maxlen is not None and len(self.queue()) >= self._queue_maxlen:
+            # TODO: Send an error message to client once those are implemented
+            log.debug("queue full, abort")
+            return
         if extractor_used == "Youtube":
             log.debug("Enqueue [YouTube]{}({}) {}@{}abr, {}s".format(
                 info["title"],
