@@ -80,7 +80,7 @@ async def play_queue_remove(event):
     """Removes the supplied track from the play queue."""
     log.debug("play.queue.remove {}".format(event.message.id))
     voice = uita.state.voice_connections[event.active_server.id]
-    voice.remove(event.message.id)
+    await voice.remove(event.message.id)
 
 
 @uita.server.on_message("play.url")

@@ -80,6 +80,7 @@ class Queue():
         self.loop = loop or asyncio.get_event_loop()
         self._now_playing = None
         self._queue = collections.deque()
+        self._queue_lock = asyncio.Lock(loop=self.loop)
         self._queue_update_flag = asyncio.Event(loop=self.loop)
         self._queue_maxlen = maxlen
         self._play_task = None
@@ -204,7 +205,7 @@ class Queue():
         else:
             raise uita.exceptions.MalformedMessage("Unhandled extractor used")
 
-    def remove(self, track_id):
+    async def remove(self, track_id):
         """Removes a track from the playback queue.
 
         Parameters
@@ -213,53 +214,59 @@ class Queue():
             Track ID of audio resource to be removed.
 
         """
-        if self._now_playing is not None and self._now_playing.id == track_id:
-            if self._player is not None:
-                self._player.stop()
-            return
-        for track in self._queue:
-            if track.id == track_id:
-                self._queue.remove(track)
-                self._notify_queue_change()
+        with await self._queue_lock:
+            if self._now_playing is not None and self._now_playing.id == track_id:
+                if self._player is not None:
+                    self._player.stop()
                 return
+            for track in self._queue:
+                if track.id == track_id:
+                    self._queue.remove(track)
+                    self._notify_queue_change()
+                    return
 
-    def _after_song(self):
-        self._now_playing = None
-        self._notify_queue_change()
-        self._end_stream()
+    async def _after_song(self):
+        with await self._queue_lock:
+            self._now_playing = None
+            self._notify_queue_change()
+            self._end_stream()
 
     async def _play_loop(self, voice):
         try:
             while voice.is_connected():
                 self._queue_update_flag.clear()
-                if self._now_playing is None and len(self._queue) > 0:
-                    self._now_playing = self._queue.popleft()
-                    log.debug("Now playing {}".format(self._now_playing.title))
-                    # Set encoder options that are injected into ffmpeg
-                    voice.encoder_options(
-                        sample_rate=FfmpegStream.SAMPLE_RATE,
-                        channels=FfmpegStream.CHANNELS
-                    )
-                    # Launch ffmpeg process
-                    self._stream = FfmpegStream(
-                        self._now_playing.url,
-                        voice.encoder.frame_size,
-                        offset=self._now_playing.offset if not self._now_playing.live else 0.0
-                    )
-                    self._player = voice.create_stream_player(
-                        self._stream,
-                        after=lambda: self.loop.call_soon_threadsafe(self._after_song)
-                    )
-                    # Waits until ffmpeg has buffered audio before playing
-                    await self._stream.wait_ready(loop=self.loop)
-                    # Wait an extra second for livestreams to ensure player clock runs behind input
-                    if self._now_playing.live is True:
-                        await asyncio.sleep(1, loop=self.loop)
-                    # About the same as a max volume YouTube video, I think
-                    self._player.volume = 0.5
-                    # Sync play start time to player start
-                    self._play_start_time = time.perf_counter()
-                    self._player.start()
+                with await self._queue_lock:
+                    if self._now_playing is None and len(self._queue) > 0:
+                        self._now_playing = self._queue.popleft()
+                        log.debug("Now playing {}".format(self._now_playing.title))
+                        # Set encoder options that are injected into ffmpeg
+                        voice.encoder_options(
+                            sample_rate=FfmpegStream.SAMPLE_RATE,
+                            channels=FfmpegStream.CHANNELS
+                        )
+                        # Launch ffmpeg process
+                        self._stream = FfmpegStream(
+                            self._now_playing.url,
+                            voice.encoder.frame_size,
+                            offset=self._now_playing.offset if not self._now_playing.live else 0.0
+                        )
+                        self._player = voice.create_stream_player(
+                            self._stream,
+                            after=lambda: asyncio.run_coroutine_threadsafe(
+                                self._after_song(),
+                                loop=self.loop
+                            )
+                        )
+                        # Waits until ffmpeg has buffered audio before playing
+                        await self._stream.wait_ready(loop=self.loop)
+                        # Wait an extra second for livestreams so player clock runs behind input
+                        if self._now_playing.live is True:
+                            await asyncio.sleep(1, loop=self.loop)
+                        # About the same as a max volume YouTube video, I think
+                        self._player.volume = 0.5
+                        # Sync play start time to player start
+                        self._play_start_time = time.perf_counter()
+                        self._player.start()
                 await self._queue_update_flag.wait()
         except asyncio.CancelledError:
             pass
