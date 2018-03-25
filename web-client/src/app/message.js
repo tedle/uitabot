@@ -107,6 +107,18 @@ export class PlayQueueGetMessage extends AbstractMessage {
     }
 }
 
+export class PlayQueueMoveMessage extends AbstractMessage {
+    static get header() {
+        return "play.queue.move";
+    }
+
+    constructor(id, position) {
+        super();
+        this.id = id;
+        this.position = position;
+    }
+}
+
 export class PlayQueueRemoveMessage extends AbstractMessage {
     static get header() {
         return "play.queue.remove";
@@ -186,6 +198,7 @@ const VALID_MESSAGES = {
     "channel.list.send": [ChannelListSendMessage, ["channels"]],
     "heartbeat": [HeartbeatMessage, []],
     "play.queue.get": [PlayQueueGetMessage, []],
+    "play.queue.move": [PlayQueueMoveMessage, ["id", "position"]],
     "play.queue.remove": [PlayQueueRemoveMessage, ["id"]],
     "play.queue.send": [PlayQueueSendMessage, ["queue"]],
     "play.url": [PlayURLMessage, ["url"]],

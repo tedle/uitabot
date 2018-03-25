@@ -75,6 +75,14 @@ async def play_queue_get(event):
     await event.socket.send(str(uita.message.PlayQueueSendMessage(voice.queue())))
 
 
+@uita.server.on_message("play.queue.move")
+async def play_queue_move(event):
+    """Moves the supplied track to a new position in the play queue."""
+    log.debug("play.queue.move {}->{}".format(event.message.id, event.message.position))
+    voice = uita.state.voice_connections[event.active_server.id]
+    await voice.move(event.message.id, event.message.position)
+
+
 @uita.server.on_message("play.queue.remove")
 async def play_queue_remove(event):
     """Removes the supplied track from the play queue."""

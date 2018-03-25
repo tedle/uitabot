@@ -205,6 +205,41 @@ class Queue():
         else:
             raise uita.exceptions.MalformedMessage("Unhandled extractor used")
 
+    async def move(self, track_id, position):
+        """Moves a track to a new position in the playback queue.
+
+        Parameters
+        ----------
+        track_id : str
+            Track ID of audio resource to be moved.
+        position : int
+            Index position for the track to be moved to.
+
+        """
+        with await self._queue_lock:
+            if position >= len(self.queue()) or position < 0:
+                log.debug("Requested queue index out of bounds")
+                return
+            # Check if re-ordering the queue will change the currently playing song
+            if self._now_playing is not None and self._player is not None:
+                # No need to swap with self while playing, would restart the track
+                if self._now_playing.id == track_id and position == 0:
+                    return
+                if self._now_playing.id == track_id or position == 0:
+                    self._now_playing.offset = 0
+                    self._queue.appendleft(self._now_playing)
+                    self._now_playing = None
+                    self._player.stop()
+                # Since now_playing will not be added to the queue, offset the index to compensate
+                else:
+                    position -= 1
+            for index, track in enumerate(self._queue):
+                if track.id == track_id:
+                    del self._queue[index]
+                    self._queue.insert(position, track)
+                    self._notify_queue_change()
+                    return
+
     async def remove(self, track_id):
         """Removes a track from the playback queue.
 
@@ -236,7 +271,7 @@ class Queue():
             while voice.is_connected():
                 self._queue_update_flag.clear()
                 with await self._queue_lock:
-                    if self._now_playing is None and len(self._queue) > 0:
+                    if self._player is None and len(self._queue) > 0:
                         self._now_playing = self._queue.popleft()
                         log.debug("Now playing {}".format(self._now_playing.title))
                         # Set encoder options that are injected into ffmpeg

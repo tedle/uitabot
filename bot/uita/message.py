@@ -202,6 +202,29 @@ class PlayQueueGetMessage(AbstractMessage):
     """"""
 
 
+class PlayQueueMoveMessage(AbstractMessage):
+    """Sent by client to move a track to a new position in the queue..
+
+    Attributes
+    ----------
+    id : str
+        ID of track to be removed.
+    position : int
+        Queue index to be moved to.
+
+    """
+    header = "play.queue.move"
+    """"""
+
+    def __init__(self, id, position):
+        self.id = str(id)
+        self.position = int(position)
+        if len(self.id) > MAX_TRACK_ID_LENGTH:
+            raise uita.exceptions.MalformedMessage("Track ID exceeds max possible length")
+        if self.position < 0:
+            raise uita.exceptions.MalformedMessage("Track position is less than 0")
+
+
 class PlayQueueRemoveMessage(AbstractMessage):
     """Sent by client containing track ID to be removed.
 
@@ -325,6 +348,7 @@ VALID_MESSAGES = {
     ChannelListSendMessage.header: (ChannelListSendMessage, ["channels"]),
     HeartbeatMessage.header: (HeartbeatMessage, []),
     PlayQueueGetMessage.header: (PlayQueueGetMessage, []),
+    PlayQueueMoveMessage.header: (PlayQueueMoveMessage, ["id", "position"]),
     PlayQueueRemoveMessage.header: (PlayQueueRemoveMessage, ["id"]),
     PlayQueueSendMessage.header: (PlayQueueSendMessage, ["queue"]),
     PlayURLMessage.header: (PlayURLMessage, ["url"]),

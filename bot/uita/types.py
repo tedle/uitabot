@@ -327,6 +327,19 @@ class DiscordVoiceClient():
         """
         return self._playlist.queue()
 
+    async def move(self, track_id, position):
+        """Moves a track to a new position in the playback queue.
+
+        Parameters
+        ----------
+        track_id : str
+            Track ID of audio resource to be moved.
+        position : int
+            Index position for the track to be moved to.
+
+        """
+        await self._playlist.move(track_id, position)
+
     async def remove(self, track_id):
         """Removes a track from the playback queue.
 

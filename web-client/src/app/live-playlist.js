@@ -25,6 +25,10 @@ export default class LivePlaylist extends React.Component {
         this.props.eventDispatcher.clearMessageHandler("play.queue.send");
     }
 
+    queueMove(track_id, position) {
+        this.props.socket.send(new Message.PlayQueueMoveMessage(track_id, position).str());
+    }
+
     queueRemove(track_id) {
         this.props.socket.send(new Message.PlayQueueRemoveMessage(track_id).str());
     }
@@ -32,12 +36,20 @@ export default class LivePlaylist extends React.Component {
     render() {
         const queue = this.state.queue
             .map((track) => {
-            return (
-                <li key={track.id}>
-                    <a href={track.url}>{track.title}</a>
-                    <button onClick={() => this.queueRemove(track.id)}>x</button>
-                </li>
-            );
+                const move_buttons = [...Array(this.state.queue.length)].map((_, position) => {
+                    return (
+                        <button key={position} onClick={() => this.queueMove(track.id, position)}>
+                            #{position}
+                        </button>
+                    );
+                });
+                return (
+                    <li key={track.id}>
+                        <a href={track.url}>{track.title}</a>
+                        <button onClick={() => this.queueRemove(track.id)}>x</button>
+                        move to:{move_buttons}
+                    </li>
+                );
         });
         return (
             <div>
