@@ -34,6 +34,7 @@ module.exports = {
     externals: {
         config: JSON.stringify({
             "client_id": config.discord.client.id,
+            "youtube_api": config.youtube.api_key,
             "bot_url": bot_url,
             "client_url": client_url
         })

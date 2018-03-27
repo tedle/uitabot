@@ -6,6 +6,9 @@
         },
         "token": ""
     },
+    "youtube": {
+        "api_key": ""
+    },
     "bot": {
         "domain": "localhost",
         "port": 3189
