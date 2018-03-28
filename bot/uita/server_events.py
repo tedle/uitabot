@@ -1,4 +1,5 @@
 """Event triggers for web client to."""
+import asyncio
 import discord
 
 import uita
@@ -40,6 +41,19 @@ async def channel_list_get(event):
         if discord_channel.type is discord.ChannelType.voice
     ]
     await event.socket.send(str(uita.message.ChannelListSendMessage(discord_channels)))
+
+
+@uita.server.on_message("file.upload.start", block=True)
+async def file_upload_start(event):
+    """Uploads a file to be queued."""
+    log.debug("file upload start {}B".format(event.message.size))
+    with open("test.wav", "wb") as f:
+        file_size = event.message.size
+        bytes_read = 0
+        while bytes_read < file_size:
+            data = await asyncio.wait_for(event.socket.recv(), 5, loop=uita.loop)
+            f.write(data)
+            bytes_read += len(data)
 
 
 @uita.server.on_message("server.join", require_active_server=False)

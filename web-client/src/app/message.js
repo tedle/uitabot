@@ -95,6 +95,17 @@ export class ChannelListSendMessage extends AbstractMessage {
     }
 }
 
+export class FileUploadStartMessage extends AbstractMessage {
+    static get header() {
+        return "file.upload.start";
+    }
+
+    constructor(size) {
+        super();
+        this.size = size;
+    }
+}
+
 export class HeartbeatMessage extends AbstractMessage {
     static get header() {
         return "heartbeat";
@@ -196,6 +207,7 @@ const VALID_MESSAGES = {
     "channel.leave": [ChannelLeaveMessage, []],
     "channel.list.get": [ChannelListGetMessage, []],
     "channel.list.send": [ChannelListSendMessage, ["channels"]],
+    "file.upload.start": [FileUploadStartMessage, ["size"]],
     "heartbeat": [HeartbeatMessage, []],
     "play.queue.get": [PlayQueueGetMessage, []],
     "play.queue.move": [PlayQueueMoveMessage, ["id", "position"]],

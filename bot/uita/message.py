@@ -190,6 +190,22 @@ class ChannelListSendMessage(AbstractMessage):
         } for channel in channels]
 
 
+class FileUploadStartMessage(AbstractMessage):
+    """Sent by client initiating a file upload procedure.
+
+    Attributes
+    ----------
+    size : int
+        File size in bytes.
+
+    """
+    header = "file.upload.start"
+    """"""
+
+    def __init__(self, size):
+        self.size = int(size)
+
+
 class HeartbeatMessage(AbstractMessage):
     """Sent by client every 60 seconds to keep connection alive."""
     header = "heartbeat"
@@ -346,6 +362,7 @@ VALID_MESSAGES = {
     ChannelLeaveMessage.header: (ChannelLeaveMessage, []),
     ChannelListGetMessage.header: (ChannelListGetMessage, []),
     ChannelListSendMessage.header: (ChannelListSendMessage, ["channels"]),
+    FileUploadStartMessage.header: (FileUploadStartMessage, ["size"]),
     HeartbeatMessage.header: (HeartbeatMessage, []),
     PlayQueueGetMessage.header: (PlayQueueGetMessage, []),
     PlayQueueMoveMessage.header: (PlayQueueMoveMessage, ["id", "position"]),

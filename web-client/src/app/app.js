@@ -122,6 +122,7 @@ export default class App extends React.Component {
         return <Dashboard
             socket={this.socket}
             eventDispatcher={this.eventDispatcher}
+            discordServer={this.state.discordServer}
         />;
     }
 }

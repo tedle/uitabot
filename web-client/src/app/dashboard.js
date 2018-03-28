@@ -34,6 +34,7 @@ export default class Dashboard extends React.Component {
                 <FileUploadDropZone
                     socket={this.props.socket}
                     eventDispatcher={this.props.eventDispatcher}
+                    discordServer={this.props.discordServer}
                 />
             </div>
         );
