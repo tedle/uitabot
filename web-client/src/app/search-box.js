@@ -12,31 +12,53 @@ export default class SearchBox extends React.Component {
             searchBox: "",
             searchResults: null
         };
+        // setTimeout callback is stored so that it can be cancelled when overwritten
+        this.searchTimeout = null;
     }
 
     focus() {
         this.searchInput.focus();
     }
 
+    search(query) {
+        Youtube.search(query)
+            .then((response) => {
+                if (response.ok) {
+                    return response.json();
+                }
+                throw new Error(`Youtube API failed with code ${response.status}`);
+            })
+            .then((data) => {
+                // If the query box has already changed don't bother storing the results
+                if (this.isQuery(this.state.searchBox)) {
+                    this.setState({searchResults: data});
+                }
+            })
+            .catch((error) => {
+                this.setState({searchResults: null});
+                console.log(error.message);
+            });
+    }
+
+    isQuery(query) {
+        return (query.length > 0 && !this.isUrl(query));
+    }
+
+    isUrl(url) {
+        return RegExp("^http(s)?:\\/\\/").test(url);
+    }
+
     setSearchBox(query) {
         // Sync input box value with component state
         this.setState({searchBox: query});
+        // Cancel any currently running search queries
+        if (this.searchTimeout != null) {
+            clearTimeout(this.searchTimeout);
+            this.searchTimeout = null;
+        }
         // Do a search if the box isn't empty and isn't a URL
-        if (query.length > 0 && !RegExp("^http(s)?:\\/\\/").test(query)) {
-            Youtube.search(query)
-                .then((response) => {
-                    if (response.ok) {
-                        return response.json();
-                    }
-                    throw new Error(`Youtube API failed with code ${response.status}`);
-                })
-                .then((data) => {
-                    this.setState({searchResults: data});
-                })
-                .catch((error) => {
-                    this.setState({searchResults: null});
-                    console.log(error.message);
-                });
+        if (this.isQuery(query)) {
+            this.searchTimeout = setTimeout(() => this.search(query), 500);
         }
         else {
             this.setState({searchResults: null});
@@ -55,7 +77,19 @@ export default class SearchBox extends React.Component {
     handleKeyDown(event) {
         // Submit search query to backend
         if (event.keyCode == 13) { // Enter
-            this.submitUrl(this.state.searchBox);
+            const input = this.state.searchBox;
+            // Search queries get sent to Youtube
+            if (this.isQuery(input)) {
+                if (this.searchTimeout != null) {
+                    clearTimeout(this.searchTimeout);
+                    this.searchTimeout = null;
+                }
+                this.search(input);
+            }
+            // URLs get sent to the backend
+            else if (this.isUrl(input)) {
+                this.submitUrl(this.state.searchBox);
+            }
         }
     }
 
