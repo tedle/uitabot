@@ -1,6 +1,8 @@
 import asyncio
 import atexit
 import collections
+import json
+import os
 import queue
 import subprocess
 import threading
@@ -19,37 +21,43 @@ class Track():
 
     Parameters
     ----------
-    url : str
-        URL to audio resource for ffmpeg to load.
+    path : str
+        Path to audio resource for ffmpeg to load.
     title : str
         Title of track.
     duration : int
         Track duration in seconds.
     live : bool
         Determines if the track is a remote livestream.
+    local : bool
+        Determines if the track is a local file or not.
 
     Attributes
     ----------
     id : str
         Unique 32 character long ID.
-    url : str
-        URL to audio resource for ffmpeg to load.
+    path : str
+        Path to audio resource for ffmpeg to load.
     title : str
         Title of track.
     duration : int
         Track duration in seconds.
     live : bool
         Determines if the track is a remote livestream.
+    local : bool
+        Determines if the track is a local file or not.
     offset : float
         Offset in seconds to start track from.
 
     """
-    def __init__(self, url, title, duration, live):
+    def __init__(self, path, title, duration, live, local, url=None):
         self.id = uuid.uuid4().hex
-        self.url = url
+        self.path = path
         self.title = title
         self.duration = duration
         self.live = live
+        self.local = local
+        self.url = url
         self.offset = 0.0
 
 
@@ -133,77 +141,25 @@ class Queue():
             await self._play_task
         self._end_stream()
 
-    async def enqueue(self, url):
-        """Queues a URL to be played by the running playlist task.
+    async def enqueue(self, path):
+        """Queues a path to be played by the running playlist task.
 
         Parameters
         ----------
-        url : str
-            URL for audio resource to be played.
+        path : str
+            Path for audio resource to be played.
 
         Raises
         ------
         uita.exceptions.MalformedMessage
-            If called with an unusable audio URL.
+            If called with an unusable audio path.
 
         """
-        null_log = logging.Logger("dummy")
-        null_log.addHandler(logging.NullHandler())
-
-        opts = {
-            # bestaudio prefers videoless streams, which often have a lower bitrate
-            # ironically not the best audio
-            # also highly values lower bitrate vorbis streams over higher bitrate opus?? why.
-            "format": "best[acodec=opus]/bestaudio[acodec=opus]/bestaudio/best",
-            "quiet": True,
-            "no_warnings": True,
-            "extract_flat": "in_playlist",
-            "logger": null_log,
-            "skip_download": True
-        }
-        scraper = youtube_dl.YoutubeDL(opts)
-        info = None
-        extractor_used = None
-        valid_extractors = ["Youtube", "YoutubePlaylist"]
-        for extractor in valid_extractors:
-            try:
-                info = await self.loop.run_in_executor(
-                    None,
-                    lambda: scraper.extract_info(url, download=False, ie_key=extractor)
-                )
-                extractor_used = extractor
-                # Break on first valid extraction
-                break
-            # Triggers when URL doesnt match extractor used
-            except youtube_dl.utils.DownloadError:
-                pass
-        # This check cannot have any awaits between it and the following queue.append()s
-        if self._queue_maxlen is not None and len(self.queue()) >= self._queue_maxlen:
-            # TODO: Send an error message to client once those are implemented
-            log.debug("queue full, abort")
-            return
-        if extractor_used == "Youtube":
-            log.debug("Enqueue [YouTube]{}({}) {}@{}abr, {}s".format(
-                info["title"],
-                info["id"],
-                info["acodec"],
-                info["abr"],
-                info["duration"]
-            ))
-            self._queue.append(Track(
-                info["url"],
-                info["title"],
-                info["duration"],
-                info["is_live"] or False  # is_live is either True or None?? Thanks ytdl
-            ))
-            self._notify_queue_change()
-        elif extractor_used == "YoutubePlaylist":
-            log.debug("YoutubePlaylists still unimplemented!")
-            raise uita.exceptions.MalformedMessage("YoutubePlaylists unimplemented (but will be)")
-        elif extractor_used is None:
-            raise uita.exceptions.MalformedMessage("Malformed URLs should send an error message")
+        if os.path.isfile(path):
+            self._queue.append(await self.track_from_file(path))
         else:
-            raise uita.exceptions.MalformedMessage("Unhandled extractor used")
+            self._queue.append(await self.track_from_url(path))
+        self._notify_queue_change()
 
     async def move(self, track_id, position):
         """Moves a track to a new position in the playback queue.
@@ -260,6 +216,126 @@ class Queue():
                     self._notify_queue_change()
                     return
 
+    async def track_from_file(self, path):
+        """Probes the file at a given path for audio metadata.
+
+        Parameters
+        ----------
+        path : os.PathLike
+            Path to audio file.
+
+        Returns
+        -------
+        uita.audio.Track
+            Container for track metadata.
+
+        """
+        completed_probe_process = await self.loop.run_in_executor(
+            None,
+            lambda: subprocess.run([
+                "ffprobe",
+                path,
+                "-of", "json",
+                "-show_format",
+                "-show_error",
+                "-loglevel", "quiet"
+            ], stdout=subprocess.PIPE)
+        )
+        probe = json.loads(completed_probe_process.stdout.decode("utf-8"))
+        if "format" not in probe:
+            raise uita.exceptions.MalformedFile("Not a valid audio file")
+        title = "untagged file upload"
+        if "tags" in probe["format"]:
+            # ffprobe sometimes keys tags in all caps or not
+            tags = {k.lower(): v for k, v in probe["format"]["tags"].items()}
+            title = "{} - {}".format(
+                tags.get("title", "Unknown title"),
+                tags.get("artist", "Unknown artist")
+            )
+        log.debug("Enqueue [Local]{}, {}s".format(
+            title,
+            probe["format"]["duration"]
+        ))
+        return Track(
+            path,
+            title,
+            probe["format"]["duration"],
+            live=False,
+            local=True
+        )
+
+    async def track_from_url(self, url):
+        """Probes the audio resource at a given URL for audio metadata.
+
+        Parameters
+        ----------
+        url : str
+            URL to audio resource.
+
+        Returns
+        -------
+        uita.audio.Track
+            Container for track metadata.
+
+        """
+        null_log = logging.Logger("dummy")
+        null_log.addHandler(logging.NullHandler())
+
+        opts = {
+            # bestaudio prefers videoless streams, which often have a lower bitrate
+            # ironically not the best audio
+            # also highly values lower bitrate vorbis streams over higher bitrate opus?? why.
+            "format": "best[acodec=opus]/bestaudio[acodec=opus]/bestaudio/best",
+            "quiet": True,
+            "no_warnings": True,
+            "extract_flat": "in_playlist",
+            "logger": null_log,
+            "skip_download": True
+        }
+        scraper = youtube_dl.YoutubeDL(opts)
+        info = None
+        extractor_used = None
+        valid_extractors = ["Youtube", "YoutubePlaylist"]
+        for extractor in valid_extractors:
+            try:
+                info = await self.loop.run_in_executor(
+                    None,
+                    lambda: scraper.extract_info(url, download=False, ie_key=extractor)
+                )
+                extractor_used = extractor
+                # Break on first valid extraction
+                break
+            # Triggers when URL doesnt match extractor used
+            except youtube_dl.utils.DownloadError:
+                pass
+        # This check cannot have any awaits between it and the following queue.append()s
+        if self._queue_maxlen is not None and len(self.queue()) >= self._queue_maxlen:
+            # TODO: Send an error message to client once those are implemented
+            log.debug("queue full, abort")
+            return
+        if extractor_used == "Youtube":
+            log.debug("Enqueue [YouTube]{}({}) {}@{}abr, {}s".format(
+                info["title"],
+                info["id"],
+                info["acodec"],
+                info["abr"],
+                info["duration"]
+            ))
+            return Track(
+                info["url"],
+                info["title"],
+                info["duration"],
+                info["is_live"] or False,  # is_live is either True or None?? Thanks ytdl
+                local=False,
+                url="https://youtube.com/watch?v={}".format(info["id"])
+            )
+        elif extractor_used == "YoutubePlaylist":
+            log.debug("YoutubePlaylists still unimplemented!")
+            raise uita.exceptions.MalformedMessage("YoutubePlaylists unimplemented (but will be)")
+        elif extractor_used is None:
+            raise uita.exceptions.MalformedMessage("Malformed URLs should send an error message")
+        raise uita.exceptions.MalformedMessage("Unhandled extractor used")
+
     async def _after_song(self):
         with await self._queue_lock:
             self._now_playing = None
@@ -281,9 +357,8 @@ class Queue():
                         )
                         # Launch ffmpeg process
                         self._stream = FfmpegStream(
-                            self._now_playing.url,
-                            voice.encoder.frame_size,
-                            offset=self._now_playing.offset if not self._now_playing.live else 0.0
+                            self._now_playing,
+                            voice.encoder.frame_size
                         )
                         self._player = voice.create_stream_player(
                             self._stream,
@@ -332,8 +407,8 @@ class FfmpegStream():
 
     Parameters
     ----------
-    url : str
-        URL for audio resource to be played.
+    track : uita.audio.Track
+        Track to be played.
     frame_size : int
         Amount of bytes to be returned by `FfmpegStream.read()`. **Note that `FfmpegStream.read()`
         actually ignores its byte input parameter as the buffered audio data chunks are of
@@ -342,19 +417,22 @@ class FfmpegStream():
         it will always call `FfmpegStream.read()` with a size of
         `discord.VoiceClient.encoder.frame_size`, so just pass that into the constructor and
         things should be okay. Sorry.
-    offset : float, optional
-        Time offset in fractional seconds to start playback of audio resource from.
 
     """
     SAMPLE_RATE = 48000
     CHANNELS = 2
 
-    def __init__(self, url, frame_size, offset=0.0):
-        self._process = subprocess.Popen([
-            "ffmpeg",
-            "-reconnect", "1",
-            "-ss", str(offset),
-            "-i", url,
+    def __init__(self, track, frame_size):
+        self._track = track
+        process_options = [
+            "ffmpeg"
+        ]
+        # The argument order is very important
+        if not self._track.local:
+            process_options += ["-reconnect", "1"]
+        process_options += [
+            "-ss", str(track.offset if not track.live else 0.0),
+            "-i", track.path,
             "-f", "s16le",
             "-ac", str(FfmpegStream.CHANNELS),
             "-ar", str(FfmpegStream.SAMPLE_RATE),
@@ -362,7 +440,9 @@ class FfmpegStream():
             "-vn",
             "-loglevel", "quiet",
             "pipe:1"
-        ], stdout=subprocess.PIPE)
+        ]
+
+        self._process = subprocess.Popen(process_options, stdout=subprocess.PIPE)
         # Ensure ffmpeg processes are cleaned up at exit, since Python handles this horribly
         atexit.register(self.stop)
         self._frame_size = frame_size

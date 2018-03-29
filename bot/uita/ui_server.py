@@ -235,7 +235,14 @@ class Server():
         """
         for socket, conn in self.connections.items():
             if conn.user is not None and conn.user.active_server_id == server_id:
-                self._create_task(socket.send(str(message)))
+                async def try_send(s, m):
+                    try:
+                        await s.send(m)
+                    except websockets.exceptions.ConnectionClosed:
+                        pass
+                    except asyncio.CancelledError:
+                        pass
+                self._create_task(try_send(socket, str(message)))
 
     async def verify_active_servers(self):
         """Checks if any user is connected to an active server that is no longer accessible.
@@ -323,6 +330,8 @@ class Server():
                 finally:
                     event.finish()
             self._create_task(wrapper())
+        else:
+            event.finish()
 
     async def _on_connect(self, websocket, path):
         """Main loop for each connected client."""

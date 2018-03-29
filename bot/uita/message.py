@@ -274,7 +274,7 @@ class PlayQueueSendMessage(AbstractMessage):
     def __init__(self, queue):
         self.queue = [{
             "id": track.id,
-            "url": track.url,
+            "url": track.url or "",
             "title": track.title,
             "duration": track.duration,
             "live": track.live

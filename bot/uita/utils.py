@@ -25,8 +25,8 @@ def cache_dir():
 
     """
     cache = os.path.join(install_dir(), "cache")
-    if os.path.exists(cache) is True and os.path.isdir(cache) is False:
+    if os.path.exists(cache) and not os.path.isdir(cache):
         os.remove(cache)
-    if os.path.exists(cache) is False:
+    if not os.path.exists(cache):
         os.mkdir(cache, mode=0o600)
     return cache

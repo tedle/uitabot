@@ -50,14 +50,29 @@ async def channel_list_get(event):
 async def file_upload_start(event):
     """Uploads a file to be queued."""
     log.debug("file upload start {}B".format(event.message.size))
-    filename = os.path.join(uita.utils.cache_dir(), uuid.uuid4().hex)
-    with open(filename, "wb") as f:
-        file_size = event.message.size
+    # Sanitization
+    file_size = event.message.size
+    file_path = os.path.join(uita.utils.cache_dir(), uuid.uuid4().hex)
+    if file_size > event.config.file.upload_max_size:
+        raise uita.exceptions.MalformedMessage("Uploaded file exceeds maximum size")
+    # Loop socket reads until file is complete
+    with open(file_path, "wb") as f:
         bytes_read = 0
         while bytes_read < file_size:
             data = await asyncio.wait_for(event.socket.recv(), 5, loop=uita.loop)
             f.write(data)
             bytes_read += len(data)
+    # Double check client isn't trying to pull a fast one on us
+    if bytes_read > event.config.file.upload_max_size:
+        os.remove(file_path)
+        raise uita.exceptions.MalformedMessage("Uploaded file exceeds maximum size")
+    # Enqueue uploaded file
+    voice = uita.state.voice_connections[event.active_server.id]
+    try:
+        await voice.enqueue(file_path)
+    except Exception:
+        os.remove(file_path)
+        raise
 
 
 @uita.server.on_message("server.join", require_active_server=False)

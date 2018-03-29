@@ -6,6 +6,11 @@ class AuthenticationError(Exception):
     pass
 
 
+class MalformedFile(Exception):
+    """Occurs when an uploaded file is malformed."""
+    pass
+
+
 class MalformedMessage(Exception):
     """Occurs when a parsed websocket message is malformed."""
     pass
