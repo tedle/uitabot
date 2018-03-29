@@ -57,5 +57,11 @@ UI Server
 .. automodule:: uita.ui_server
 .. autoclass:: Connection
 .. autoclass:: Event
+    :members:
 .. autoclass:: Server
-   :members:
+    :members:
+
+Utils
+-----
+.. automodule:: uita.utils
+    :members:

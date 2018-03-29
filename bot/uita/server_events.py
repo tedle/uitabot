@@ -1,10 +1,13 @@
 """Event triggers for web client to."""
 import asyncio
 import discord
+import os
+import uuid
 
 import uita
 import uita.message
 import uita.types
+import uita.utils
 
 import logging
 log = logging.getLogger(__name__)
@@ -47,7 +50,8 @@ async def channel_list_get(event):
 async def file_upload_start(event):
     """Uploads a file to be queued."""
     log.debug("file upload start {}B".format(event.message.size))
-    with open("test.wav", "wb") as f:
+    filename = os.path.join(uita.utils.cache_dir(), uuid.uuid4().hex)
+    with open(filename, "wb") as f:
         file_size = event.message.size
         bytes_read = 0
         while bytes_read < file_size:

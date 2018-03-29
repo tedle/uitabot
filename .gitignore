@@ -1,6 +1,7 @@
 # project
 config.json
 build/
+cache/
 # python
 env/
 _build/
