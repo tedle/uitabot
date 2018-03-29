@@ -27,7 +27,7 @@ def parse(message):
         raise uita.exceptions.MalformedMessage("Message exceeded maximum length")
     try:
         msg = json.loads(message, parse_int=str, parse_float=str)
-    except json.JSONDecoderError:
+    except (json.JSONDecodeError, TypeError):
         raise uita.exceptions.MalformedMessage("Expected JSON encoded object")
 
     # Ensure message header exists and is properly formatted
