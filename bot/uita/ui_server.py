@@ -51,6 +51,8 @@ class Event():
         User that triggered event.
     socket : websockets.WebSocketProtocol
         Connection that triggered event.
+    config : uita.config.Config
+        Configuration options.
     loop : asyncio.AbstractEventLoop
         Event loop that task is running in.
     active_server : uita.types.DiscordServer
@@ -64,16 +66,19 @@ class Event():
         User that triggered event.
     socket : websockets.WebSocketProtocol
         Connection that triggered event.
+    config : uita.config.Config
+        Configuration options.
     loop : asyncio.AbstractEventLoop
         Event loop that task is running in.
     active_server : uita.types.DiscordServer
         Server that user is active in. None if not yet selected.
 
     """
-    def __init__(self, message, user, socket, loop, active_server):
+    def __init__(self, message, user, socket, config, loop, active_server):
         self.message = message
         self.user = user
         self.socket = socket
+        self.config = config
         self.loop = loop
         self.active_server = active_server
         self._block_flag = asyncio.Event()
@@ -339,7 +344,7 @@ class Server():
                 # Parse data into message and dispatch to aproppriate event callback
                 message = uita.message.parse(data)
                 active_server = uita.state.servers.get(user.active_server_id)
-                event = Event(message, user, websocket, self.loop, active_server)
+                event = Event(message, user, websocket, self.config, self.loop, active_server)
                 self._dispatch_event(event)
                 await event.wait()
         except websockets.exceptions.ConnectionClosed as error:
