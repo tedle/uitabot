@@ -8,6 +8,7 @@ import uita.auth
 import uita.database
 import uita.exceptions
 import uita.message
+import uita.utils
 import uita
 
 import logging
@@ -150,6 +151,18 @@ class Server():
                 self.database.maintenance()
                 await asyncio.sleep(600, loop=self.loop)
         self._create_task(database_maintenance())
+
+        # Setup an endless cache pruning task to run every minute
+        async def cache_prune():
+            while True:
+                whitelist = []
+                for _, v in uita.state.voice_connections.items():
+                    for track in v.queue():
+                        if track.local:
+                            whitelist.append(track.path)
+                await uita.utils.prune_cache_dir(whitelist=whitelist)
+                await asyncio.sleep(60, loop=self.loop)
+        self._create_task(cache_prune())
 
         ssl_context = None
         # Don't need to check ssl_key_file

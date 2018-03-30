@@ -59,30 +59,31 @@ async def file_upload_start(event):
     if dir_size + file_size > event.config.file.cache_max_size:
         raise uita.exceptions.MalformedFile("Playback cache has exceeded capacity")
     # Loop socket reads until file is complete
-    with open(file_path, "wb") as f:
-        # Pre-allocate full filesize so other upload tasks get valid dir_size results
-        f.seek(file_size-1)
-        f.write(b"\0")
-        f.flush()
-        os.fsync(f.fileno())
-        f.seek(0)
-        # Data receiving loop
-        bytes_read = 0
-        while bytes_read < file_size:
-            data = await asyncio.wait_for(event.socket.recv(), 5, loop=uita.loop)
-            f.write(data)
-            bytes_read += len(data)
-    # Double check client isn't trying to pull a fast one on us
-    if bytes_read > event.config.file.upload_max_size:
-        os.remove(file_path)
-        raise uita.exceptions.MalformedFile("Uploaded file exceeds maximum size")
-    # Enqueue uploaded file
-    try:
-        voice = uita.state.voice_connections[event.active_server.id]
-        await voice.enqueue(file_path)
-    except Exception:
-        os.remove(file_path)
-        raise
+    with uita.utils.prune_cache_guard(file_path):
+        with open(file_path, "wb") as f:
+            # Pre-allocate full filesize so other upload tasks get valid dir_size results
+            f.seek(file_size-1)
+            f.write(b"\0")
+            f.flush()
+            os.fsync(f.fileno())
+            f.seek(0)
+            # Data receiving loop
+            bytes_read = 0
+            while bytes_read < file_size:
+                data = await asyncio.wait_for(event.socket.recv(), 5, loop=uita.loop)
+                f.write(data)
+                bytes_read += len(data)
+        # Double check client isn't trying to pull a fast one on us
+        if bytes_read > event.config.file.upload_max_size:
+            os.remove(file_path)
+            raise uita.exceptions.MalformedFile("Uploaded file exceeds maximum size")
+        # Enqueue uploaded file
+        try:
+            voice = uita.state.voice_connections[event.active_server.id]
+            await voice.enqueue(file_path)
+        except Exception:
+            os.remove(file_path)
+            raise
 
 
 @uita.server.on_message("server.join", require_active_server=False)

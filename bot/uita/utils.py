@@ -1,5 +1,6 @@
 """Utility functions."""
 import asyncio
+import contextlib
 import os
 import sys
 
@@ -16,6 +17,8 @@ async def dir_size(path, loop=None):
     ----------
     path : os.PathLike
         Path to directory to be sized up.
+    loop : asyncio.AbstractEventLoop, optional
+        Event loop to attach listen server to, defaults to ``asyncio.get_event_loop()``.
 
     Returns
     -------
@@ -63,3 +66,43 @@ def cache_dir():
     if not os.path.exists(cache):
         os.mkdir(cache, mode=0o600)
     return cache
+
+
+async def prune_cache_dir(whitelist=None, loop=None):
+    """Prunes the cache directory of unused files.
+
+    Parameters
+    ----------
+    whitelist : list(os.PathLike), optional
+        List of absolute paths to exempt from pruning.
+    loop : asyncio.AbstractEventLoop, optional
+        Event loop to attach listen server to, defaults to ``asyncio.get_event_loop()``.
+
+    """
+    whitelist = (whitelist or list()) + list(prune_cache_dir.whitelist)
+    loop = loop or asyncio.get_event_loop()
+
+    def prune(exemptions):
+        for directory, _, files in os.walk(cache_dir()):
+            for f in files:
+                path = os.path.join(directory, f)
+                if path in exemptions:
+                    continue
+                os.remove(path)
+    await loop.run_in_executor(None, lambda: prune(whitelist))
+prune_cache_dir.whitelist = set()  # noqa: E305
+
+
+@contextlib.contextmanager
+def prune_cache_guard(path):
+    """Scoped `with` context function for protecting a path from `uita.utils.prune_cache_dir`
+
+    Parameters
+    ----------
+    path : os.PathLike
+        Absolute path to be exempted from pruning.
+
+    """
+    prune_cache_dir.whitelist.add(path)
+    yield
+    prune_cache_dir.whitelist.discard(path)

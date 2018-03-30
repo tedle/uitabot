@@ -2,6 +2,7 @@ import asyncio
 
 import uita
 import uita.config
+import uita.utils
 
 import logging
 import sys
@@ -46,5 +47,7 @@ if __name__ == "__main__":
             # Additional cleanup to handle buggy asyncio cleanup
             for task in task_list:
                 del task
+        # Clear cache folder
+        uita.loop.run_until_complete(uita.utils.prune_cache_dir())
         # Finalize shutdown
         uita.loop.close()
