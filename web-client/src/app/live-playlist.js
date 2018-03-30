@@ -39,7 +39,7 @@ export default class LivePlaylist extends React.Component {
                 const move_buttons = [...Array(this.state.queue.length)].map((_, position) => {
                     return (
                         <button key={position} onClick={() => this.queueMove(track.id, position)}>
-                            #{position}
+                            #{position + 1}
                         </button>
                     );
                 });
@@ -54,7 +54,7 @@ export default class LivePlaylist extends React.Component {
         return (
             <div>
                 <p>music queue</p>
-                <ul>{queue}</ul>
+                <ol>{queue}</ol>
             </div>
         );
     }

@@ -249,8 +249,8 @@ class Queue():
             # ffprobe sometimes keys tags in all caps or not
             tags = {k.lower(): v for k, v in probe["format"]["tags"].items()}
             title = "{} - {}".format(
-                tags.get("title", "Unknown title"),
-                tags.get("artist", "Unknown artist")
+                tags.get("artist", "Unknown artist"),
+                tags.get("title", "Unknown title")
             )
         log.debug("Enqueue [Local]{}, {}s".format(
             title,
