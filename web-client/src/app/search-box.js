@@ -14,6 +14,27 @@ export default class SearchBox extends React.Component {
         };
         // setTimeout callback is stored so that it can be cancelled when overwritten
         this.searchTimeout = null;
+        // React deprecated isMounted() because they think you should implement a janky, only
+        // sometimes functional, canellable promise wrapper around every async function call you
+        // make so that running promises can be cleaned up on unmount, sometimes, if you're lucky
+        // and built them in just the right way. Instead we will just track that state ourselves.
+        this._isMounted = false;
+    }
+
+    componentDidMount() {
+        this._isMounted = true;
+    }
+
+    componentWillUnmount() {
+        this._isMounted = false;
+        this.cancelRunningQueries();
+    }
+
+    cancelRunningQueries() {
+        if (this.searchTimeout != null) {
+            clearTimeout(this.searchTimeout);
+            this.searchTimeout = null;
+        }
     }
 
     focus() {
@@ -22,14 +43,14 @@ export default class SearchBox extends React.Component {
 
     async search(query) {
         const response = await Youtube.search(query);
-        if (!response.ok) {
-            this.setState({searchResults: null});
+        let results = null;
+        if (response.ok) {
+            results = await response.json();
+        } else {
             console.log(`Youtube API failed with code ${response.status}`);
-            return;
         }
-        // If the query box has already changed don't bother storing the results
-        if (this.isQuery(this.state.searchBox)) {
-            this.setState({searchResults: await response.json()});
+        if (this._isMounted && this.state.searchBox == query) {
+            this.setState({searchResults: results});
         }
     }
 
@@ -45,10 +66,7 @@ export default class SearchBox extends React.Component {
         // Sync input box value with component state
         this.setState({searchBox: query});
         // Cancel any currently running search queries
-        if (this.searchTimeout != null) {
-            clearTimeout(this.searchTimeout);
-            this.searchTimeout = null;
-        }
+        this.cancelRunningQueries();
         // Do a search if the box isn't empty and isn't a URL
         if (this.isQuery(query)) {
             this.searchTimeout = setTimeout(() => this.search(query), 500);
@@ -73,10 +91,7 @@ export default class SearchBox extends React.Component {
             const input = this.state.searchBox;
             // Search queries get sent to Youtube
             if (this.isQuery(input)) {
-                if (this.searchTimeout != null) {
-                    clearTimeout(this.searchTimeout);
-                    this.searchTimeout = null;
-                }
+                this.cancelRunningQueries();
                 this.search(input);
             }
             // URLs get sent to the backend
