@@ -155,11 +155,14 @@ class Queue():
             If called with an unusable audio path.
 
         """
+        track = None
         if os.path.isfile(path):
-            self._queue.append(await self.track_from_file(path))
+            track = await self.track_from_file(path)
         else:
-            self._queue.append(await self.track_from_url(path))
-        self._notify_queue_change()
+            track = await self.track_from_url(path)
+        if track is not None:
+            self._queue.append(track)
+            self._notify_queue_change()
 
     async def move(self, track_id, position):
         """Moves a track to a new position in the playback queue.
@@ -332,8 +335,11 @@ class Queue():
                 url="https://youtube.com/watch?v={}".format(info["id"])
             )
         elif extractor_used == "YoutubePlaylist":
-            log.error("YoutubePlaylists still unimplemented!")
-            return
+            if info["_type"] != "playlist":
+                raise uita.exceptions.ServerError("Unknown playlist type")
+            for entry in info["entries"]:
+                await self.enqueue("https://youtube.com/watch?v={}".format(entry["id"]))
+            return None
         raise uita.exceptions.ClientError(uita.message.ErrorUrlInvalidMessage())
 
     async def _after_song(self):
