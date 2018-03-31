@@ -195,8 +195,6 @@ class ErrorFileInvalidMessage(AbstractMessage):
 
     Attributes
     ----------
-    file_id : str
-        Identifier that allows client to know which upload failed.
     error : str
         Description of file error.
 
@@ -204,9 +202,8 @@ class ErrorFileInvalidMessage(AbstractMessage):
     header = "error.file.invalid"
     """"""
 
-    def __init__(self, file_id, error):
-        file_id = file_id
-        error = error
+    def __init__(self, error):
+        self.error = error
 
 
 class ErrorUrlInvalidMessage(AbstractMessage):
@@ -220,8 +217,6 @@ class FileUploadStartMessage(AbstractMessage):
 
     Attributes
     ----------
-    file_id : str
-        Unique identifier that is returned to the client in any generated error messages.
     size : int
         File size in bytes.
 
@@ -229,9 +224,14 @@ class FileUploadStartMessage(AbstractMessage):
     header = "file.upload.start"
     """"""
 
-    def __init__(self, file_id, size):
-        self.file_id = str(file_id)
+    def __init__(self, size):
         self.size = int(size)
+
+
+class FileUploadCompleteMessage(AbstractMessage):
+    """Sent by server signaling a completed file upload"""
+    header = "file.upload.complete"
+    """"""
 
 
 class HeartbeatMessage(AbstractMessage):
@@ -390,9 +390,10 @@ VALID_MESSAGES = {
     ChannelLeaveMessage.header: (ChannelLeaveMessage, []),
     ChannelListGetMessage.header: (ChannelListGetMessage, []),
     ChannelListSendMessage.header: (ChannelListSendMessage, ["channels"]),
-    ErrorFileInvalidMessage.header: (ErrorFileInvalidMessage, ["file_id", "error"]),
+    ErrorFileInvalidMessage.header: (ErrorFileInvalidMessage, ["error"]),
     ErrorUrlInvalidMessage.header: (ErrorUrlInvalidMessage, []),
-    FileUploadStartMessage.header: (FileUploadStartMessage, ["file_id", "size"]),
+    FileUploadStartMessage.header: (FileUploadStartMessage, ["size"]),
+    FileUploadCompleteMessage.header: (FileUploadCompleteMessage, []),
     HeartbeatMessage.header: (HeartbeatMessage, []),
     PlayQueueGetMessage.header: (PlayQueueGetMessage, []),
     PlayQueueMoveMessage.header: (PlayQueueMoveMessage, ["id", "position"]),

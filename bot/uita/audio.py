@@ -243,7 +243,9 @@ class Queue():
         )
         probe = json.loads(completed_probe_process.stdout.decode("utf-8"))
         if "format" not in probe:
-            raise uita.exceptions.ClientError(uita.message.ErrorFileInvalidMessage())
+            raise uita.exceptions.ClientError(
+                uita.message.ErrorFileInvalidMessage("Invalid audio format")
+            )
         title = "untagged file upload"
         if "tags" in probe["format"]:
             # ffprobe sometimes keys tags in all caps or not

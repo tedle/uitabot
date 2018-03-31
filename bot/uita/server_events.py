@@ -55,17 +55,15 @@ async def file_upload_start(event):
     file_path = os.path.join(uita.utils.cache_dir(), uuid.uuid4().hex)
     if file_size > event.config.file.upload_max_size:
         raise uita.exceptions.ClientError(
-            uita.message.ErrorFileInvalidMessage(
-                event.message.file_id, "Uploaded file exceeds maximum size"
-            )
+            uita.message.ErrorFileInvalidMessage("Uploaded file exceeds maximum size")
         )
     dir_size = await uita.utils.dir_size(uita.utils.cache_dir(), loop=event.loop)
     if dir_size + file_size > event.config.file.cache_max_size:
         raise uita.exceptions.ClientError(
-            uita.message.ErrorFileInvalidMessage(
-                event.message.file_id, "Playback cache has exceeded capacity"
-            )
+            uita.message.ErrorFileInvalidMessage("Playback cache has exceeded capacity")
         )
+    # Return the original message to signal binary data stream
+    await event.socket.send(str(event.message))
     # Loop socket reads until file is complete
     with uita.utils.prune_cache_guard(file_path):
         with open(file_path, "wb") as f:
@@ -89,6 +87,8 @@ async def file_upload_start(event):
         try:
             voice = uita.state.voice_connections[event.active_server.id]
             await voice.enqueue(file_path)
+            # Signal the successful file upload
+            await event.socket.send(str(uita.message.FileUploadCompleteMessage()))
         except Exception:
             os.remove(file_path)
             raise

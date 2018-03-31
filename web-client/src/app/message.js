@@ -100,9 +100,8 @@ export class ErrorFileInvalidMessage extends AbstractMessage {
         return "error.file.invalid";
     }
 
-    constructor(file_id, error) {
+    constructor(error) {
         super();
-        this.file_id = file_id;
         this.error = error;
     }
 }
@@ -118,10 +117,15 @@ export class FileUploadStartMessage extends AbstractMessage {
         return "file.upload.start";
     }
 
-    constructor(file_id, size) {
+    constructor(size) {
         super();
-        this.file_id = file_id;
         this.size = size;
+    }
+}
+
+export class FileUploadCompleteMessage extends AbstractMessage {
+    static get header() {
+        return "file.upload.complete";
     }
 }
 
@@ -226,9 +230,10 @@ const VALID_MESSAGES = {
     "channel.leave": [ChannelLeaveMessage, []],
     "channel.list.get": [ChannelListGetMessage, []],
     "channel.list.send": [ChannelListSendMessage, ["channels"]],
-    "error.file.invalid": [ErrorFileInvalidMessage, ["file_id", "error"]],
+    "error.file.invalid": [ErrorFileInvalidMessage, ["error"]],
     "error.url.invalid": [ErrorUrlInvalidMessage, []],
-    "file.upload.start": [FileUploadStartMessage, ["file_id", "size"]],
+    "file.upload.start": [FileUploadStartMessage, ["size"]],
+    "file.upload.complete": [FileUploadCompleteMessage, []],
     "heartbeat": [HeartbeatMessage, []],
     "play.queue.get": [PlayQueueGetMessage, []],
     "play.queue.move": [PlayQueueMoveMessage, ["id", "position"]],

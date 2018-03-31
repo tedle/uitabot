@@ -38,6 +38,49 @@ export default class FileUploadDropZone extends React.Component {
         }
     }
 
+    async fileSend(file, socket, dispatcher) {
+        socket.send(new Message.FileUploadStartMessage(file.size).str());
+        // Wait for the server response
+        await this.fileReady(dispatcher);
+        // Stream the file data in one go
+        const chunk_size = 4096;
+        let start = 0;
+        let end = 0;
+        while (end < file.size) {
+            start = end;
+            end = Math.min(end + chunk_size, file.size);
+            socket.send(file.slice(start, end));
+        }
+        // Wait for the server response
+        await this.fileComplete(dispatcher);
+    }
+
+    fileReady(dispatcher) {
+        // Create an awaitable event that triggers after a server response
+        return new Promise((resolve, reject) => {
+            dispatcher.setMessageHandler("file.upload.start", m => {
+                resolve();
+            });
+            dispatcher.setMessageHandler("error.file.invalid", m => {
+                reject(m.error);
+            });
+            setTimeout(() => reject("Server timed out or disconnected"), 5000);
+        });
+    }
+
+    fileComplete(dispatcher) {
+        // Create an awaitable event that triggers after a server response
+        return new Promise((resolve, reject) => {
+            dispatcher.setMessageHandler("file.upload.complete", m => {
+                resolve();
+            });
+            dispatcher.setMessageHandler("error.file.invalid", m => {
+                reject(m.error);
+            });
+            setTimeout(() => reject("Server timed out or disconnected"), 5000);
+        });
+    }
+
     upload(files) {
         if (files.length == 0) {
             return;
@@ -59,19 +102,18 @@ export default class FileUploadDropZone extends React.Component {
                 socket.send(new Message.AuthSessionMessage(session.handle, session.secret).str());
             };
             // After authentication, join the selected server and upload the files
-            eventDispatcher.setMessageHandler("auth.succeed", m => {
+            eventDispatcher.setMessageHandler("auth.succeed", async (m) => {
                 try {
                     socket.send(new Message.ServerJoinMessage(this.props.discordServer).str());
                     for (let file of files) {
-                        const id = Utils.randomString(32);
-                        socket.send(new Message.FileUploadStartMessage(id, file.size).str());
-                        const chunk_size = 4096;
-                        let start = 0;
-                        let end = 0;
-                        while (end < file.size) {
-                            start = end;
-                            end = Math.min(end + chunk_size, file.size);
-                            socket.send(file.slice(start, end));
+                        if (socket.readyState != WebSocket.OPEN) {
+                            alert("Server disconnected");
+                            break;
+                        }
+                        try {
+                            await this.fileSend(file, socket, eventDispatcher);
+                        } catch (error) {
+                            alert(error);
                         }
                     }
                 } finally {
