@@ -67,7 +67,7 @@ export default class SearchBox extends React.Component {
     }
 
     isUrl(url) {
-        return RegExp("^http(s)?:\\/\\/").test(url);
+        return /^http(s)?:\/\//.test(url);
     }
 
     setSearchBox(query) {

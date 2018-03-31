@@ -19,7 +19,7 @@ export default class FileUploadDropZone extends React.Component {
         let files = Array();
         for (let file of event.dataTransfer.files) {
             // Only upload files that have an audio/* mime type
-            if (RegExp("^audio\\/").test(file.type)) {
+            if (/^audio\//.test(file.type)) {
                 files.push(file);
             }
         }
@@ -31,7 +31,7 @@ export default class FileUploadDropZone extends React.Component {
         event.dataTransfer.dropEffect = "none";
         // Only allow drop payloads with an item that has an audio/* mime type
         for (let item of event.dataTransfer.items) {
-            if (RegExp("^audio\\/").test(item.type)) {
+            if (/^audio\//.test(item.type)) {
                 event.dataTransfer.dropEffect = "copy";
                 break;
             }
