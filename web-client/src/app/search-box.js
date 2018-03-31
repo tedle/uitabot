@@ -48,15 +48,17 @@ export default class SearchBox extends React.Component {
     }
 
     async search(query) {
-        const response = await Youtube.search(query);
-        let results = null;
-        if (response.ok) {
-            results = await response.json();
-        } else {
-            console.log(`Youtube API failed with code ${response.status}`);
-        }
-        if (this._isMounted && this.state.searchBox == query) {
-            this.setState({searchResults: results});
+        try {
+            const results = await Youtube.search(query);
+            if (this._isMounted && this.state.searchBox == query) {
+                this.setState({searchResults: results});
+            }
+            const detailedResults = await Youtube.searchDetails(results);
+            if (this._isMounted && this.state.searchBox == query) {
+                this.setState({searchResults: detailedResults});
+            }
+        } catch (error) {
+            console.log(error);
         }
     }
 
@@ -107,9 +109,9 @@ export default class SearchBox extends React.Component {
         }
     }
 
-    handleSearchResultClick(youtube_id) {
+    handleSearchResultClick(url) {
         this.setSearchBox("");
-        this.submitUrl(Youtube.urlFromId(youtube_id));
+        this.submitUrl(url);
         this.focus();
     }
 
@@ -117,13 +119,13 @@ export default class SearchBox extends React.Component {
         // Map the search results JSON object into component nodes
         let searchResults = [];
         if (this.state.searchResults != null) {
-            searchResults = this.state.searchResults.items
-                .map((result) => {
+            searchResults = this.state.searchResults
+                .map(result => {
                     return (
-                        <li key={result.etag}>
-                            <img src={result.snippet.thumbnails.default.url}/>
-                            <button onClick={() => this.handleSearchResultClick(result.id.videoId)}>
-                                {result.snippet.title}
+                        <li key={result.id}>
+                            <img src={result.thumbnail}/>
+                            <button onClick={() => this.handleSearchResultClick(result.url)}>
+                                {result.display()}
                             </button>
                         </li>
                     );
