@@ -5,7 +5,8 @@ import * as Config from "config";
 
 var ResultType = {
     VIDEO: 1,
-    PLAYLIST: 2
+    LIVE: 2,
+    PLAYLIST: 3
 }
 Object.freeze(ResultType);
 
@@ -21,6 +22,7 @@ class Result {
     get url() {
         switch(this.type) {
             case ResultType.VIDEO:
+            case ResultType.LIVE:
                 return `https://youtube.com/watch?v=${this.id}`;
             case ResultType.PLAYLIST:
                 return `https://youtube.com/playlist?list=${this.id}`;
@@ -29,11 +31,27 @@ class Result {
         }
     }
 
+    displayDuration() {
+        if (this.duration == null) {
+            return "";
+        }
+        let display = "";
+        if (this.duration > 60 * 60) {
+            display += `${Math.floor(this.duration / (60 * 60))}h`;
+        }
+        if (this.duration > 60) {
+            display += `${Math.floor(this.duration / 60) % 60}m`;
+        }
+        display += `${this.duration % 60}s`;
+        return display;
+    }
+
     display() {
-        const duration_display = (this.duration != null ? this.duration : "");
         switch(this.type) {
             case ResultType.VIDEO:
-                return `${this.title} ${duration_display}`;
+                return `${this.title} ${this.displayDuration()}`;
+            case ResultType.LIVE:
+                return `${this.title} (Live)`;
             case ResultType.PLAYLIST:
                 return `${this.title} (Playlist)`;
             default:
@@ -62,7 +80,12 @@ export async function search(query) {
         switch (result.id.kind) {
             case "youtube#video":
                 id = result.id.videoId;
-                type = ResultType.VIDEO;
+                if (result.snippet.liveBroadcastContent == "live") {
+                    type = ResultType.LIVE;
+                }
+                else {
+                    type = ResultType.VIDEO;
+                }
                 break;
             case "youtube#playlist":
                 id = result.id.playlistId;
@@ -100,7 +123,7 @@ export async function searchDetails(results) {
     // Detailed results go into an object for keyed lookup
     let detailedResults = {};
     for (let item of detailedJson.items) {
-        detailedResults[item.id] = item.contentDetails.duration;
+        detailedResults[item.id] = parseYoutubeTime(item.contentDetails.duration);
     }
     // Return detailed results with added video durations
     return results.map(result => {
@@ -115,4 +138,24 @@ export async function searchDetails(results) {
         }
         return result;
     });
+}
+
+export function parseYoutubeTime(time) {
+    let duration = 0;
+    let regex = /(\d+)(H|M|S)/g;
+    let match = null;
+    while (match = regex.exec(time)) {
+        switch(match[2]) {
+            case "H":
+                duration += parseInt(match[1]) * 60 * 60;
+                break;
+            case "M":
+                duration += parseInt(match[1]) * 60;
+                break;
+            case "S":
+                duration += parseInt(match[1]);
+                break;
+        }
+    }
+    return duration;
 }
