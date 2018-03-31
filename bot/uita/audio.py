@@ -151,7 +151,7 @@ class Queue():
 
         Raises
         ------
-        uita.exceptions.MalformedMessage
+        uita.exceptions.ClientError
             If called with an unusable audio path.
 
         """
@@ -243,7 +243,7 @@ class Queue():
         )
         probe = json.loads(completed_probe_process.stdout.decode("utf-8"))
         if "format" not in probe:
-            raise uita.exceptions.MalformedFile("Not a valid audio file")
+            raise uita.exceptions.ClientError(uita.message.ErrorFileInvalidMessage())
         title = "untagged file upload"
         if "tags" in probe["format"]:
             # ffprobe sometimes keys tags in all caps or not
@@ -330,11 +330,9 @@ class Queue():
                 url="https://youtube.com/watch?v={}".format(info["id"])
             )
         elif extractor_used == "YoutubePlaylist":
-            log.debug("YoutubePlaylists still unimplemented!")
-            raise uita.exceptions.MalformedMessage("YoutubePlaylists unimplemented (but will be)")
-        elif extractor_used is None:
-            raise uita.exceptions.MalformedMessage("Malformed URLs should send an error message")
-        raise uita.exceptions.MalformedMessage("Unhandled extractor used")
+            log.error("YoutubePlaylists still unimplemented!")
+            return
+        raise uita.exceptions.ClientError(uita.message.ErrorUrlInvalidMessage())
 
     async def _after_song(self):
         with await self._queue_lock:

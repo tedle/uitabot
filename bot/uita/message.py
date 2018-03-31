@@ -190,11 +190,38 @@ class ChannelListSendMessage(AbstractMessage):
         } for channel in channels]
 
 
+class ErrorFileInvalidMessage(AbstractMessage):
+    """Sent when an uploaded file has invalid audio data.
+
+    Attributes
+    ----------
+    file_id : str
+        Identifier that allows client to know which upload failed.
+    error : str
+        Description of file error.
+
+    """
+    header = "error.file.invalid"
+    """"""
+
+    def __init__(self, file_id, error):
+        file_id = file_id
+        error = error
+
+
+class ErrorUrlInvalidMessage(AbstractMessage):
+    """Sent when a requested URL cannot be played."""
+    header = "error.url.invalid"
+    """"""
+
+
 class FileUploadStartMessage(AbstractMessage):
     """Sent by client initiating a file upload procedure.
 
     Attributes
     ----------
+    file_id : str
+        Unique identifier that is returned to the client in any generated error messages.
     size : int
         File size in bytes.
 
@@ -202,7 +229,8 @@ class FileUploadStartMessage(AbstractMessage):
     header = "file.upload.start"
     """"""
 
-    def __init__(self, size):
+    def __init__(self, file_id, size):
+        self.file_id = str(file_id)
         self.size = int(size)
 
 
@@ -362,7 +390,9 @@ VALID_MESSAGES = {
     ChannelLeaveMessage.header: (ChannelLeaveMessage, []),
     ChannelListGetMessage.header: (ChannelListGetMessage, []),
     ChannelListSendMessage.header: (ChannelListSendMessage, ["channels"]),
-    FileUploadStartMessage.header: (FileUploadStartMessage, ["size"]),
+    ErrorFileInvalidMessage.header: (ErrorFileInvalidMessage, ["file_id", "error"]),
+    ErrorUrlInvalidMessage.header: (ErrorUrlInvalidMessage, []),
+    FileUploadStartMessage.header: (FileUploadStartMessage, ["file_id", "size"]),
     HeartbeatMessage.header: (HeartbeatMessage, []),
     PlayQueueGetMessage.header: (PlayQueueGetMessage, []),
     PlayQueueMoveMessage.header: (PlayQueueMoveMessage, ["id", "position"]),

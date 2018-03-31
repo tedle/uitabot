@@ -89,7 +89,7 @@ async def get(end_point, token, loop):
 
     Raises
     ------
-    uita.exceptions.MalformedMessage
+    uita.exceptions.AuthenticationError
         If request is invalid.
 
     """

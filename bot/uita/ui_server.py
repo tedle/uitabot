@@ -332,8 +332,11 @@ class Server():
             async def wrapper():
                 try:
                     await self._event_callbacks[event.message.header](event)
-                except asyncio.CancelledError:
+                except (asyncio.CancelledError, websockets.exceptions.ConnectionClosed):
                     pass
+                except uita.exceptions.ClientError as e:
+                    log.debug("ClientError {}".format(e))
+                    await event.socket.send(str(e))
                 except uita.exceptions.NoActiveServer:
                     await event.socket.send(str(uita.message.ServerKickMessage()))
                 except Exception:

@@ -1,4 +1,35 @@
 """Specialized exceptions."""
+import uita.message
+
+
+class ClientError(Exception):
+    """Occurs when a server event fails and needs to notify to the client.
+
+    Unlike other uncaught errors caused by a server event, `ClientError`s will not cause a
+    connection closure.
+
+    Parameters
+    ----------
+    message : uita.message.AbstractMessage
+        Message to be sent by the connection handler to the client.
+
+    Attributes
+    ----------
+    message : uita.message.AbstractMessage
+        Message to be sent by the connection handler to the client.
+
+    Raises
+    ------
+    TypeError
+        If initialized with a type other than uita.message.AbstractMessage
+
+    """
+    def __init__(self, message):
+        if not isinstance(message, uita.message.AbstractMessage):
+            raise TypeError(
+                "uita.exceptions.ClientError must be initialized with uita.message.AbstractMessage"
+            )
+        super().__init__(message)
 
 
 class AuthenticationError(Exception):

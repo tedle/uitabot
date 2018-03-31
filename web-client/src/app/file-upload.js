@@ -5,6 +5,7 @@ import React from "react";
 import * as Config from "config";
 import * as Message from "./message.js";
 import * as Session from "./session.js";
+import * as Utils from "./utils.js";
 
 export default class FileUploadDropZone extends React.Component {
     constructor(props) {
@@ -12,7 +13,6 @@ export default class FileUploadDropZone extends React.Component {
         this.state = {
         };
     }
-
 
     handleFileDrop(event) {
         event.preventDefault();
@@ -63,7 +63,8 @@ export default class FileUploadDropZone extends React.Component {
                 try {
                     socket.send(new Message.ServerJoinMessage(this.props.discordServer).str());
                     for (let file of files) {
-                        socket.send(new Message.FileUploadStartMessage(file.size).str());
+                        const id = Utils.randomString(32);
+                        socket.send(new Message.FileUploadStartMessage(id, file.size).str());
                         const chunk_size = 4096;
                         let start = 0;
                         let end = 0;

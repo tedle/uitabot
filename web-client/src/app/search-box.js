@@ -23,11 +23,17 @@ export default class SearchBox extends React.Component {
 
     componentDidMount() {
         this._isMounted = true;
+
+        // Handler for URL errors
+        this.props.eventDispatcher.setMessageHandler("error.url.invalid", m => {
+            alert("ERROR: We sent a bad URL");
+        });
     }
 
     componentWillUnmount() {
         this._isMounted = false;
         this.cancelRunningQueries();
+        this.props.eventDispatcher.clearMessageHandler("error.url.invalid");
     }
 
     cancelRunningQueries() {
