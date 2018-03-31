@@ -20,24 +20,17 @@ export default class SearchBox extends React.Component {
         this.searchInput.focus();
     }
 
-    search(query) {
-        Youtube.search(query)
-            .then((response) => {
-                if (response.ok) {
-                    return response.json();
-                }
-                throw new Error(`Youtube API failed with code ${response.status}`);
-            })
-            .then((data) => {
-                // If the query box has already changed don't bother storing the results
-                if (this.isQuery(this.state.searchBox)) {
-                    this.setState({searchResults: data});
-                }
-            })
-            .catch((error) => {
-                this.setState({searchResults: null});
-                console.log(error.message);
-            });
+    async search(query) {
+        const response = await Youtube.search(query);
+        if (!response.ok) {
+            this.setState({searchResults: null});
+            console.log(`Youtube API failed with code ${response.status}`);
+            return;
+        }
+        // If the query box has already changed don't bother storing the results
+        if (this.isQuery(this.state.searchBox)) {
+            this.setState({searchResults: await response.json()});
+        }
     }
 
     isQuery(query) {
