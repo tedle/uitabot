@@ -334,6 +334,8 @@ class Server():
                     await self._event_callbacks[event.message.header](event)
                 except asyncio.CancelledError:
                     pass
+                except uita.exceptions.NoActiveServer:
+                    await event.socket.send(str(uita.message.ServerKickMessage()))
                 except Exception:
                     log.warning("Uncaught exception in event", exc_info=True)
                     await event.socket.close(

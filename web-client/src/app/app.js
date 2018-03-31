@@ -114,7 +114,7 @@ export default class App extends React.Component {
             return <ServerSelect
                 socket={this.socket}
                 eventDispatcher={this.eventDispatcher}
-                onServerSelect={(id) => this.setState({discordServer: id})}
+                onServerSelect={id => this.setState({discordServer: id})}
             />;
         }
 
