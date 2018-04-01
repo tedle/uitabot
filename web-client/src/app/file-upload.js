@@ -64,6 +64,9 @@ export default class FileUploadDropZone extends React.Component {
             dispatcher.setMessageHandler("error.file.invalid", m => {
                 reject(m.error);
             });
+            dispatcher.setMessageHandler("error.queue.full", m => {
+                reject("Queue is full");
+            });
             setTimeout(() => reject("Server timed out or disconnected"), 5000);
         });
     }
@@ -76,6 +79,9 @@ export default class FileUploadDropZone extends React.Component {
             });
             dispatcher.setMessageHandler("error.file.invalid", m => {
                 reject(m.error);
+            });
+            dispatcher.setMessageHandler("error.queue.full", m => {
+                reject("Queue is full");
             });
             setTimeout(() => reject("Server timed out or disconnected"), 5000);
         });

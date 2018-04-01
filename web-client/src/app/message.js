@@ -106,6 +106,12 @@ export class ErrorFileInvalidMessage extends AbstractMessage {
     }
 }
 
+export class ErrorQueueFullMessage extends AbstractMessage {
+    static get header() {
+        return "error.queue.full";
+    }
+}
+
 export class ErrorUrlInvalidMessage extends AbstractMessage {
     static get header() {
         return "error.url.invalid";
@@ -231,6 +237,7 @@ const VALID_MESSAGES = {
     "channel.list.get": [ChannelListGetMessage, []],
     "channel.list.send": [ChannelListSendMessage, ["channels"]],
     "error.file.invalid": [ErrorFileInvalidMessage, ["error"]],
+    "error.queue.full": [ErrorQueueFullMessage, []],
     "error.url.invalid": [ErrorUrlInvalidMessage, []],
     "file.upload.start": [FileUploadStartMessage, ["size"]],
     "file.upload.complete": [FileUploadCompleteMessage, []],

@@ -206,6 +206,12 @@ class ErrorFileInvalidMessage(AbstractMessage):
         self.error = error
 
 
+class ErrorQueueFullMessage(AbstractMessage):
+    """Sent when a requested URL cannot be played."""
+    header = "error.queue.full"
+    """"""
+
+
 class ErrorUrlInvalidMessage(AbstractMessage):
     """Sent when a requested URL cannot be played."""
     header = "error.url.invalid"
@@ -391,6 +397,7 @@ VALID_MESSAGES = {
     ChannelListGetMessage.header: (ChannelListGetMessage, []),
     ChannelListSendMessage.header: (ChannelListSendMessage, ["channels"]),
     ErrorFileInvalidMessage.header: (ErrorFileInvalidMessage, ["error"]),
+    ErrorQueueFullMessage.header: (ErrorQueueFullMessage, []),
     ErrorUrlInvalidMessage.header: (ErrorUrlInvalidMessage, []),
     FileUploadStartMessage.header: (FileUploadStartMessage, ["size"]),
     FileUploadCompleteMessage.header: (FileUploadCompleteMessage, []),

@@ -343,6 +343,17 @@ class DiscordVoiceClient():
         """
         return self._playlist.queue()
 
+    def queue_full(self):
+        """Tests if the queue is at capacity.
+
+        Returns
+        -------
+        bool
+            True if the queue is full.
+
+        """
+        return self._playlist.queue_full()
+
     async def move(self, track_id, position):
         """Moves a track to a new position in the playback queue.
 

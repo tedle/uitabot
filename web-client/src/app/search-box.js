@@ -28,6 +28,9 @@ export default class SearchBox extends React.Component {
         this.props.eventDispatcher.setMessageHandler("error.url.invalid", m => {
             alert("ERROR: We sent a bad URL");
         });
+        this.props.eventDispatcher.setMessageHandler("error.queue.full", m => {
+            alert("ERROR: The queue is full");
+        });
     }
 
     componentWillUnmount() {

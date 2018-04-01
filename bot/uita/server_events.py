@@ -50,6 +50,10 @@ async def channel_list_get(event):
 async def file_upload_start(event):
     """Uploads a file to be queued."""
     log.debug("file upload start {}B".format(event.message.size))
+    # Check for queue space
+    voice = uita.state.voice_connections[event.active_server.id]
+    if voice.queue_full():
+        raise uita.exceptions.ClientError(uita.message.ErrorQueueFullMessage())
     # Sanitization
     file_size = event.message.size
     file_path = os.path.join(uita.utils.cache_dir(), uuid.uuid4().hex)
@@ -85,7 +89,6 @@ async def file_upload_start(event):
             raise uita.exceptions.MalformedFile("Uploaded file exceeds maximum size")
         # Enqueue uploaded file
         try:
-            voice = uita.state.voice_connections[event.active_server.id]
             await voice.enqueue_file(file_path)
             # Signal the successful file upload
             await event.socket.send(str(uita.message.FileUploadCompleteMessage()))

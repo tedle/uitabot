@@ -107,6 +107,17 @@ class Queue():
         """
         return ([self._now_playing] if self._now_playing is not None else []) + list(self._queue)
 
+    def queue_full(self):
+        """Tests if the queue is at capacity.
+
+        Returns
+        -------
+        bool
+            True if the queue is full.
+
+        """
+        return self._queue_maxlen is not None and len(self.queue()) >= self._queue_maxlen
+
     async def play(self, voice):
         """Starts a new playlist task that awaits and plays new queue inputs.
 
@@ -188,6 +199,9 @@ class Queue():
             title,
             probe["format"]["duration"]
         ))
+        # This check cannot have any awaits between it and the following queue.append()s
+        if self.queue_full():
+            raise uita.exceptions.ClientError(uita.message.ErrorQueueFullMessage())
         self._queue.append(Track(
             path,
             title,
@@ -242,10 +256,8 @@ class Queue():
             except youtube_dl.utils.DownloadError:
                 pass
         # This check cannot have any awaits between it and the following queue.append()s
-        if self._queue_maxlen is not None and len(self.queue()) >= self._queue_maxlen:
-            # TODO: Send an error message to client once those are implemented
-            log.debug("queue full, abort")
-            return
+        if self.queue_full():
+            raise uita.exceptions.ClientError(uita.message.ErrorQueueFullMessage())
         if extractor_used == "Youtube":
             log.debug("Enqueue [YouTube]{}({}) {}@{}abr, {}s".format(
                 info["title"],
