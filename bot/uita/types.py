@@ -300,7 +300,23 @@ class DiscordVoiceClient():
                 await self._voice.disconnect()
                 self._voice = None
 
-    async def enqueue(self, url):
+    async def enqueue_file(self, path):
+        """Queues a file to be played by the running playlist task.
+
+        Parameters
+        ----------
+        path : os.PathLike
+            Path to audio resource to be played.
+
+        Raises
+        ------
+        uita.exceptions.ClientError
+            If called with an unusable audio URL.
+
+        """
+        await self._playlist.enqueue_file(path)
+
+    async def enqueue_url(self, url):
         """Queues a URL to be played by the running playlist task.
 
         Parameters
@@ -310,11 +326,11 @@ class DiscordVoiceClient():
 
         Raises
         ------
-        uita.exceptions.MalformedMessage
+        uita.exceptions.ClientError
             If called with an unusable audio URL.
 
         """
-        await self._playlist.enqueue(url)
+        await self._playlist.enqueue_url(url)
 
     def queue(self):
         """Retrieves a list of currently queued audio resources for this connection.

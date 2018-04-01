@@ -141,12 +141,12 @@ class Queue():
             await self._play_task
         self._end_stream()
 
-    async def enqueue(self, path):
-        """Queues a path to be played by the running playlist task.
+    async def enqueue_file(self, path):
+        """Queues a file to be played by the running playlist task.
 
         Parameters
         ----------
-        path : str
+        path : os.PathLike
             Path for audio resource to be played.
 
         Raises
@@ -155,14 +155,121 @@ class Queue():
             If called with an unusable audio path.
 
         """
-        track = None
-        if os.path.isfile(path):
-            track = await self.track_from_file(path)
-        else:
-            track = await self.track_from_url(path)
-        if track is not None:
-            self._queue.append(track)
+        # Some quick sanitization to make sure bad input won't escape the cache directory
+        # However user input should never reach this function
+        path = os.path.join(uita.utils.cache_dir(), os.path.basename(path))
+        if not os.path.isfile(path):
+            raise uita.message.ErrorFileInvalidMessage("Invalid audio format")
+        completed_probe_process = await self.loop.run_in_executor(
+            None,
+            lambda: subprocess.run([
+                "ffprobe",
+                path,
+                "-of", "json",
+                "-show_format",
+                "-show_error",
+                "-loglevel", "quiet"
+            ], stdout=subprocess.PIPE)
+        )
+        probe = json.loads(completed_probe_process.stdout.decode("utf-8"))
+        if "format" not in probe:
+            raise uita.exceptions.ClientError(
+                uita.message.ErrorFileInvalidMessage("Invalid audio format")
+            )
+        title = "untagged file upload"
+        if "tags" in probe["format"]:
+            # ffprobe sometimes keys tags in all caps or not
+            tags = {k.lower(): v for k, v in probe["format"]["tags"].items()}
+            title = "{} - {}".format(
+                tags.get("artist", "Unknown artist"),
+                tags.get("title", "Unknown title")
+            )
+        log.debug("Enqueue [Local]{}, {}s".format(
+            title,
+            probe["format"]["duration"]
+        ))
+        self._queue.append(Track(
+            path,
+            title,
+            probe["format"]["duration"],
+            live=False,
+            local=True
+        ))
+        self._notify_queue_change()
+
+    async def enqueue_url(self, url):
+        """Queues a URL to be played by the running playlist task.
+
+        Parameters
+        ----------
+        url : str
+            URL for audio resource to be played.
+
+        Raises
+        ------
+        uita.exceptions.ClientError
+            If called with an unusable audio path.
+
+        """
+        null_log = logging.Logger("dummy")
+        null_log.addHandler(logging.NullHandler())
+
+        opts = {
+            # bestaudio prefers videoless streams, which often have a lower bitrate
+            # ironically not the best audio
+            # also highly values lower bitrate vorbis streams over higher bitrate opus?? why.
+            "format": "best[acodec=opus]/bestaudio[acodec=opus]/bestaudio/best",
+            "quiet": True,
+            "no_warnings": True,
+            "extract_flat": "in_playlist",
+            "logger": null_log,
+            "skip_download": True
+        }
+        scraper = youtube_dl.YoutubeDL(opts)
+        info = None
+        extractor_used = None
+        valid_extractors = ["Youtube", "YoutubePlaylist"]
+        for extractor in valid_extractors:
+            try:
+                info = await self.loop.run_in_executor(
+                    None,
+                    lambda: scraper.extract_info(url, download=False, ie_key=extractor)
+                )
+                extractor_used = extractor
+                # Break on first valid extraction
+                break
+            # Triggers when URL doesnt match extractor used
+            except youtube_dl.utils.DownloadError:
+                pass
+        # This check cannot have any awaits between it and the following queue.append()s
+        if self._queue_maxlen is not None and len(self.queue()) >= self._queue_maxlen:
+            # TODO: Send an error message to client once those are implemented
+            log.debug("queue full, abort")
+            return
+        if extractor_used == "Youtube":
+            log.debug("Enqueue [YouTube]{}({}) {}@{}abr, {}s".format(
+                info["title"],
+                info["id"],
+                info["acodec"],
+                info["abr"],
+                info["duration"]
+            ))
+            self._queue.append(Track(
+                info["url"],
+                info["title"],
+                info["duration"],
+                info["is_live"] or False,  # is_live is either True or None?? Thanks ytdl
+                local=False,
+                url="https://youtube.com/watch?v={}".format(info["id"])
+            ))
             self._notify_queue_change()
+        elif extractor_used == "YoutubePlaylist":
+            if info["_type"] != "playlist":
+                raise uita.exceptions.ServerError("Unknown playlist type")
+            for entry in info["entries"]:
+                await self.enqueue_url("https://youtube.com/watch?v={}".format(entry["id"]))
+        else:
+            raise uita.exceptions.ClientError(uita.message.ErrorUrlInvalidMessage())
 
     async def move(self, track_id, position):
         """Moves a track to a new position in the playback queue.
@@ -219,56 +326,6 @@ class Queue():
                     self._notify_queue_change()
                     return
 
-    async def track_from_file(self, path):
-        """Probes the file at a given path for audio metadata.
-
-        Parameters
-        ----------
-        path : os.PathLike
-            Path to audio file.
-
-        Returns
-        -------
-        uita.audio.Track
-            Container for track metadata.
-
-        """
-        completed_probe_process = await self.loop.run_in_executor(
-            None,
-            lambda: subprocess.run([
-                "ffprobe",
-                path,
-                "-of", "json",
-                "-show_format",
-                "-show_error",
-                "-loglevel", "quiet"
-            ], stdout=subprocess.PIPE)
-        )
-        probe = json.loads(completed_probe_process.stdout.decode("utf-8"))
-        if "format" not in probe:
-            raise uita.exceptions.ClientError(
-                uita.message.ErrorFileInvalidMessage("Invalid audio format")
-            )
-        title = "untagged file upload"
-        if "tags" in probe["format"]:
-            # ffprobe sometimes keys tags in all caps or not
-            tags = {k.lower(): v for k, v in probe["format"]["tags"].items()}
-            title = "{} - {}".format(
-                tags.get("artist", "Unknown artist"),
-                tags.get("title", "Unknown title")
-            )
-        log.debug("Enqueue [Local]{}, {}s".format(
-            title,
-            probe["format"]["duration"]
-        ))
-        return Track(
-            path,
-            title,
-            probe["format"]["duration"],
-            live=False,
-            local=True
-        )
-
     async def track_from_url(self, url):
         """Probes the audio resource at a given URL for audio metadata.
 
@@ -283,65 +340,6 @@ class Queue():
             Container for track metadata.
 
         """
-        null_log = logging.Logger("dummy")
-        null_log.addHandler(logging.NullHandler())
-
-        opts = {
-            # bestaudio prefers videoless streams, which often have a lower bitrate
-            # ironically not the best audio
-            # also highly values lower bitrate vorbis streams over higher bitrate opus?? why.
-            "format": "best[acodec=opus]/bestaudio[acodec=opus]/bestaudio/best",
-            "quiet": True,
-            "no_warnings": True,
-            "extract_flat": "in_playlist",
-            "logger": null_log,
-            "skip_download": True
-        }
-        scraper = youtube_dl.YoutubeDL(opts)
-        info = None
-        extractor_used = None
-        valid_extractors = ["Youtube", "YoutubePlaylist"]
-        for extractor in valid_extractors:
-            try:
-                info = await self.loop.run_in_executor(
-                    None,
-                    lambda: scraper.extract_info(url, download=False, ie_key=extractor)
-                )
-                extractor_used = extractor
-                # Break on first valid extraction
-                break
-            # Triggers when URL doesnt match extractor used
-            except youtube_dl.utils.DownloadError:
-                pass
-        # This check cannot have any awaits between it and the following queue.append()s
-        if self._queue_maxlen is not None and len(self.queue()) >= self._queue_maxlen:
-            # TODO: Send an error message to client once those are implemented
-            log.debug("queue full, abort")
-            return
-        if extractor_used == "Youtube":
-            log.debug("Enqueue [YouTube]{}({}) {}@{}abr, {}s".format(
-                info["title"],
-                info["id"],
-                info["acodec"],
-                info["abr"],
-                info["duration"]
-            ))
-            return Track(
-                info["url"],
-                info["title"],
-                info["duration"],
-                info["is_live"] or False,  # is_live is either True or None?? Thanks ytdl
-                local=False,
-                url="https://youtube.com/watch?v={}".format(info["id"])
-            )
-        elif extractor_used == "YoutubePlaylist":
-            if info["_type"] != "playlist":
-                raise uita.exceptions.ServerError("Unknown playlist type")
-            for entry in info["entries"]:
-                await self.enqueue("https://youtube.com/watch?v={}".format(entry["id"]))
-            return None
-        raise uita.exceptions.ClientError(uita.message.ErrorUrlInvalidMessage())
-
     async def _after_song(self):
         with await self._queue_lock:
             self._now_playing = None

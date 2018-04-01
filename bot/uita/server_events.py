@@ -86,7 +86,7 @@ async def file_upload_start(event):
         # Enqueue uploaded file
         try:
             voice = uita.state.voice_connections[event.active_server.id]
-            await voice.enqueue(file_path)
+            await voice.enqueue_file(file_path)
             # Signal the successful file upload
             await event.socket.send(str(uita.message.FileUploadCompleteMessage()))
         except Exception:
@@ -148,4 +148,4 @@ async def play_url(event):
     """Queues the audio from a given URL."""
     log.debug("play.url {}".format(event.message.url))
     voice = uita.state.voice_connections[event.active_server.id]
-    await voice.enqueue(event.message.url)
+    await voice.enqueue_url(event.message.url)
