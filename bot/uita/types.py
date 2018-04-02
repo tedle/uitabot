@@ -261,7 +261,19 @@ class DiscordVoiceClient():
         self.server_id = server_id
         self.loop = loop or asyncio.get_event_loop()
 
-        def on_queue_change(queue):
+        async def on_queue_change(queue, user=None):
+            # If the queue is changed and the bot is not connected to a voice channel, find the
+            # voice channel of the user who most recently changed the queue and join it.
+            # User is None for queue change callbacks that should not cause the bot to join a
+            # channel, such as queue re-ordering and removal
+            if self._voice is None and user is not None and len(queue) > 0:
+                discord_user = uita.bot.get_server(self.server_id).get_member(user.id)
+                if discord_user is not None:
+                    channel = discord_user.voice.voice_channel
+                    if channel is not None:
+                        await self.connect(channel.id)
+            elif len(queue) == 0:
+                await self.disconnect()
             message = uita.message.PlayQueueSendMessage(queue)
             uita.server.send_all(message, self.server_id)
         self._playlist = uita.audio.Queue(
@@ -273,24 +285,22 @@ class DiscordVoiceClient():
         self._voice = None
         self._voice_lock = asyncio.Lock(loop=self.loop)
 
-    async def connect(self, bot, channel_id):
+    async def connect(self, channel_id):
         """Connect bot to a voice a voice channel in this server.
 
         Parameters
         ----------
-        bot : discord.Client
-            Bot to connect with.
         channel_id : str
             ID of channel to connect to.
 
         """
-        bot_channel = bot.get_server(self.server_id).get_channel(channel_id)
+        channel = uita.bot.get_server(self.server_id).get_channel(channel_id)
         with await self._voice_lock:
             if self._voice is None:
-                self._voice = await bot.join_voice_channel(bot_channel)
+                self._voice = await uita.bot.join_voice_channel(channel)
                 await self._playlist.play(self._voice)
             else:
-                await self._voice.move_to(bot_channel)
+                await self._voice.move_to(channel)
 
     async def disconnect(self):
         """Disconnect bot from the voice channels in this server."""
@@ -300,13 +310,15 @@ class DiscordVoiceClient():
                 await self._voice.disconnect()
                 self._voice = None
 
-    async def enqueue_file(self, path):
+    async def enqueue_file(self, path, user):
         """Queues a file to be played by the running playlist task.
 
         Parameters
         ----------
         path : os.PathLike
             Path to audio resource to be played.
+        user : uita.types.DiscordUser
+            User that requested track.
 
         Raises
         ------
@@ -314,15 +326,17 @@ class DiscordVoiceClient():
             If called with an unusable audio URL.
 
         """
-        await self._playlist.enqueue_file(path)
+        await self._playlist.enqueue_file(path, user)
 
-    async def enqueue_url(self, url):
+    async def enqueue_url(self, url, user):
         """Queues a URL to be played by the running playlist task.
 
         Parameters
         ----------
         url : str
             URL for audio resource to be played.
+        user : uita.types.DiscordUser
+            User that requested track.
 
         Raises
         ------
@@ -330,7 +344,7 @@ class DiscordVoiceClient():
             If called with an unusable audio URL.
 
         """
-        await self._playlist.enqueue_url(url)
+        await self._playlist.enqueue_url(url, user)
 
     def queue(self):
         """Retrieves a list of currently queued audio resources for this connection.

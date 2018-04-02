@@ -18,7 +18,7 @@ async def channel_join(event):
     """Connect the bot to a given channel of the active server."""
     log.debug("channel join {}".format(event.message.channel_id))
     voice = uita.state.voice_connections[event.active_server.id]
-    await voice.connect(uita.bot, event.message.channel_id)
+    await voice.connect(event.message.channel_id)
 
 
 @uita.server.on_message("channel.leave")
@@ -89,7 +89,7 @@ async def file_upload_start(event):
             raise uita.exceptions.MalformedFile("Uploaded file exceeds maximum size")
         # Enqueue uploaded file
         try:
-            await voice.enqueue_file(file_path)
+            await voice.enqueue_file(file_path, event.user)
             # Signal the successful file upload
             await event.socket.send(str(uita.message.FileUploadCompleteMessage()))
         except Exception:
@@ -151,4 +151,4 @@ async def play_url(event):
     """Queues the audio from a given URL."""
     log.debug("play.url {}".format(event.message.url))
     voice = uita.state.voice_connections[event.active_server.id]
-    await voice.enqueue_url(event.message.url)
+    await voice.enqueue_url(event.message.url, event.user)

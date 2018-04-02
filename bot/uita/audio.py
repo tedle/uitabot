@@ -23,6 +23,8 @@ class Track():
     ----------
     path : str
         Path to audio resource for ffmpeg to load.
+    user : uita.types.DiscordUser
+        User that requested track.
     title : str
         Title of track.
     duration : int
@@ -38,6 +40,8 @@ class Track():
         Unique 32 character long ID.
     path : str
         Path to audio resource for ffmpeg to load.
+    user : uita.types.DiscordUser
+        User that requested track.
     title : str
         Title of track.
     duration : int
@@ -50,9 +54,10 @@ class Track():
         Offset in seconds to start track from.
 
     """
-    def __init__(self, path, title, duration, live, local, url=None):
+    def __init__(self, path, user, title, duration, live, local, url=None):
         self.id = uuid.uuid4().hex
         self.path = path
+        self.user = user
         self.title = title
         self.duration = duration
         self.live = live
@@ -152,13 +157,15 @@ class Queue():
             await self._play_task
         self._end_stream()
 
-    async def enqueue_file(self, path):
+    async def enqueue_file(self, path, user):
         """Queues a file to be played by the running playlist task.
 
         Parameters
         ----------
         path : os.PathLike
             Path for audio resource to be played.
+        user : uita.types.DiscordUser
+            User that requested track.
 
         Raises
         ------
@@ -195,7 +202,8 @@ class Queue():
                 tags.get("artist", "Unknown artist"),
                 tags.get("title", "Unknown title")
             )
-        log.debug("Enqueue [Local]{}, {}s".format(
+        log.debug("[{}]Enqueue [Local]{}, {}s".format(
+            user.name,
             title,
             probe["format"]["duration"]
         ))
@@ -204,20 +212,23 @@ class Queue():
             raise uita.exceptions.ClientError(uita.message.ErrorQueueFullMessage())
         self._queue.append(Track(
             path,
+            user,
             title,
             probe["format"]["duration"],
             live=False,
             local=True
         ))
-        self._notify_queue_change()
+        await self._notify_queue_change(user)
 
-    async def enqueue_url(self, url):
+    async def enqueue_url(self, url, user):
         """Queues a URL to be played by the running playlist task.
 
         Parameters
         ----------
         url : str
             URL for audio resource to be played.
+        user : uita.types.DiscordUser
+            User that requested track.
 
         Raises
         ------
@@ -259,7 +270,8 @@ class Queue():
         if self.queue_full():
             raise uita.exceptions.ClientError(uita.message.ErrorQueueFullMessage())
         if extractor_used == "Youtube":
-            log.debug("Enqueue [YouTube]{}({}) {}@{}abr, {}s".format(
+            log.debug("[{}]Enqueue [YouTube]{}({}) {}@{}abr, {}s".format(
+                user.name,
                 info["title"],
                 info["id"],
                 info["acodec"],
@@ -268,18 +280,19 @@ class Queue():
             ))
             self._queue.append(Track(
                 info["url"],
+                user,
                 info["title"],
                 info["duration"],
                 info["is_live"] or False,  # is_live is either True or None?? Thanks ytdl
                 local=False,
                 url="https://youtube.com/watch?v={}".format(info["id"])
             ))
-            self._notify_queue_change()
+            await self._notify_queue_change(user)
         elif extractor_used == "YoutubePlaylist":
             if info["_type"] != "playlist":
                 raise uita.exceptions.ServerError("Unknown playlist type")
             for entry in info["entries"]:
-                await self.enqueue_url("https://youtube.com/watch?v={}".format(entry["id"]))
+                await self.enqueue_url("https://youtube.com/watch?v={}".format(entry["id"]), user)
         else:
             raise uita.exceptions.ClientError(uita.message.ErrorUrlInvalidMessage())
 
@@ -315,7 +328,7 @@ class Queue():
                 if track.id == track_id:
                     del self._queue[index]
                     self._queue.insert(position, track)
-                    self._notify_queue_change()
+                    await self._notify_queue_change()
                     return
 
     async def remove(self, track_id):
@@ -335,7 +348,7 @@ class Queue():
             for track in self._queue:
                 if track.id == track_id:
                     self._queue.remove(track)
-                    self._notify_queue_change()
+                    await self._notify_queue_change()
                     return
 
     async def track_from_url(self, url):
@@ -355,7 +368,7 @@ class Queue():
     async def _after_song(self):
         with await self._queue_lock:
             self._now_playing = None
-            self._notify_queue_change()
+            await self._notify_queue_change()
             self._end_stream()
 
     async def _play_loop(self, voice):
@@ -365,7 +378,10 @@ class Queue():
                 with await self._queue_lock:
                     if self._player is None and len(self._queue) > 0:
                         self._now_playing = self._queue.popleft()
-                        log.debug("Now playing {}".format(self._now_playing.title))
+                        log.debug("[{}]Now playing {}".format(
+                            self._now_playing.user.name,
+                            self._now_playing.title
+                        ))
                         # Set encoder options that are injected into ffmpeg
                         voice.encoder_options(
                             sample_rate=FfmpegStream.SAMPLE_RATE,
@@ -399,9 +415,9 @@ class Queue():
         except Exception as e:
             log.error("Unhandled exception: {}", e)
 
-    def _notify_queue_change(self):
+    async def _notify_queue_change(self, user=None):
         self._queue_update_flag.set()
-        self._on_queue_change(self.queue())
+        await self._on_queue_change(self.queue(), user)
 
     def _end_stream(self):
         if self._stream is not None:
