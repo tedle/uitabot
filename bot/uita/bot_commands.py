@@ -67,6 +67,22 @@ async def parse(message):
         )
 
 
+async def set_prefix(prefix):
+    """Sets the prefix used to trigger bot commands. Updates client presence to show help command.
+
+    Parameters
+    ----------
+    prefix : str
+        Command prefix.
+
+    """
+    global _COMMAND_PREFIX
+    _COMMAND_PREFIX = prefix
+    await uita.bot.change_presence(
+        game=discord.Game(name="{}help".format(_COMMAND_PREFIX), type=2)
+    )
+
+
 @command("help", "?", help="Shows this potentially useful message")
 async def help(message, params):
     help_message = discord.Embed(title="Commands", color=_EMBED_COLOUR)

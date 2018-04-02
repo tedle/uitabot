@@ -20,6 +20,7 @@ def bot_ready(function):
 async def on_ready():
     log.info("Bot connected to Discord")
     uita.state.initialize_from_bot(uita.bot)
+    await uita.bot_commands.set_prefix(".")
 
 
 @uita.bot.event
