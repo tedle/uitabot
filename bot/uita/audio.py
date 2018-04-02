@@ -70,7 +70,7 @@ class Queue():
         Maximum queue size. Default is `None`, which is unlimited.
     on_queue_change : callback(list), optional
         Callback that is triggered everytime the state of the playback queue changes. Function
-        accepts a list of `uita.audio.Track`s as its only argument.
+        accepts a list of `uita.audio.Track` as its only argument.
     loop : asyncio.AbstractEventLoop, optional
         Event loop for audio tasks to run in.
 

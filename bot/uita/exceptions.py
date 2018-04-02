@@ -5,8 +5,8 @@ import uita.message
 class ClientError(Exception):
     """Occurs when a server event fails and needs to notify to the client.
 
-    Unlike other uncaught errors caused by a server event, `ClientError`s will not cause a
-    connection closure.
+    Unlike other uncaught errors caused by a server event, `uita.exceptions.ClientError` will not
+    cause a connection closure.
 
     Parameters
     ----------
