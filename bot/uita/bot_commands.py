@@ -85,7 +85,14 @@ async def set_prefix(prefix):
 
 @command("help", "?", help="Shows this potentially useful message")
 async def help(message, params):
-    help_message = discord.Embed(title="Commands", color=_EMBED_COLOUR)
+    help_message = discord.Embed(
+        title="Help info",
+        description=(
+            "**{}** can be controlled using the web client at {}\n\n" +
+            "**Commands**"
+        ).format(uita.bot.user.name, uita.utils.build_client_url(uita.server.config)),
+        color=_EMBED_COLOUR
+    )
     for cmd in _COMMAND_HELP:
         name = ", ".join(["`{}{}`".format(_COMMAND_PREFIX, c) for c in cmd[0]])
         help_message.add_field(

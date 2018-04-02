@@ -174,10 +174,7 @@ class Server():
             self._on_connect, host=config.bot.domain, port=config.bot.port,
             loop=self.loop, origins=origins, ssl=ssl_context
         )
-        log.info("Server listening on ws{}://{}:{}".format(
-            "s" if ssl_context is not None else "",
-            config.bot.domain, config.bot.port
-        ))
+        log.info("Server listening on {}".format(uita.utils.build_websocket_url(self.config)))
 
     async def stop(self):
         """Closes all active connections and destroys listen server.
