@@ -20,6 +20,12 @@ Authentication
 .. autofunction:: verify_session
 .. autofunction:: verify_code
 
+Bot Commands
+------------
+.. automodule:: uita.bot_commands
+.. autofunction:: command
+.. autofunction:: parse
+
 Config
 ------
 .. automodule:: uita.config

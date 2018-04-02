@@ -4,3 +4,4 @@ uitabot Documentation
    :maxdepth: 2
 
    api
+   bot_commands

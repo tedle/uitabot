@@ -1,4 +1,5 @@
 """Event triggers for Discord client to synchronize API state with uitabot."""
+import uita.bot_commands
 import uita.types
 import uita
 
@@ -63,6 +64,14 @@ async def on_member_remove(member):
 @bot_ready
 async def on_member_update(before, after):
     return
+
+
+@uita.bot.event
+@bot_ready
+async def on_message(message):
+    if message.author == uita.bot.user:
+        return
+    await uita.bot_commands.parse(message)
 
 
 @uita.bot.event
