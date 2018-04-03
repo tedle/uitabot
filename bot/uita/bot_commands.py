@@ -13,6 +13,10 @@ _COMMAND_PREFIX = "."
 _COMMANDS = {}
 _COMMAND_HELP = []
 _EMBED_COLOUR = 14721770
+_EMOJI = {
+    "ok": "\u2B55",
+    "error": "\u274C"
+}
 
 
 def command(*args, **kwargs):
@@ -62,8 +66,8 @@ async def parse(message):
     else:
         await uita.bot.send_message(
             message.channel, (
-                "Unknown command. Try `{0}help` for a list of commands."
-            ).format(_COMMAND_PREFIX)
+                "{} Unknown command. Try `{}help` for a list of commands."
+            ).format(_EMOJI["error"], _COMMAND_PREFIX)
         )
 
 
@@ -101,3 +105,22 @@ async def help(message, params):
             inline=False
         )
     await uita.bot.send_message(message.channel, content="", embed=help_message)
+
+
+@command("join", "j", help="Joins your voice channel")
+async def join(message, params):
+    channel = message.author.voice.voice_channel
+    if channel is not None:
+        voice = uita.state.voice_connections[message.server.id]
+        await voice.connect(channel.id)
+    else:
+        await uita.bot.send_message(
+            message.channel,
+            content="{} You aren't in a voice channel (that I can see)".format(_EMOJI["error"])
+        )
+
+
+@command("leave", "l", help="Leaves the voice channel")
+async def leave(message, params):
+    voice = uita.state.voice_connections[message.server.id]
+    await voice.disconnect()
