@@ -1,3 +1,4 @@
+"""Audio queue management."""
 import asyncio
 import atexit
 import collections
@@ -8,9 +9,9 @@ import subprocess
 import threading
 import time
 import uuid
-import youtube_dl
 
 import uita.exceptions
+import uita.youtube
 
 import logging
 log = logging.getLogger(__name__)
@@ -236,40 +237,11 @@ class Queue():
             If called with an unusable audio path.
 
         """
-        null_log = logging.Logger("dummy")
-        null_log.addHandler(logging.NullHandler())
-
-        opts = {
-            # bestaudio prefers videoless streams, which often have a lower bitrate
-            # ironically not the best audio
-            # also highly values lower bitrate vorbis streams over higher bitrate opus?? why.
-            "format": "best[acodec=opus]/bestaudio[acodec=opus]/bestaudio/best",
-            "quiet": True,
-            "no_warnings": True,
-            "extract_flat": "in_playlist",
-            "logger": null_log,
-            "skip_download": True
-        }
-        scraper = youtube_dl.YoutubeDL(opts)
-        info = None
-        extractor_used = None
-        valid_extractors = ["Youtube", "YoutubePlaylist"]
-        for extractor in valid_extractors:
-            try:
-                info = await self.loop.run_in_executor(
-                    None,
-                    lambda: scraper.extract_info(url, download=False, ie_key=extractor)
-                )
-                extractor_used = extractor
-                # Break on first valid extraction
-                break
-            # Triggers when URL doesnt match extractor used
-            except youtube_dl.utils.DownloadError:
-                pass
+        info = await uita.youtube.scrape(url, loop=self.loop)
         # This check cannot have any awaits between it and the following queue.append()s
         if self.queue_full():
             raise uita.exceptions.ClientError(uita.message.ErrorQueueFullMessage())
-        if extractor_used == "Youtube":
+        if info["extractor"] == "Youtube":
             log.debug("[{}]Enqueue [YouTube]{}({}) {}@{}abr, {}s".format(
                 user.name,
                 info["title"],
@@ -288,7 +260,7 @@ class Queue():
                 url="https://youtube.com/watch?v={}".format(info["id"])
             ))
             await self._notify_queue_change(user)
-        elif extractor_used == "YoutubePlaylist":
+        elif info["extractor"] == "YoutubePlaylist":
             if info["_type"] != "playlist":
                 raise uita.exceptions.ServerError("Unknown playlist type")
             for entry in info["entries"]:
