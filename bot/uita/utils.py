@@ -68,6 +68,19 @@ def cache_dir():
     return cache
 
 
+def config_file():
+    """Gets the absolute path to the config file.
+
+    Returns
+    -------
+    os.PathLike
+        Path to config file.
+
+    """
+    config = os.path.join(install_dir(), os.path.pardir, "config.json")
+    return config
+
+
 async def prune_cache_dir(whitelist=None, loop=None):
     """Prunes the cache directory of unused files.
 

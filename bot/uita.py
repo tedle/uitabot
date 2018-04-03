@@ -24,7 +24,7 @@ if __name__ == "__main__":
     try:
         # Initialization
         initialize_logging()
-        config = uita.config.load("../config.json")
+        config = uita.config.load(uita.utils.config_file())
         uita.loop.create_task(uita.server.start(":memory:", config, loop=uita.loop))
         uita.loop.create_task(uita.bot.start(config.discord.token))
         # Main loop
