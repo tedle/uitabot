@@ -70,7 +70,7 @@ async def on_member_update(before, after):
 @uita.bot.event
 @bot_ready
 async def on_message(message):
-    if message.author == uita.bot.user:
+    if message.author == uita.bot.user or message.channel.is_private is True:
         return
     await uita.bot_commands.parse(message)
 
