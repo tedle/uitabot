@@ -15,6 +15,8 @@ async def scrape(url, loop=None):
     ----------
     url : str
         URL for audio resource to be played.
+    loop : asyncio.AbstractEventLoop, optional
+        Event loop to attach to launch worker threads from.
 
     Returns
     -------
@@ -55,4 +57,68 @@ async def scrape(url, loop=None):
         # Triggers when URL doesnt match extractor used
         except youtube_dl.utils.DownloadError:
             pass
+    raise uita.exceptions.ClientError(uita.message.ErrorUrlInvalidMessage())
+
+
+async def search(query, results=5, loop=None):
+    """Queries YouTube for search results.
+
+    Parameters
+    ----------
+    query : str
+        Search query for audio resource to be found.
+    results : int, optional
+        Number of results to retrieve, default ``5``.
+    loop : asyncio.AbstractEventLoop, optional
+        Event loop to attach to launch worker threads from.
+
+    Returns
+    -------
+    list
+        List of search results.
+
+    Raises
+    ------
+    uita.exceptions.ClientError
+        If called with an unusable search query.
+
+    """
+    loop = loop or asyncio.get_event_loop()
+    null_log = logging.Logger("dummy")
+    null_log.addHandler(logging.NullHandler())
+
+    opts = {
+        "quiet": True,
+        "no_warnings": True,
+        "logger": null_log,
+        "skip_download": True
+    }
+    scraper = youtube_dl.YoutubeDL(opts)
+    try:
+        results = await loop.run_in_executor(
+            None,
+            lambda: scraper.extract_info("ytsearch{}:{}".format(results, query), download=False)
+        )
+        # Filter out any entries that aren't in this whitelist
+        whitelist = set([
+            "id",
+            "duration",
+            "is_live",
+            "thumbnail",
+            "title",
+            "uploader",
+            "view_count"
+        ])
+        entries = [
+            dict(filter(lambda x: x[0] in whitelist, e.items()))
+            for e in results["entries"]
+        ]
+        # By default is True or None for some reason
+        for entry in entries:
+            entry["is_live"] = entry["is_live"] or False
+            entry["url"] = "https://youtube.com/watch?v={}".format(entry["id"])
+        return entries
+    # Triggers when query doesnt match extractor used
+    except youtube_dl.utils.DownloadError:
+        pass
     raise uita.exceptions.ClientError(uita.message.ErrorUrlInvalidMessage())
