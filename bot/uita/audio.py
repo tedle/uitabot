@@ -485,7 +485,7 @@ class FfmpegStream():
             log.error("Audio process queue has mismatched frame_size and read size.")
             return b""
         try:
-            return self._buffer.get(timeout=5)
+            return self._buffer.get(timeout=10)
         except queue.Empty:
             log.warn("Audio process queue is not being produced")
             self.stop()
@@ -531,7 +531,7 @@ class FfmpegStream():
                 # However! Since we use daemon threads, this method would just leave dangling
                 # ffmpeg processes on exit, and so we must register every spawned process to be
                 # cleaned up on exit. Python is really pretty terrible for concurrency. Chears.
-                self._buffer.put(data, timeout=5)
+                self._buffer.put(data, timeout=10)
                 if need_set_ready is True:
                     self._is_ready.set()
                     need_set_ready = False
