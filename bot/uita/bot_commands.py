@@ -15,7 +15,8 @@ _COMMAND_HELP = []
 _EMBED_COLOUR = 14721770
 _EMOJI = {
     "ok": "\u2B55",
-    "error": "\u274C"
+    "error": "\u274C",
+    "loading": "\U0001F504"
 }
 
 
@@ -105,6 +106,43 @@ async def help(message, params):
             inline=False
         )
     await uita.bot.send_message(message.channel, content="", embed=help_message)
+
+
+@command("play", "p", help="Enqueues a provided `<URL>`")
+async def play(message, params):
+    voice = uita.state.voice_connections[message.server.id]
+    user = uita.types.DiscordUser(message.author.id, message.author.name, None, message.server.id)
+    response = await uita.bot.send_message(
+        message.channel,
+        content="{} Processing...".format(_EMOJI["loading"])
+    )
+    try:
+        await voice.enqueue_url(params, user)
+        await uita.bot.edit_message(
+            response,
+            new_content="{} Got it!".format(_EMOJI["ok"])
+        )
+    except uita.exceptions.ClientError as error:
+        if error.message.header == uita.message.ErrorQueueFullMessage.header:
+            await uita.bot.edit_message(
+                response,
+                new_content="{} Queue is full, sorry!".format(_EMOJI["error"])
+            )
+        elif error.message.header == uita.message.ErrorUrlInvalidMessage.header:
+            await uita.bot.edit_message(
+                response,
+                new_content="{} That URL was no good, sorry!".format(_EMOJI["error"])
+            )
+        else:
+            await uita.bot.edit_message(
+                response,
+                new_content="{} Not feeling up to it, sorry!".format(_EMOJI["error"])
+            )
+    except Exception:
+        await uita.bot.edit_message(
+            response,
+            new_content="{} Not feeling up to it, sorry!".format(_EMOJI["error"])
+        )
 
 
 @command("join", "j", help="Joins your voice channel")

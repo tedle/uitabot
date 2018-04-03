@@ -30,6 +30,7 @@ class ClientError(Exception):
                 "uita.exceptions.ClientError must be initialized with uita.message.AbstractMessage"
             )
         super().__init__(message)
+        self.message = message
 
 
 class AuthenticationError(Exception):
