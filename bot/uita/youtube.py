@@ -95,7 +95,7 @@ async def search(query, results=5, loop=None):
     }
     scraper = youtube_dl.YoutubeDL(opts)
     try:
-        results = await loop.run_in_executor(
+        search_results = await loop.run_in_executor(
             None,
             lambda: scraper.extract_info("ytsearch{}:{}".format(results, query), download=False)
         )
@@ -111,7 +111,7 @@ async def search(query, results=5, loop=None):
         ])
         entries = [
             dict(filter(lambda x: x[0] in whitelist, e.items()))
-            for e in results["entries"]
+            for e in search_results["entries"]
         ]
         # By default is True or None for some reason
         for entry in entries:
