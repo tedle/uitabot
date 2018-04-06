@@ -2,7 +2,7 @@
 import discord
 
 import uita.types
-import uita.youtube
+import uita.youtube_api
 import uita
 
 import logging
@@ -165,7 +165,12 @@ async def search(message, params):
     try:
         # Scrape YouTube for search result
         result_max = 5
-        results = await uita.youtube.search(params, results=result_max, loop=uita.bot.loop)
+        results = await uita.youtube_api.search(
+            params,
+            api_key=uita.server.config.youtube.api_key,
+            results=result_max,
+            loop=uita.bot.loop
+        )
         # Build a choice picking menu from the results
         description = ""
         for i in range(result_max):
@@ -174,10 +179,12 @@ async def search(message, params):
             description += "{}**{}** ({})\n".format(
                 emoji,
                 result["title"],
-                "live" if result["is_live"] else (str(result["duration"]) + "s")
+                "Live" if result["live"] else "{:0>2}:{:0>2}:{:0>2}".format(
+                    int(result["duration"] / (60 * 60)),
+                    int((result["duration"] / 60) % 60),
+                    int(result["duration"] % 60)
+                )
             )
-            # The reaction is a button that lets the user choose a result
-            await uita.bot.add_reaction(response, emoji)
         embed_results = discord.Embed(
             title="Search results",
             description=description,
@@ -189,12 +196,16 @@ async def search(message, params):
             new_content="{} Choose your future song".format(_EMOJI["wait"]),
             embed=embed_results
         )
+        # Build a responsive UI out of emoji reactions
+        for i in range(result_max):
+            emoji = _EMOJI["numbers"][i+1]
+            await uita.bot.add_reaction(response, emoji)
         # Wait for the user to make a choice
         reaction = await uita.bot.wait_for_reaction(
             emoji=[_EMOJI["numbers"][i+1] for i in range(result_max)],
             message=response,
             user=message.author,
-            timeout=10
+            timeout=30
         )
         # If we timed out just delete the message
         if reaction is None:
@@ -236,7 +247,7 @@ async def search(message, params):
         )
         song_info.add_field(
             name="Duration",
-            value="Live" if song["is_live"] else "{:0>2}:{:0>2}:{:0>2}".format(
+            value="Live" if song["live"] else "{:0>2}:{:0>2}:{:0>2}".format(
                 int(song["duration"] / (60 * 60)),
                 int((song["duration"] / 60) % 60),
                 int(song["duration"] % 60)

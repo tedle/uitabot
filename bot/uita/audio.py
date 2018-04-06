@@ -11,7 +11,7 @@ import time
 import uuid
 
 import uita.exceptions
-import uita.youtube
+import uita.youtube_api
 
 import logging
 log = logging.getLogger(__name__)
@@ -237,7 +237,7 @@ class Queue():
             If called with an unusable audio path.
 
         """
-        info = await uita.youtube.scrape(url, loop=self.loop)
+        info = await uita.youtube_api.scrape(url, loop=self.loop)
         # This check cannot have any awaits between it and the following queue.append()s
         if self.queue_full():
             raise uita.exceptions.ClientError(uita.message.ErrorQueueFullMessage())
