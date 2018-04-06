@@ -196,10 +196,15 @@ async def search(message, params):
             new_content="{} Choose your future song".format(_EMOJI["wait"]),
             embed=embed_results
         )
+
         # Build a responsive UI out of emoji reactions
-        for i in range(result_max):
-            emoji = _EMOJI["numbers"][i+1]
-            await uita.bot.add_reaction(response, emoji)
+        async def add_reactions():
+            for i in range(result_max):
+                emoji = _EMOJI["numbers"][i+1]
+                await uita.bot.add_reaction(response, emoji)
+        # Run the task separately so if a reaction is clicked while the loop is running we will
+        # still respond to it
+        uita.bot.loop.create_task(add_reactions())
         # Wait for the user to make a choice
         reaction = await uita.bot.wait_for_reaction(
             emoji=[_EMOJI["numbers"][i+1] for i in range(result_max)],
