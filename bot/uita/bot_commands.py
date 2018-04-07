@@ -290,6 +290,35 @@ async def search(message, params):
         raise
 
 
+@command("skip", help="Skips the currently playing song")
+async def skip(message, params):
+    voice = uita.state.voice_connections[message.server.id]
+    queue = voice.queue()
+    if len(queue) > 0:
+        await voice.remove(queue[0].id)
+        await uita.bot.send_message(
+            message.channel,
+            content="{} Skipped `{}`".format(_EMOJI["ok"], queue[0].title)
+        )
+    else:
+        await uita.bot.send_message(
+            message.channel,
+            content="{} The queue is already empty".format(_EMOJI["error"])
+        )
+
+
+@command("clear", help="Empties the playback queue")
+async def clear(message, params):
+    voice = uita.state.voice_connections[message.server.id]
+    # Start from the back so we don't have to await currently playing songs
+    for track in reversed(voice.queue()):
+        await voice.remove(track.id)
+    await uita.bot.send_message(
+        message.channel,
+        content="{} The queue has been emptied".format(_EMOJI["ok"])
+    )
+
+
 @command("join", "j", help="Joins your voice channel")
 async def join(message, params):
     channel = message.author.voice.voice_channel
