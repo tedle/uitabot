@@ -1,5 +1,6 @@
 const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
+const ExtractTextPlugin = require("extract-text-webpack-plugin");
 const config = require("../config.json");
 
 const bot_url = `ws${config.ssl.cert_file.length > 0 ? "s" : ""}://`
@@ -24,8 +25,15 @@ module.exports = {
     module: {
         rules: [
             {
-                use: "babel-loader",
                 test: /\.js$/,
+                use: "babel-loader",
+                exclude: /node_modules/
+            },
+            {
+                test: /\.css$/,
+                use: ExtractTextPlugin.extract({
+                    use: "css-loader"
+                }),
                 exclude: /node_modules/
             }
         ]
@@ -35,7 +43,8 @@ module.exports = {
             template: "./src/index.html",
             filename: "./index.html",
             bot_url: bot_url
-        })
+        }),
+        new ExtractTextPlugin("styles.css")
     ],
     externals: {
         config: JSON.stringify({
