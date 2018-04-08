@@ -1,11 +1,11 @@
-// --- dashboard.js ------------------------------------------------------------
+// --- Dashboard.js ------------------------------------------------------------
 // Component for interacting with the backend bot, contains music list, etc
 
 import React from "react";
-import FileUploadDropZone from "./file-upload.js";
-import LivePlaylist from "./live-playlist.js";
-import SearchBox from "./search-box.js";
-import VoiceChannelSelect from "./voice-channel-select.js";
+import FileUploadDropZone from "./FileUpload/FileUpload";
+import LivePlaylist from "./LivePlaylist/LivePlaylist";
+import SearchBox from "./SearchBox/SearchBox";
+import VoiceChannelSelect from "./VoiceChannelSelect/VoiceChannelSelect";
 
 export default class Dashboard extends React.Component {
     constructor(props) {

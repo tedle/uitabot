@@ -1,4 +1,4 @@
-// --- youtube-api.js ----------------------------------------------------------
+// --- YoutubeApi.js -----------------------------------------------------------
 // YouTube API request functions
 
 import * as Config from "config";

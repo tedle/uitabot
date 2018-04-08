@@ -1,8 +1,8 @@
-// --- voice-channel-select.js -------------------------------------------------
+// --- VoiceChannelSelect.js ---------------------------------------------------
 // Component for commanding bot to join voice channels
 
 import React from "react";
-import * as Message from "./message.js";
+import * as Message from "utils/Message";
 
 export default class VoiceChannelSelect extends React.Component {
     constructor(props) {

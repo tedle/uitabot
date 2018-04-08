@@ -1,14 +1,14 @@
-// --- app.js ------------------------------------------------------------------
+// --- App.js ------------------------------------------------------------------
 // Main component containing the frontend app
 
 import React from "react";
 import * as Config from "config";
-import * as Message from "./message.js";
-import * as Session from "./session.js";
-import * as DiscordOauth from "./discord-oauth.js";
-import Authenticate from "./authenticate.js";
-import Dashboard from "./dashboard.js";
-import ServerSelect from "./server-select.js";
+import * as Message from "utils/Message";
+import * as Session from "utils/Session";
+import * as DiscordOauth from "utils/DiscordOauth";
+import Authenticate from "./Authenticate/Authenticate";
+import Dashboard from "./Dashboard/Dashboard";
+import ServerSelect from "./ServerSelect/ServerSelect";
 
 export default class App extends React.Component {
     constructor(props) {

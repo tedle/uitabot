@@ -1,8 +1,8 @@
-// --- live-playlist.js --------------------------------------------------------
+// --- LivePlaylist.js ---------------------------------------------------------
 // Component for viewing queued music
 
 import React from "react";
-import * as Message from "./message.js";
+import * as Message from "utils/Message";
 
 export default class LivePlaylist extends React.Component {
     constructor(props) {

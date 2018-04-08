@@ -1,8 +1,8 @@
-// --- server-select.js --------------------------------------------------------
+// --- ServerSelect.js ---------------------------------------------------------
 // Component for selecting the server to play music in
 
 import React from "react";
-import * as Message from "./message.js";
+import * as Message from "utils/Message";
 
 export default class ServerSelect extends React.Component {
     constructor(props) {

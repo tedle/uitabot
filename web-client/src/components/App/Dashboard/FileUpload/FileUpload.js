@@ -1,11 +1,10 @@
-// --- file-upload.js ----------------------------------------------------------
+// --- FileUpload.js -----------------------------------------------------------
 // Component for drag and drop file uploads via websocket
 
 import React from "react";
 import * as Config from "config";
-import * as Message from "./message.js";
-import * as Session from "./session.js";
-import * as Utils from "./utils.js";
+import * as Message from "utils/Message";
+import * as Session from "utils/Session";
 
 export default class FileUploadDropZone extends React.Component {
     constructor(props) {

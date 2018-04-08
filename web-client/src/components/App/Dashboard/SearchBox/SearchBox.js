@@ -1,9 +1,9 @@
-// --- searchbox.js ------------------------------------------------------------
+// --- SearchBox.js ------------------------------------------------------------
 // Component for searching and queueing audio
 
 import React from "react";
-import * as Message from "./message.js";
-import * as Youtube from "./youtube-api.js";
+import * as Message from "utils/Message";
+import * as Youtube from "utils/YoutubeApi";
 
 export default class SearchBox extends React.Component {
     constructor(props) {

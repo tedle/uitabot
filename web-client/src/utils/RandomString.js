@@ -1,8 +1,7 @@
-// --- utils.js ----------------------------------------------------------------
-// Utility functions
-
+// --- RandomString.js ---------------------------------------------------------
 // Generate a cryptographically secure random string
-export function randomString(length) {
+
+export default function(length) {
     // Each byte is encoded as 2 characters, so half length
     let byteArray = new Uint8Array(length / 2);
     window.crypto.getRandomValues(byteArray);

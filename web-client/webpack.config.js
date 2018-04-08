@@ -11,6 +11,12 @@ const client_url = `http${config.ssl.cert_file.length > 0 ? "s" : ""}://`
 
 module.exports = {
     entry: ["./src/index.js"],
+    resolve: {
+        alias: {
+            components: path.resolve(__dirname, "src/components"),
+            utils: path.resolve(__dirname, "src/utils")
+        }
+    },
     output: {
         filename: "app.js",
         path: path.resolve(__dirname, "build")

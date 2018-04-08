@@ -1,11 +1,11 @@
-// --- authenticate.js ---------------------------------------------------------
+// --- Authenticate.js ---------------------------------------------------------
 // Component for doing backend authentication
 
 import React from "react";
 import * as QueryString from "query-string";
-import * as Message from "./message.js";
-import * as Session from "./session.js";
-import * as DiscordOauth from "./discord-oauth.js";
+import * as Message from "utils/Message";
+import * as Session from "utils/Session";
+import * as DiscordOauth from "utils/DiscordOauth";
 
 export default class Authenticate extends React.Component {
     constructor(props) {

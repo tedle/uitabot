@@ -1,8 +1,8 @@
-// --- discord-oauth.js --------------------------------------------------------
+// --- DiscordOauth.js ---------------------------------------------------------
 // Utility functions for interfacing with Discord OAuth API
 
 import Cookie from "js-cookie";
-import * as Utils from "./utils.js";
+import RandomString from "utils/RandomString";
 
 // Generates a "login" URL based on config.json and Discord requirements
 export function createOauthUrl(clientId, redirectUrl) {
@@ -24,7 +24,7 @@ export function createOauthUrl(clientId, redirectUrl) {
 // Generate a long, cryptographically random string and store it in a cookie
 // This will be sent to the Discord API and then passed back to us to verify
 export function createState() {
-    let state = Utils.randomString(64);
+    let state = RandomString(64);
     Cookie.set("state", state);
     return state;
 }

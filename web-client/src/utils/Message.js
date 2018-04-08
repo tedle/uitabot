@@ -1,4 +1,4 @@
-// --- message.js --------------------------------------------------------------
+// --- Message.js --------------------------------------------------------------
 // Utility classes for parsing and building network packets
 // For detailed breakdown on protocol uses, see /bot/uita/message.py
 
