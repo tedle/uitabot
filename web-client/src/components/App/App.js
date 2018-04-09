@@ -1,7 +1,7 @@
 // --- App.js ------------------------------------------------------------------
 // Main component containing the frontend app
 
-import "./App.css";
+import "./App.scss";
 
 import React from "react";
 import * as Config from "config";
