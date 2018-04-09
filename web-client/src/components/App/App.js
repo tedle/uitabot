@@ -10,6 +10,7 @@ import * as Session from "utils/Session";
 import * as DiscordOauth from "utils/DiscordOauth";
 import Authenticate from "./Authenticate/Authenticate";
 import Dashboard from "./Dashboard/Dashboard";
+import Login from "./Login/Login";
 import ServerSelect from "./ServerSelect/ServerSelect";
 
 export default class App extends React.Component {
@@ -90,7 +91,7 @@ export default class App extends React.Component {
         // Display the login page if authentication has failed
         if (this.state.needLogin) {
             const oauthUrl = DiscordOauth.createOauthUrl(Config.client_id, Config.client_url);
-            return <p>need to <a href={oauthUrl}>login</a></p>;
+            return <Login url={oauthUrl}/>;
         }
 
         // Establishing connection with backend, SSL handshake, etc
