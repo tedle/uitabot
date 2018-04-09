@@ -5,6 +5,8 @@
         <meta http-equiv="Content-Security-Policy" content="
             default-src 'self';
             connect-src 'self' <%= htmlWebpackPlugin.options.bot_url %> https://www.googleapis.com/youtube/v3/;
+            style-src 'self' https://fonts.googleapis.com/css;
+            font-src 'self' https://fonts.gstatic.com/;
             img-src i.ytimg.com yt3.ggpht.com;
         ">
         <title>uitabot</title>
