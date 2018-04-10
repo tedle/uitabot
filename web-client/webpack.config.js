@@ -1,6 +1,7 @@
 const path = require("path");
+const CleanWebpackPlugin = require("clean-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
-const ExtractTextPlugin = require("extract-text-webpack-plugin");
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const config = require("../config.json");
 
 const bot_url = `ws${config.ssl.cert_file.length > 0 ? "s" : ""}://`
@@ -21,7 +22,7 @@ module.exports = {
         }
     },
     output: {
-        filename: "assets/[chunkhash].js",
+        filename: "assets/[contenthash].js",
         path: path.resolve(__dirname, "build")
     },
     module: {
@@ -33,9 +34,7 @@ module.exports = {
             },
             {
                 test: /\.scss$/,
-                use: ExtractTextPlugin.extract({
-                    use: ["css-loader", "sass-loader"]
-                }),
+                use: [MiniCssExtractPlugin.loader, "css-loader", "sass-loader"],
                 exclude: /node_modules/
             },
             {
@@ -46,12 +45,13 @@ module.exports = {
         ]
     },
     plugins: [
+        new CleanWebpackPlugin(["build"]),
         new HtmlWebpackPlugin({
             template: "./src/index.html",
             filename: "./index.html",
             bot_url: bot_url
         }),
-        new ExtractTextPlugin("styles.css")
+        new MiniCssExtractPlugin({ filename: "assets/[contenthash].css" })
     ],
     externals: {
         config: JSON.stringify({
@@ -61,6 +61,7 @@ module.exports = {
             "client_url": client_url
         })
     },
+    devtool: "none",
     devServer: {
         contentBase: "./build"
     }
