@@ -2,6 +2,7 @@ const path = require("path");
 const CleanWebpackPlugin = require("clean-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const OptimizeCssAssetsPlugin = require("optimize-css-assets-webpack-plugin");
 const config = require("../config.json");
 
 const bot_url = `ws${config.ssl.cert_file.length > 0 ? "s" : ""}://`
@@ -51,7 +52,8 @@ module.exports = {
             filename: "./index.html",
             bot_url: bot_url
         }),
-        new MiniCssExtractPlugin({ filename: "assets/[contenthash].css" })
+        new MiniCssExtractPlugin({ filename: "assets/[contenthash].css" }),
+        new OptimizeCssAssetsPlugin()
     ],
     externals: {
         config: JSON.stringify({
