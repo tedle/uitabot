@@ -14,13 +14,14 @@ module.exports = {
     entry: ["./src/index.js"],
     resolve: {
         alias: {
+            assets: path.resolve(__dirname, "src/assets"),
             components: path.resolve(__dirname, "src/components"),
             styles: path.resolve(__dirname, "src/styles"),
             utils: path.resolve(__dirname, "src/utils")
         }
     },
     output: {
-        filename: "app.js",
+        filename: "assets/[chunkhash].js",
         path: path.resolve(__dirname, "build")
     },
     module: {
@@ -35,6 +36,11 @@ module.exports = {
                 use: ExtractTextPlugin.extract({
                     use: ["css-loader", "sass-loader"]
                 }),
+                exclude: /node_modules/
+            },
+            {
+                test: /\.svg$/,
+                use: "url-loader",
                 exclude: /node_modules/
             }
         ]
