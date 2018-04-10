@@ -1,0 +1,8 @@
+@import "~styles/common";
+
+.Loading {
+    @include center;
+    @include desktop { font-size: 2em; }
+    @include phone { font-size: 1.4em; }
+    color: $header-color;
+}

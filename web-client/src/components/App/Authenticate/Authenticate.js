@@ -6,6 +6,7 @@ import * as QueryString from "query-string";
 import * as Message from "utils/Message";
 import * as Session from "utils/Session";
 import * as DiscordOauth from "utils/DiscordOauth";
+import Loading from "components/App/Loading/Loading";
 
 export default class Authenticate extends React.Component {
     constructor(props) {
@@ -53,6 +54,6 @@ export default class Authenticate extends React.Component {
     }
 
     render() {
-        return <p>authing</p>;
+        return <Loading>Authenticating</Loading>;
     }
 }
