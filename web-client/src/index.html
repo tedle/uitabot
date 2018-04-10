@@ -5,11 +5,12 @@
         <meta http-equiv="Content-Security-Policy" content="
             default-src 'self';
             connect-src 'self' <%= htmlWebpackPlugin.options.bot_url %> https://www.googleapis.com/youtube/v3/;
-            style-src 'self' https://fonts.googleapis.com/css;
-            font-src 'self' https://fonts.gstatic.com/;
+            style-src 'self' https://fonts.googleapis.com/css https://use.fontawesome.com/;
+            font-src 'self' https://fonts.gstatic.com/ https://use.fontawesome.com/;
             img-src 'self' data: i.ytimg.com yt3.ggpht.com;
         ">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.9/css/all.css" integrity="sha384-5SOiIsAziJl6AWe0HWRKTXlfcSHKmYV4RBF18PPJ173Kzn7jzMyFuTtk8JA7QQG1" crossorigin="anonymous">
         <title>uitabot</title>
     </head>
     <body>
