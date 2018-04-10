@@ -1,5 +1,10 @@
 @import "~styles/common";
 
+:root {
+    font-family: $label-font;
+    color: $font-color;
+}
+
 :root, body, #root {
     background-color: $bg-color;
     margin: 0;
