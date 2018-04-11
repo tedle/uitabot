@@ -9,6 +9,21 @@
     transform: translate(-50%, -50%);
 }
 
+@mixin modal {
+    @include center;
+
+    @include desktop {
+        border-radius: 5px;
+        overflow: hidden;
+        background-color: $modal-color;
+        border: 1px solid $bg-color;
+    }
+
+    @include phone {
+        width: 100%;
+    }
+}
+
 @mixin user-select ($select) {
     -webkit-user-select: $select;
        -moz-user-select: $select;

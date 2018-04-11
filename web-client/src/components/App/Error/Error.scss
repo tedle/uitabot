@@ -1,0 +1,26 @@
+@import "~styles/common";
+
+.Error {
+    @include modal;
+
+    @include desktop {
+        box-shadow: 0 0 10px rgba($highlight-error, 0.3);
+        font-size: 1.5em;
+    }
+
+    @include phone {
+        font-size: 1.2em;
+    }
+
+    padding: 30px;
+    text-align: center;
+
+    a {
+        text-decoration: none;
+        color: $highlight;
+    }
+
+    a:hover {
+        border-bottom: 2px solid $highlight;
+    }
+}

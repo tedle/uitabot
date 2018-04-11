@@ -1,8 +1,12 @@
 $bg-color: rgb(48, 48, 56);
 $modal-color: lighten($bg-color, 5%);
-$header-color: rgb(211, 210, 215);
+
 $font-color: rgb(211, 210, 215);
+$header-color: rgb(211, 210, 215);
+
 $highlight: rgb(117, 176, 255);
+$highlight-error: rgb(255, 102, 94);
 $highlight-pop: darken(desaturate($highlight, 16%), 18%);
+
 $discord-logo: url(~assets/discord-logo.svg);
 $discord-logo-color: #FFF;

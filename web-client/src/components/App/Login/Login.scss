@@ -1,19 +1,11 @@
 @import "~styles/common";
 
 .Login {
-    @include center;
+    @include modal;
 
     @include desktop {
         width: 400px;
-        border-radius: 5px;
-        overflow: hidden;
-        background-color: $modal-color;
         box-shadow: 0 0 10px rgba($highlight, 0.3);
-        border: 1px solid $bg-color;
-    }
-
-    @include phone {
-        width: 100%;
     }
 
     h1 {

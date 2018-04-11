@@ -10,6 +10,7 @@ import * as Session from "utils/Session";
 import * as DiscordOauth from "utils/DiscordOauth";
 import Authenticate from "./Authenticate/Authenticate";
 import Dashboard from "./Dashboard/Dashboard";
+import Error from "./Error/Error";
 import Loading from "./Loading/Loading";
 import Login from "./Login/Login";
 import ServerSelect from "./ServerSelect/ServerSelect";
@@ -102,7 +103,7 @@ export default class App extends React.Component {
 
         // Connection error displays when server closes connection
         if (this.state.connection != WebSocket.OPEN) {
-            return <Loading>Connection error</Loading>
+            return <Error>Connection error. <a href="/">Refresh</a>?</Error>
         }
 
         // Attempt authentication with stored credentials (if they exist)
