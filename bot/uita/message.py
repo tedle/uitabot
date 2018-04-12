@@ -380,7 +380,8 @@ class ServerListSendMessage(AbstractMessage):
     def __init__(self, servers):
         self.servers = [{
             "id": server.id,
-            "name": server.name
+            "name": server.name,
+            "icon": server.icon
         } for server in servers]
 
 

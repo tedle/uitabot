@@ -1,0 +1,102 @@
+@import "~styles/common";
+
+.ServerSelect {
+    @include modal;
+
+    @include desktop {
+        width: 400px;
+        overflow: hidden;
+        box-shadow: 0 0 20px rgba($shadow, 0.3);
+    }
+
+    h1 {
+        margin: 0;
+        padding: 30px 30px;
+
+        color: $header-color;
+
+        font-size: 1.5em;
+        font-family: $header-font;
+    }
+
+    ul {
+        margin: 0;
+        padding: 0;
+
+        list-style-type: none;
+    }
+
+    li {
+        border-top: 1px solid $modal-color;
+    }
+
+    button {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        width: 100%;
+        padding: 0;
+
+        color: $font-color;
+        background-color: $bg-color;
+
+        text-align: left;
+        font-family: $label-font;
+        font-size: 1.2em;
+
+        border: none;
+        // Specify border-left so it can animate both ways
+        border-left: 0px solid $highlight;
+
+        // Specify box-shadow so it can animate both ways
+        box-shadow: 0 0 0px rgba($shadow, 0.2);
+        // z-index so hovered button shadows others
+        position: relative;
+        z-index: 1;
+
+        transition: border-width 0.1s, box-shadow 0.2s;
+
+        img, .null-logo {
+            // Use min-max to skirt around some insane Chrome bug that would set the width to
+            // 37.5, only sometimes, on certain pageloads, and only until the button had been
+            // hovered over once after which it would be fixed until the browser was restarted.
+            // CSS is still terrible, even on modern browsers apparently
+            min-width: 50px;
+            max-width: 50px;
+            min-height: 50px;
+            max-height: 50px;
+
+            border-radius: 50%;
+
+            margin: 24px;
+        }
+
+        .null-logo {
+            font-size: 1.4em;
+            text-align: center;
+            line-height: 54px;
+
+            color: $discord-logo-color;
+            background-color: $discord-server-bg-color;
+        }
+
+        span {
+            @include truncate-text;
+            width: 100%;
+        }
+
+        .end-icon {
+            padding: 0 32px;
+        }
+    }
+
+    button:hover {
+        color: $highlight;
+
+        border-left-width: 5px;
+
+        box-shadow: 0 0 10px rgba($shadow, 0.2);
+        z-index: 2;
+    }
+}

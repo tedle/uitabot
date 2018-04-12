@@ -21,6 +21,11 @@ export function createOauthUrl(clientId, redirectUrl) {
         + `&scope=${scope}`;
 }
 
+// Generates a server icon URL from a server ID and icon hash
+export function createServerIconUrl(serverId, iconHash) {
+    return `https://cdn.discordapp.com/icons/${serverId}/${iconHash}.png`;
+}
+
 // Generate a long, cryptographically random string and store it in a cookie
 // This will be sent to the Discord API and then passed back to us to verify
 export function createState() {

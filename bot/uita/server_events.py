@@ -114,7 +114,7 @@ async def server_list_get(event):
     log.debug("server list get")
     discord_servers = [
         uita.types.DiscordServer(
-            discord_server.id, discord_server.name, [], []
+            discord_server.id, discord_server.name, [], [], discord_server.icon
         )
         for key, discord_server in uita.state.servers.items()
         if event.user.id in discord_server.users

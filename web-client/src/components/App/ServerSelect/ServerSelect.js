@@ -1,7 +1,10 @@
 // --- ServerSelect.js ---------------------------------------------------------
 // Component for selecting the server to play music in
 
+import "./ServerSelect.scss";
+
 import React from "react";
+import * as DiscordOauth from "utils/DiscordOauth";
 import * as Message from "utils/Message";
 
 export default class ServerSelect extends React.Component {
@@ -42,15 +45,23 @@ export default class ServerSelect extends React.Component {
             .map((server) => {
             return (
                 <li key={server.id}>
-                    <button onClick={() => this.joinServer(server.id)}>{server.name}</button>
+                    <button onClick={() => this.joinServer(server.id)}>
+                        {server.icon === null ? (
+                            <i className="null-logo fab fa-discord"></i>
+                        ) : (
+                            <img src={DiscordOauth.createServerIconUrl(server.id, server.icon)}/>
+                        )}
+                        <span>{server.name}</span>
+                        <i className="end-icon fas fa-angle-right"></i>
+                    </button>
                 </li>
             );
         });
 
         // Display the list and an amazing gaming culture reference. It is very funny
         return (
-            <div>
-                <p>future server game</p>
+            <div className="ServerSelect">
+                <h1>Future Server Game</h1>
                 <ul>{serverList}</ul>
             </div>
         );

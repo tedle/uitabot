@@ -12,8 +12,10 @@ class DiscordState():
 
     Attributes
     ----------
-    servers : list(uita.types.DiscordServer)
-        List of servers bot is connected to.
+    servers : dict(uita.types.DiscordServer)
+        Dict of servers bot is connected to indexed by server ID.
+    voice_connections : dict(uita.types.DiscordVoiceClient)
+        Dict of voice channels bot is connected to indexed by server ID.
 
     """
     def __init__(self):
@@ -48,8 +50,9 @@ class DiscordState():
                 for channel in server.channels
             }
             discord_users = {user.id: user.name for user in server.members}
-            discord_server = DiscordServer(server.id, server.name, discord_channels, discord_users)
-            self.servers[server.id] = discord_server
+            self.servers[server.id] = DiscordServer(
+                server.id, server.name, discord_channels, discord_users, server.icon
+            )
             self.voice_connections[server.id] = DiscordVoiceClient(server.id, bot.loop)
 
     def channel_add(self, channel, server_id):
@@ -186,6 +189,8 @@ class DiscordServer():
         Dictionary of channels in server.
     users : dict(user_id: user_name)
         Dictionary of users in server.
+    icon : str
+        Server icon hash.
 
     Attributes
     ----------
@@ -197,13 +202,16 @@ class DiscordServer():
         Dictionary of channels in server.
     users : dict(user_id: user_name)
         Dictionary of users in server.
+    icon : str
+        Server icon hash.
 
     """
-    def __init__(self, id, name, channels, users):
+    def __init__(self, id, name, channels, users, icon):
         self.id = id
         self.name = name
         self.channels = channels
         self.users = users
+        self.icon = icon
 
 
 class DiscordUser():

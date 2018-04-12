@@ -85,7 +85,7 @@ async def on_server_join(server):
         for channel in server.channels
     }
     users = {user.id: user.name for user in server.members}
-    discord_server = uita.types.DiscordServer(server.id, server.name, channels, users)
+    discord_server = uita.types.DiscordServer(server.id, server.name, channels, users, server.icon)
     uita.state.server_add(discord_server, uita.bot)
 
 
@@ -107,7 +107,7 @@ async def on_server_update(before, after):
         for channel in after.channels
     }
     users = {user.id: user.name for user in after.members}
-    discord_server = uita.types.DiscordServer(after.id, after.name, channels, users)
+    discord_server = uita.types.DiscordServer(after.id, after.name, channels, users, after.icon)
     uita.state.server_add(discord_server, uita.bot.loop)
     # Kick any displaced users
     await uita.server.verify_active_servers()

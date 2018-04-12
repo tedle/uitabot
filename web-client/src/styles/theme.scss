@@ -8,5 +8,8 @@ $highlight: rgb(117, 176, 255);
 $highlight-error: rgb(255, 102, 94);
 $highlight-pop: darken(desaturate($highlight, 16%), 18%);
 
+$shadow: #000;
+
 $discord-logo: url(~assets/discord-logo.svg);
 $discord-logo-color: #FFF;
+$discord-server-bg-color: lighten($modal-color, 10%);
