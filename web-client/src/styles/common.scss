@@ -2,7 +2,13 @@
 @import "font";
 @import "media";
 
-@mixin center {
+@mixin center-flex {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+@mixin center-overlay {
     position: absolute;
     top: 50%;
     left: 50%;
@@ -10,13 +16,12 @@
 }
 
 @mixin modal {
-    @include center;
-
     @include desktop {
         border-radius: 5px;
         overflow: hidden;
         background-color: $modal-color;
         border: 1px solid $bg-color;
+        margin: 50px;
     }
 
     @include phone {
