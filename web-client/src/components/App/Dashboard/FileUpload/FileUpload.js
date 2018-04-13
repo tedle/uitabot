@@ -14,6 +14,7 @@ export default class FileUploadDropZone extends React.Component {
     }
 
     handleFileDrop(event) {
+        // Prevent default required to stop the browser from opening files in a new tab
         event.preventDefault();
         let files = Array();
         for (let file of event.dataTransfer.files) {
@@ -26,6 +27,7 @@ export default class FileUploadDropZone extends React.Component {
     }
 
     handleDragOver(event) {
+        // Prevent default required to change drop effect
         event.preventDefault();
         event.dataTransfer.dropEffect = "none";
         // Only allow drop payloads with an item that has an audio/* mime type

@@ -52,10 +52,12 @@ export default class SearchBox extends React.Component {
 
     async search(query) {
         try {
+            // A YouTube search only provides cursory info, things like duration are not included
             const results = await Youtube.search(query);
             if (this._isMounted && this.state.searchBox == query) {
                 this.setState({searchResults: results});
             }
+            // So after updating with the basic info, we make a new quest for detailed results
             const detailedResults = await Youtube.searchDetails(results);
             if (this._isMounted && this.state.searchBox == query) {
                 this.setState({searchResults: detailedResults});
