@@ -86,7 +86,7 @@ async def on_server_join(server):
     }
     users = {user.id: user.name for user in server.members}
     discord_server = uita.types.DiscordServer(server.id, server.name, channels, users)
-    uita.state.server_add(discord_server, uita.bot.loop)
+    uita.state.server_add(discord_server, uita.bot)
 
 
 @uita.bot.event
