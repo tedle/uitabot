@@ -377,7 +377,7 @@ class Queue():
                         if self._now_playing.live is True:
                             await asyncio.sleep(1, loop=self.loop)
                         # About the same as a max volume YouTube video, I think
-                        self._player.volume = 0.5
+                        self._player.volume = 0.3
                         # Sync play start time to player start
                         self._play_start_time = time.perf_counter()
                         self._player.start()
