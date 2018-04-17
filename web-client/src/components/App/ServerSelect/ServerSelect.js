@@ -62,7 +62,13 @@ export default class ServerSelect extends React.Component {
         return (
             <div className="ServerSelect">
                 <h1>Future Server Game</h1>
-                <ul>{serverList}</ul>
+                {serverList.length > 0 ? (
+                    <ul>{serverList}</ul>
+                ) : (
+                    <div className="NoServers">
+                        <i className="far fa-times-circle"></i> No Servers
+                    </div>
+                )}
             </div>
         );
     }

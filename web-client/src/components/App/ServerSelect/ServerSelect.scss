@@ -30,6 +30,18 @@
         border-top: 1px solid $modal-color;
     }
 
+    .NoServers {
+        width: 100%;
+        padding: 32px 0;
+
+        color: $font-faded-color;
+        font-size: 1.4em;
+        text-align: center;
+
+        background-color: $bg-color;
+        border-top: 1px solid $modal-color;
+    }
+
     button {
         display: flex;
         justify-content: space-between;

@@ -3,6 +3,7 @@ $modal-color: lighten($bg-color, 5%);
 
 $font-color: rgb(211, 210, 215);
 $header-color: rgb(211, 210, 215);
+$font-faded-color: darken($font-color, 20%);
 
 $highlight: rgb(117, 176, 255);
 $highlight-error: rgb(255, 102, 94);
