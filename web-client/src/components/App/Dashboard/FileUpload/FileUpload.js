@@ -1,16 +1,37 @@
 // --- FileUpload.js -----------------------------------------------------------
 // Component for drag and drop file uploads via websocket
 
+import "./FileUpload.scss";
+
 import React from "react";
 import * as Config from "config";
 import * as Message from "utils/Message";
 import * as Session from "utils/Session";
 
+var UploadStatus = {
+    QUEUED: 1,
+    UPLOADING: 2,
+    COMPLETED: 3,
+    CANCELLED: 4
+}
+Object.freeze(UploadStatus);
+
 export default class FileUploadDropZone extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
+            progress: Array(),
+            progressIndex: null
         };
+        this._isMounted = false;
+    }
+
+    componentDidMount() {
+        this._isMounted = true;
+    }
+
+    componentWillUnmount() {
+        this._isMounted = false;
     }
 
     handleFileDrop(event) {
@@ -19,7 +40,7 @@ export default class FileUploadDropZone extends React.Component {
         let files = Array();
         for (let file of event.dataTransfer.files) {
             // Only upload files that have an audio/* mime type
-            if (/^audio\//.test(file.type)) {
+            if (/^audio\//.test(file.type) && file.size > 0) {
                 files.push(file);
             }
         }
@@ -39,7 +60,7 @@ export default class FileUploadDropZone extends React.Component {
         }
     }
 
-    async fileSend(file, socket, dispatcher) {
+    async fileSend(file, socket, dispatcher, progressCallback) {
         socket.send(new Message.FileUploadStartMessage(file.size).str());
         // Wait for the server response
         await this.fileReady(dispatcher);
@@ -53,7 +74,19 @@ export default class FileUploadDropZone extends React.Component {
             socket.send(file.slice(start, end));
         }
         // Wait for the server response
-        await this.fileComplete(dispatcher);
+        let interval = setInterval(() => {
+            if (!this._isMounted) {
+                clearInterval(interval);
+                socket.close(1000);
+                return;
+            }
+            progressCallback(socket.bufferedAmount);
+        }, 200);
+        try {
+            await this.fileComplete(dispatcher, socket);
+        } finally {
+            clearInterval(interval);
+        }
     }
 
     fileReady(dispatcher) {
@@ -72,7 +105,7 @@ export default class FileUploadDropZone extends React.Component {
         });
     }
 
-    fileComplete(dispatcher) {
+    fileComplete(dispatcher, socket) {
         // Create an awaitable event that triggers after a server response
         return new Promise((resolve, reject) => {
             dispatcher.setMessageHandler("file.upload.complete", m => {
@@ -84,7 +117,14 @@ export default class FileUploadDropZone extends React.Component {
             dispatcher.setMessageHandler("error.queue.full", m => {
                 reject("Queue is full");
             });
-            setTimeout(() => reject("Server timed out or disconnected"), 5000);
+            let oldBufferedAmount = socket.bufferedAmount;
+            let bufferInterval = setInterval(() => {
+                if (oldBufferedAmount == socket.bufferedAmount) {
+                    clearInterval(bufferInterval);
+                    reject("Server timed out or disconnected");
+                }
+                oldBufferedAmount = socket.bufferedAmount;
+            }, 5000);
         });
     }
 
@@ -111,19 +151,51 @@ export default class FileUploadDropZone extends React.Component {
             // After authentication, join the selected server and upload the files
             eventDispatcher.setMessageHandler("auth.succeed", async (m) => {
                 try {
+                    // Select the server to upload files to
                     socket.send(new Message.ServerJoinMessage(this.props.discordServer).str());
-                    for (let file of files) {
-                        if (socket.readyState != WebSocket.OPEN) {
-                            alert("Server disconnected");
-                            break;
-                        }
+                    // Organize file data into React consumable state
+                    let fileProgress = files.map(file => {
+                        return {
+                            name: file.name,
+                            size: file.size,
+                            progress: 0.0,
+                            status: UploadStatus.QUEUED,
+                            error: ""
+                        };
+                    });
+                    this.setState({progress: fileProgress})
+                    // Iterate over each file and upload it to the server
+                    for (let [index, file] of files.entries()) {
                         try {
-                            await this.fileSend(file, socket, eventDispatcher);
+                            if (socket.readyState != WebSocket.OPEN) {
+                                throw new Error("Server disconnected");
+                            }
+                            this.setState({progressIndex: index});
+                            await this.fileSend(file, socket, eventDispatcher, (buffered) => {
+                                fileProgress[index].status = UploadStatus.UPLOADING;
+                                fileProgress[index].progress = (file.size - buffered) / file.size;
+                                this.setState({progress: fileProgress});
+                            });
+                            // Check after every control flow yield that is followed by state
+                            // changes that we are still mounted.
+                            // Sorry for this wild asynchronous mess, I blame sticking to basic
+                            // React since it'd be overkill to get a state library for just this
+                            // one component... but still...
+                            if (!this._isMounted) {
+                                socket.close(1000);
+                                return;
+                            }
+                            fileProgress[index].status = UploadStatus.COMPLETED;
                         } catch (error) {
-                            alert(error);
+                            fileProgress[index].status = UploadStatus.CANCELLED;
+                            fileProgress[index].error = error.message;
+                        } finally {
+                            fileProgress[index].progress = 1.0;
+                            this.setState({progress: fileProgress});
                         }
                     }
                 } finally {
+                    this.setState({progress: Array(), progressIndex: null});
                     socket.close(1000);
                 }
             });
@@ -138,6 +210,53 @@ export default class FileUploadDropZone extends React.Component {
         }
     }
 
+    renderProgress() {
+        if (this.state.progressIndex === null) {
+            return null;
+        }
+        const file = this.state.progress[this.state.progressIndex];
+        let statusText = null;
+        let statusIcon = null;
+        switch (file.status) {
+            case UploadStatus.QUEUED:
+                statusText = "Queued...";
+                statusIcon = (<i className="Queued fas fa-sync"></i>);
+                break;
+            case UploadStatus.UPLOADING:
+                statusText = "Uploading...";
+                statusIcon = (<i className="Uploading fas fa-sync"></i>);
+                break;
+            case UploadStatus.COMPLETED:
+                statusText = "Complete";
+                statusIcon = (<i className="Completed far fa-circle"></i>);
+                break;
+            case UploadStatus.CANCELLED:
+                statusText = file.error;
+                statusIcon = (<i className="Cancelled fas fa-times"></i>);
+                break;
+            default:
+                throw new Error("FileUpload progress popup reached default switch statement");
+        }
+        const status = (
+            <div className="Status">
+                {statusIcon} {statusText} {this.state.progressIndex + 1}/{this.state.progress.length}
+            </div>
+        );
+        const progress = Math.floor(file.progress * 100);
+        return (
+            <div className="FileUpload-Progress">
+                <div className="Info">
+                    <div className="File">{file.name}</div>
+                    {status}
+                </div>
+                <div className="Bar">
+                    <div className="Filled" style={{width: `${progress}%`}}></div>
+                    <div className="Empty"></div>
+                </div>
+            </div>
+        );
+    }
+
     render() {
         return (
             <div
@@ -146,6 +265,7 @@ export default class FileUploadDropZone extends React.Component {
                 onDragEnter={() => console.log("onDragEnter")}
             >
                 <p>file drop zone</p>
+                {this.renderProgress()}
             </div>
         );
     }

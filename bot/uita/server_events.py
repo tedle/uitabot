@@ -81,6 +81,8 @@ async def file_upload_start(event):
             bytes_read = 0
             while bytes_read < file_size:
                 data = await asyncio.wait_for(event.socket.recv(), 5, loop=uita.loop)
+                if type(data) is str:
+                    raise uita.exceptions.MalformedFile("Non-binary data transferred unexpectedly")
                 f.write(data)
                 bytes_read += len(data)
         # Double check client isn't trying to pull a fast one on us
