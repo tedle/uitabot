@@ -9,7 +9,7 @@ export default function Login({url}) {
     return (
         <div className="Login">
             <h1>uitabot</h1>
-            <a href={url}>Login with <span className="logo"></span></a>
+            <a href={url}>Login with <span className="Logo"></span></a>
         </div>
     );
 }

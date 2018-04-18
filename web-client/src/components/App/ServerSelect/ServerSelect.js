@@ -47,12 +47,12 @@ export default class ServerSelect extends React.Component {
                 <li key={server.id}>
                     <button onClick={() => this.joinServer(server.id)}>
                         {server.icon === null ? (
-                            <i className="null-logo fab fa-discord"></i>
+                            <i className="NullLogo fab fa-discord"></i>
                         ) : (
                             <img src={DiscordOauth.createServerIconUrl(server.id, server.icon)}/>
                         )}
                         <span>{server.name}</span>
-                        <i className="end-icon fas fa-angle-right"></i>
+                        <i className="EndIcon fas fa-angle-right"></i>
                     </button>
                 </li>
             );
