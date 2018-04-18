@@ -92,11 +92,11 @@ async def file_upload_start(event):
         # Enqueue uploaded file
         try:
             await voice.enqueue_file(file_path, event.user)
-            # Signal the successful file upload
-            await event.socket.send(str(uita.message.FileUploadCompleteMessage()))
         except Exception:
             os.remove(file_path)
             raise
+        # Signal the successful file upload
+        await event.socket.send(str(uita.message.FileUploadCompleteMessage()))
 
 
 @uita.server.on_message("server.join", require_active_server=False)
