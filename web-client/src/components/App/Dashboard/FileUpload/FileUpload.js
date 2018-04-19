@@ -4,6 +4,7 @@
 import "./FileUpload.scss";
 
 import React from "react";
+import { CSSTransition } from "react-transition-group";
 import * as Config from "config";
 import * as Message from "utils/Message";
 import * as Session from "utils/Session";
@@ -21,7 +22,8 @@ export default class FileUploadDropZone extends React.Component {
         super(props);
         this.state = {
             progress: Array(),
-            progressIndex: null
+            progressIndex: 0,
+            showProgress: false
         };
         this._isMounted = false;
     }
@@ -129,6 +131,8 @@ export default class FileUploadDropZone extends React.Component {
     }
 
     upload(files) {
+        this.setState({showProgress: false});
+
         if (files.length == 0) {
             return;
         }
@@ -163,7 +167,7 @@ export default class FileUploadDropZone extends React.Component {
                             error: ""
                         };
                     });
-                    this.setState({progress: fileProgress})
+                    this.setState({progress: fileProgress, progressIndex: 0, showProgress: true})
                     // Iterate over each file and upload it to the server
                     for (let [index, file] of files.entries()) {
                         try {
@@ -174,7 +178,7 @@ export default class FileUploadDropZone extends React.Component {
                             await this.fileSend(file, socket, eventDispatcher, (buffered) => {
                                 fileProgress[index].status = UploadStatus.UPLOADING;
                                 fileProgress[index].progress = (file.size - buffered) / file.size;
-                                this.setState({progress: fileProgress});
+                                this.setState({progress: fileProgress, showProgress: true});
                             });
                             // Check after every control flow yield that is followed by state
                             // changes that we are still mounted.
@@ -188,14 +192,14 @@ export default class FileUploadDropZone extends React.Component {
                             fileProgress[index].status = UploadStatus.COMPLETED;
                         } catch (error) {
                             fileProgress[index].status = UploadStatus.CANCELLED;
-                            fileProgress[index].error = error.message;
+                            fileProgress[index].error = error;
                         } finally {
                             fileProgress[index].progress = 1.0;
-                            this.setState({progress: fileProgress});
+                            this.setState({progress: fileProgress, showProgress: true});
                         }
                     }
                 } finally {
-                    this.setState({progress: Array(), progressIndex: null});
+                    this.setState({showProgress: false});
                     socket.close(1000);
                 }
             });
@@ -211,9 +215,6 @@ export default class FileUploadDropZone extends React.Component {
     }
 
     renderProgress() {
-        if (this.state.progressIndex === null) {
-            return null;
-        }
         const file = this.state.progress[this.state.progressIndex];
         let statusText = null;
         let statusIcon = null;
@@ -265,7 +266,15 @@ export default class FileUploadDropZone extends React.Component {
                 onDragEnter={() => console.log("onDragEnter")}
             >
                 <p>file drop zone</p>
-                {this.renderProgress()}
+                <CSSTransition
+                    in={this.state.showProgress}
+                    timeout={2200}
+                    classNames="FileUpload-Progress"
+                    mountOnEnter
+                    unmountOnExit
+                >
+                    {() => this.renderProgress()}
+                </CSSTransition>
             </div>
         );
     }

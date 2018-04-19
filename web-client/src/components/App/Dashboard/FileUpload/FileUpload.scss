@@ -82,3 +82,25 @@
         }
     }
 }
+
+.FileUpload-Progress-enter {
+    opacity: 0;
+    transform: translateY(120%);
+}
+
+.FileUpload-Progress-enter.FileUpload-Progress-enter-active {
+    opacity: 1;
+    transform: translateY(0%);
+    transition: all 0.2s ease-out;
+}
+
+.FileUpload-Progress-exit {
+    opacity: 1;
+    transform: translateY(0%);
+}
+
+.FileUpload-Progress-exit.FileUpload-Progress-exit-active {
+    opacity: 0;
+    transform: translateY(120%);
+    transition: all 0.2s ease-in 2s;
+}
