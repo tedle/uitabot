@@ -1,5 +1,73 @@
 @import "~styles/common";
 
+.FileUpload-DropZone {
+    min-width: 100%;
+    min-height: 100%;
+}
+
+.FileUpload-Overlay {
+    width: 100vw;
+    height: 100vh;
+    position: fixed;
+
+    @include desktop {
+        background-color: rgba(0, 0, 0, 0.4);
+    }
+    @include phone {
+        background-color: rgba(0, 0, 0, 0.9);
+    }
+
+    .FileUpload-Overlay-Container {
+        @include modal;
+        @include center-overlay;
+
+        @include desktop {
+            width: 400px;
+            box-shadow: 0 0 10px rgba($highlight, 0.3);
+        }
+
+        // Prevents dragleave events firing when hovering over child elements
+        pointer-events: none;
+
+        text-align: center;
+
+        i {
+            margin: 30px;
+            margin-top: 50px;
+            padding: 40px;
+
+            font-size: 6em;
+
+            border: 3px solid $highlight;
+            border-radius: 20px;
+        }
+
+        div {
+            margin-bottom: 45px;
+
+            font-size: 2em;
+        }
+    }
+}
+
+.FileUpload-Overlay-enter {
+    opacity: 0;
+}
+
+.FileUpload-Overlay-enter.FileUpload-Overlay-enter-active {
+    opacity: 1;
+    transition: opacity 0.5s;
+}
+
+.FileUpload-Overlay-exit {
+    opacity: 1;
+}
+
+.FileUpload-Overlay-exit.FileUpload-Overlay-exit-active {
+    opacity: 0;
+    transition: opacity 0.5s;
+}
+
 .FileUpload-Progress {
     @include modal;
 

@@ -139,7 +139,7 @@ export default class SearchBox extends React.Component {
         // Build the final component
         return (
             <div>
-                <p>music goes here</p>
+                <div>music goes here</div>
                 <input
                     ref={(e) => this.searchInput = e}
                     type="text"

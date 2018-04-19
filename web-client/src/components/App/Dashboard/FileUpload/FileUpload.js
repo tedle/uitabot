@@ -39,6 +39,7 @@ export default class FileUploadDropZone extends React.Component {
     handleFileDrop(event) {
         // Prevent default required to stop the browser from opening files in a new tab
         event.preventDefault();
+        this.setState({showOverlay: false});
         let files = Array();
         for (let file of event.dataTransfer.files) {
             // Only upload files that have an audio/* mime type
@@ -261,11 +262,31 @@ export default class FileUploadDropZone extends React.Component {
     render() {
         return (
             <div
-                onDrop={e => this.handleFileDrop(e)}
+                className="FileUpload-DropZone"
                 onDragOver={e => this.handleDragOver(e)}
-                onDragEnter={() => console.log("onDragEnter")}
+                onDragEnter={() => this.setState({showOverlay: true})}
             >
-                <p>file drop zone</p>
+                <CSSTransition
+                    in={this.state.showOverlay}
+                    timeout={500}
+                    classNames="FileUpload-Overlay"
+                    mountOnEnter
+                    unmountOnExit
+                >
+                    <div
+                        className="FileUpload-Overlay"
+                        onDrop={e => this.handleFileDrop(e)}
+                        onDragOver={e => this.handleDragOver(e)}
+                        onDragEnter={() => this.setState({showOverlay: true})}
+                        onDragLeave={() => this.setState({showOverlay: false})}
+                    >
+                        <div className="FileUpload-Overlay-Container">
+                            <i className="fas fa-cloud-upload-alt"></i>
+                            <div>Drag & Drop Upload</div>
+                        </div>
+                    </div>
+                </CSSTransition>
+                {this.props.children}
                 <CSSTransition
                     in={this.state.showProgress}
                     timeout={2200}

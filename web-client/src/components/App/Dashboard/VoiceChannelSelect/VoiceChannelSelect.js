@@ -52,7 +52,7 @@ export default class VoiceChannelSelect extends React.Component {
         });
         return (
             <div>
-                <p>voice channel select</p>
+                <div>voice channel select</div>
                 <ul>{channelList}</ul>
                 <button onClick={() => this.leaveChannel()}>disconnect</button>
             </div>

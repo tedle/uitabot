@@ -53,7 +53,7 @@ export default class LivePlaylist extends React.Component {
         });
         return (
             <div>
-                <p>music queue</p>
+                <div>music queue</div>
                 <ol>{queue}</ol>
             </div>
         );
