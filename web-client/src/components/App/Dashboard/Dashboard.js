@@ -24,21 +24,28 @@ export default class Dashboard extends React.Component {
                     discordServer={this.props.discordServer}
                 >
                     <div className="Dashboard-Inner">
-                        {/* Searches for and queues audio */}
-                        <SearchBox
-                            socket={this.props.socket}
-                            eventDispatcher={this.props.eventDispatcher}
-                        />
-                        {/* Shows current music queue, handles song searches, etc */}
-                        <LivePlaylist
-                            socket={this.props.socket}
-                            eventDispatcher={this.props.eventDispatcher}
-                        />
-                        {/* Controls which channel the bot plays music in */}
-                        <VoiceChannelSelect
-                            socket={this.props.socket}
-                            eventDispatcher={this.props.eventDispatcher}
-                        />
+                        <div className="Dashboard-Header">
+                            <h1>Server Name Goes Here</h1>
+                        </div>
+                        <div className="Dashboard-Playlist">
+                            {/* Searches for and queues audio */}
+                            <SearchBox
+                                socket={this.props.socket}
+                                eventDispatcher={this.props.eventDispatcher}
+                            />
+                            {/* Shows current music queue, handles song searches, etc */}
+                            <LivePlaylist
+                                socket={this.props.socket}
+                                eventDispatcher={this.props.eventDispatcher}
+                            />
+                        </div>
+                        <div className="Dashboard-VoiceChannel">
+                            {/* Controls which channel the bot plays music in */}
+                            <VoiceChannelSelect
+                                socket={this.props.socket}
+                                eventDispatcher={this.props.eventDispatcher}
+                            />
+                        </div>
                     </div>
                 </FileUploadDropZone>
             </div>

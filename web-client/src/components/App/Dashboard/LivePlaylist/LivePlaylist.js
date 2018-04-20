@@ -45,9 +45,9 @@ export default class LivePlaylist extends React.Component {
                 });
                 return (
                     <li key={track.id}>
+                        <img src={track.thumbnail}/>
                         <a href={track.url}>{track.title}</a>
                         <button onClick={() => this.queueRemove(track.id)}>x</button>
-                        move to:{move_buttons}
                     </li>
                 );
         });
