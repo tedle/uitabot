@@ -311,7 +311,8 @@ class PlayQueueSendMessage(AbstractMessage):
             "url": track.url or "",
             "title": track.title,
             "duration": track.duration,
-            "live": track.live
+            "live": track.live,
+            "thumbnail": track.user.avatar
         } for track in queue]
 
 

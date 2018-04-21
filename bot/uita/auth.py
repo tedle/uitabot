@@ -59,6 +59,7 @@ async def verify_session(session, database, config, loop):
             return uita.types.DiscordUser(
                 id=user["id"],
                 name=user["username"],
+                avatar=uita.discord_api.avatar_url(user),
                 session=session,
                 active_server_id=None
             )

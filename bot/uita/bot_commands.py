@@ -120,7 +120,13 @@ async def help(message, params):
 @command("play", "p", help="Enqueues a provided `<URL>`")
 async def play(message, params):
     voice = uita.state.voice_connections[message.server.id]
-    user = uita.types.DiscordUser(message.author.id, message.author.name, None, message.server.id)
+    user = uita.types.DiscordUser(
+        message.author.id,
+        message.author.name,
+        message.author.avatar_url or message.author.default_avatar_url,
+        None,
+        message.server.id
+    )
     response = await uita.bot.send_message(
         message.channel,
         content="{} Processing...".format(_EMOJI["loading"])
@@ -233,7 +239,11 @@ async def search(message, params):
         # Load it up...
         voice = uita.state.voice_connections[message.server.id]
         user = uita.types.DiscordUser(
-            message.author.id, message.author.name, None, message.server.id
+            message.author.id,
+            message.author.name,
+            message.author.avatar_url or message.author.default_avatar_url,
+            None,
+            message.server.id
         )
         await voice.enqueue_url(song["url"], user)
         # Build an embedded (nice looking) message that describes the song

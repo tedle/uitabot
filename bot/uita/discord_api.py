@@ -14,6 +14,7 @@ BASE_HEADERS = {
 BASE_URL = "https://discordapp.com/api"
 AUTH_URL = BASE_URL + "/oauth2/token"
 API_URL = BASE_URL + "/v6"
+CDN_URL = "https://cdn.discordapp.com"
 VALID_CODE_REGEX = re.compile("^([a-zA-Z0-9]+)$")
 
 
@@ -106,3 +107,28 @@ async def get(end_point, token, loop):
     if response.status_code != 200:
         raise uita.exceptions.AuthenticationError("Made an invalid Discord API request")
     return response.json()
+
+
+def avatar_url(user):
+    """Generates an avatar CDN URL from a supplied API User GET response.
+
+    Parameters
+    ----------
+    user : dict
+        JSON decoded data of a Discord API User object.
+
+    Returns
+    -------
+    str
+        URL to user avatar.
+
+    Raises
+    ------
+    KeyError
+        If supplied object is missing expected values.
+
+    """
+    if user["avatar"]:
+        return CDN_URL + "/avatars/{}/{}.png".format(user["id"], user["avatar"])
+    else:
+        return CDN_URL + "/embed/avatars/{}.png".format(int(user["discriminator"]) % 5)

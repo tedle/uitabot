@@ -223,6 +223,8 @@ class DiscordUser():
         Unique user ID.
     name : str
         User name.
+    avatar : str
+        URL to user avatar.
     session : uita.auth.Session
         Session authentication data.
     active_server_id : str
@@ -234,15 +236,18 @@ class DiscordUser():
         Unique user ID.
     name : str
         User name.
+    avatar : str
+        URL to user avatar.
     session : uita.auth.Session
         Session authentication data.
     active_server_id : str
         Discord server that user has joined. None if user has not joined a server yet.
 
     """
-    def __init__(self, id, name, session, active_server_id):
+    def __init__(self, id, name, avatar, session, active_server_id):
         self.id = id
         self.name = name
+        self.avatar = avatar
         self.session = session
         self.active_server_id = active_server_id
 
