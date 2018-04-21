@@ -1,6 +1,8 @@
 // --- LivePlaylist.js ---------------------------------------------------------
 // Component for viewing queued music
 
+import "./LivePlaylist.scss";
+
 import React from "react";
 import * as Message from "utils/Message";
 
@@ -45,15 +47,23 @@ export default class LivePlaylist extends React.Component {
                 });
                 return (
                     <li key={track.id}>
-                        <img src={track.thumbnail}/>
-                        <a href={track.url}>{track.title}</a>
-                        <button onClick={() => this.queueRemove(track.id)}>x</button>
+                        <img className="Thumbnail" src={track.thumbnail}/>
+                        <div className="TrackTitle">
+                            {track.title}
+                        </div>
+                        {track.url.length > 0 &&
+                            <a className="TrackUrl" href={track.url}>
+                                <i className="fab fa-youtube"></i>
+                            </a>
+                        }
+                        <button onClick={() => this.queueRemove(track.id)}>
+                            <i className="fas fa-times"></i>
+                        </button>
                     </li>
                 );
         });
         return (
-            <div>
-                <div>music queue</div>
+            <div className="LivePlaylist">
                 <ol>{queue}</ol>
             </div>
         );

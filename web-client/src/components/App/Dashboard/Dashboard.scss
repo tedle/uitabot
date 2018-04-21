@@ -20,7 +20,7 @@
 
     display: grid;
     grid: [header-start] 100px [header-end content-start] auto [content-end] /
-          [playlist-start] 5fr [playlist-end voicechannel-start] 2fr [voicechannel-end];
+          [playlist-start] 1fr [playlist-end voicechannel-start] 250px [voicechannel-end];
 
     background-color: $bg-color;
 }
@@ -34,9 +34,11 @@
 .Dashboard-Playlist {
     grid-row: content-start / content-end;
     grid-column: playlist-start / playlist-end;
+    min-width: 0;
 }
 
 .Dashboard-VoiceChannel {
     grid-row: content-start / content-end;
     grid-column: voicechannel-start / voicechannel-end;
+    min-width: 0;
 }
