@@ -157,7 +157,7 @@ export default class FileUploadDropZone extends React.Component {
             eventDispatcher.setMessageHandler("auth.succeed", async (m) => {
                 try {
                     // Select the server to upload files to
-                    socket.send(new Message.ServerJoinMessage(this.props.discordServer).str());
+                    socket.send(new Message.ServerJoinMessage(this.props.discordServer.id).str());
                     // Organize file data into React consumable state
                     let fileProgress = files.map(file => {
                         return {

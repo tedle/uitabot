@@ -5,6 +5,7 @@ import "./Dashboard.scss";
 
 import React from "react";
 import FileUploadDropZone from "./FileUpload/FileUpload";
+import Header from "./Header/Header";
 import LivePlaylist from "./LivePlaylist/LivePlaylist";
 import SearchBox from "./SearchBox/SearchBox";
 import VoiceChannelSelect from "./VoiceChannelSelect/VoiceChannelSelect";
@@ -24,7 +25,10 @@ export default class Dashboard extends React.Component {
                 >
                     <div className="Dashboard-Inner">
                         <div className="Dashboard-Header">
-                            <h1>Server Name Goes Here</h1>
+                            <Header
+                                discordUser={this.props.discordUser}
+                                discordServer={this.props.discordServer}
+                            />
                         </div>
                         <div className="Dashboard-Playlist">
                             {/* Searches for and queues audio */}

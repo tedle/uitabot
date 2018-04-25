@@ -32,9 +32,9 @@ export default class ServerSelect extends React.Component {
         this.props.socket.send(new Message.ServerListGetMessage().str());
     }
 
-    joinServer(id) {
-        this.props.socket.send(new Message.ServerJoinMessage(id).str());
-        this.props.onServerSelect(id);
+    joinServer(server) {
+        this.props.socket.send(new Message.ServerJoinMessage(server.id).str());
+        this.props.onServerSelect(server);
     }
 
     render() {
@@ -46,7 +46,7 @@ export default class ServerSelect extends React.Component {
             .map((server) => {
             return (
                 <li key={server.id}>
-                    <button onClick={() => this.joinServer(server.id)}>
+                    <button onClick={() => this.joinServer(server)}>
                         {server.icon === null ? (
                             <i className="NullLogo fab fa-discord"></i>
                         ) : (

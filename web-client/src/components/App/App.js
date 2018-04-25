@@ -21,9 +21,9 @@ export default class App extends React.Component {
 
         // Stores main app state determining auth status, connection, etc
         this.state = {
-            authenticated: false,
             connection: WebSocket.CLOSED,
             needLogin: false,
+            discordUser: null,
             discordServer: null
         };
 
@@ -42,8 +42,10 @@ export default class App extends React.Component {
 
         // Handler for authentication success
         this.eventDispatcher.setMessageHandler("auth.succeed", m => {
-            Session.store({handle: m.session_handle, secret: m.session_secret});
-            this.setState({authenticated: true});
+            Session.store({handle: m.user.session.handle, secret: m.user.session.secret});
+            // Just incase we have some kind of injectable XSS nastiness
+            delete m.user.session;
+            this.setState({discordUser: m.user});
             // Server will close connection if it doesn't receive a packet after 90 seconds
             this.heartbeatInterval = setInterval(
                 () => this.socket.send(new Message.HeartbeatMessage().str()),
@@ -107,7 +109,7 @@ export default class App extends React.Component {
         }
 
         // Attempt authentication with stored credentials (if they exist)
-        if (!this.state.authenticated) {
+        if (this.state.discordUser === null) {
             return <Authenticate
                 socket={this.socket}
                 onAuthFail={() => this.setState({needLogin: true})}
@@ -119,7 +121,7 @@ export default class App extends React.Component {
             return <ServerSelect
                 socket={this.socket}
                 eventDispatcher={this.eventDispatcher}
-                onServerSelect={id => this.setState({discordServer: id})}
+                onServerSelect={server => this.setState({discordServer: server})}
             />;
         }
 
@@ -127,6 +129,7 @@ export default class App extends React.Component {
         return <Dashboard
             socket={this.socket}
             eventDispatcher={this.eventDispatcher}
+            discordUser={this.state.discordUser}
             discordServer={this.state.discordServer}
         />;
     }

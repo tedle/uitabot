@@ -28,7 +28,7 @@
 .Dashboard-Header {
     grid-row: header-start / header-end;
     grid-column: playlist-start / voicechannel-end;
-    background-color: $modal-color;
+    min-width: 0;
 }
 
 .Dashboard-Playlist {

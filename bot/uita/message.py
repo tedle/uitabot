@@ -121,21 +121,23 @@ class AuthSucceedMessage(AbstractMessage):
 
     Attributes
     ----------
-    username : str
-        Username for display.
-    session_handle : str
-        Session authentication handle.
-    session_secret : str
-        Session authentication secret.
+    user : uita.types.DiscordUser
+        Object representing authenticated user.
 
     """
     header = "auth.succeed"
     """"""
 
     def __init__(self, user):
-        self.username = str(user.name)
-        self.session_handle = str(user.session.handle)
-        self.session_secret = str(user.session.secret)
+        self.user = {
+            "id": str(user.id),
+            "name": str(user.name),
+            "avatar": str(user.avatar),
+            "session": {
+                "handle": str(user.session.handle),
+                "secret": str(user.session.secret)
+            }
+        }
 
 
 class ChannelJoinMessage(AbstractMessage):
@@ -391,9 +393,7 @@ VALID_MESSAGES = {
     AuthCodeMessage.header: (AuthCodeMessage, ["code"]),
     AuthFailMessage.header: (AuthFailMessage, []),
     AuthSessionMessage.header: (AuthSessionMessage, ["handle", "secret"]),
-    AuthSucceedMessage.header: (AuthSucceedMessage, [
-        "username", "session_handle", "session_secret"
-    ]),
+    AuthSucceedMessage.header: (AuthSucceedMessage, ["user"]),
     ChannelJoinMessage.header: (ChannelJoinMessage, ["channel_id"]),
     ChannelLeaveMessage.header: (ChannelLeaveMessage, []),
     ChannelListGetMessage.header: (ChannelListGetMessage, []),
