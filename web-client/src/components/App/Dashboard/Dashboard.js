@@ -19,7 +19,6 @@ export default class Dashboard extends React.Component {
             <div className="Dashboard">
                 {/* Files dropped here are uploaded and queued */}
                 <FileUploadDropZone
-                    socket={this.props.socket}
                     eventDispatcher={this.props.eventDispatcher}
                     discordServer={this.props.discordServer}
                 >
