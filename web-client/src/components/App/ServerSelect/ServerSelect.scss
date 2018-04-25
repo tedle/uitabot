@@ -70,6 +70,7 @@
         transition: border-width 0.1s, box-shadow 0.2s;
 
         img, .NullLogo {
+            flex-shrink: 0;
             // Use min-max to skirt around some insane Chrome bug that would set the width to
             // 37.5, only sometimes, on certain pageloads, and only until the button had been
             // hovered over once after which it would be fixed until the browser was restarted.
@@ -95,11 +96,12 @@
 
         span {
             @include truncate-text;
-            width: 100%;
+            flex-grow: 1;
         }
 
         .EndIcon {
             padding: 0 32px;
+            flex-shrink: 0;
         }
     }
 
