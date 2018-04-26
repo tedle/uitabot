@@ -6,6 +6,7 @@ import "./ServerSelect.scss";
 import React from "react";
 import * as DiscordOauth from "utils/DiscordOauth";
 import * as Message from "utils/Message";
+import * as Session from "utils/Session";
 
 export default class ServerSelect extends React.Component {
     constructor(props) {
@@ -69,6 +70,11 @@ export default class ServerSelect extends React.Component {
                         <i className="far fa-times-circle"></i> No Servers
                     </div>
                 )}
+                <div className="Options">
+                    <button onClick={Session.logout}>
+                        <i className="fas fa-sign-out-alt"></i> Logout
+                    </button>
+                </div>
             </div>
         );
     }

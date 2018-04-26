@@ -4,7 +4,11 @@
 import Cookie from "js-cookie";
 
 export function store(session) {
-    Cookie.set("session", {handle: session.handle, secret: session.secret}, {expires: 7});
+    Cookie.set(
+        "session",
+        {handle: session.handle, secret: session.secret},
+        {expires: 7}
+    );
 }
 
 export function load() {
@@ -13,4 +17,9 @@ export function load() {
         return null;
     }
     return session;
+}
+
+export function logout() {
+    Cookie.remove("session");
+    window.location.assign("/");
 }
