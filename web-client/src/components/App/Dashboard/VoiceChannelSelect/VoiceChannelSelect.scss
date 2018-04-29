@@ -1,0 +1,88 @@
+@import "~styles/common";
+
+.VoiceChannelSelect {
+    width: 100%;
+    height: 100%;
+
+    background-color: $sidebar-color;
+    box-shadow: 0 0 10px rgba($shadow, 0.2);
+
+    h2 {
+        margin: 0;
+        padding: 20px;
+
+        font-family: $header-font;
+        font-size: 1.0em;
+        color: $font-faded-color;
+    }
+
+    ul {
+        margin: 0;
+        padding: 0;
+
+        list-style-type: none;
+    }
+
+    button {
+        @include truncate-text;
+
+        width: 100%;
+
+        margin: 0;
+        padding: 10px;
+
+        color: $font-faded-color;
+        font-family: $label-font;
+        font-size: 1.2em;
+        text-align: left;
+
+        border: none;
+        background: none;
+
+        i {
+            width: 30px;
+            padding-right: 5px;
+
+            text-align: center;
+            font-size: 0.8em;
+
+            visibility: hidden;
+        }
+    }
+
+    div.Disconnect {
+        i {
+            font-size: 0.9em;
+
+            visibility: visible;
+        }
+    }
+
+    div.Disconnect:hover {
+        i {
+            color: $highlight-error;
+        }
+    }
+
+    li, div.Disconnect {
+        border-left: 5px solid $sidebar-color;
+    }
+
+    li:hover, li.Active, div.Disconnect:hover {
+        button {
+            color: $font-color;
+        }
+        background-color: $bg-color;
+    }
+
+    li:hover, div.Disconnect:hover {
+        border-left: 5px solid $bg-color;
+    }
+
+    li.Active {
+        button i {
+            visibility: visible;
+        }
+        border-left: 5px solid $highlight;
+    }
+}

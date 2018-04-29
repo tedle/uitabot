@@ -1,4 +1,5 @@
 $bg-color: rgb(48, 48, 56);
+$sidebar-color: lighten($bg-color, 2%);
 $modal-color: lighten($bg-color, 5%);
 $popup-color: darken($bg-color, 3%);
 

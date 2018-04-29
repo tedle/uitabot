@@ -1,6 +1,8 @@
 // --- VoiceChannelSelect.js ---------------------------------------------------
 // Component for commanding bot to join voice channels
 
+import "./VoiceChannelSelect.scss";
+
 import React from "react";
 import * as Message from "utils/Message";
 
@@ -54,25 +56,27 @@ export default class VoiceChannelSelect extends React.Component {
                 return a.position - b.position;
             })
             .map((channel) => {
-            return (
-                <li key={channel.id}>
-                    <button onClick={() => this.joinChannel(channel.id)}>
-                        {this.state.activeChannelId == channel.id ? (
-                            <span>O</span>
-                        ) : (
-                            <span>X</span>
-                        )}
-                        {channel.name}
-                    </button>
-                </li>
-            );
-        });
+                const activeClass = this.state.activeChannelId == channel.id ? "Active" : "";
+                return (
+                    <li key={channel.id} className={activeClass}>
+                        <button onClick={() => this.joinChannel(channel.id)}>
+                            <i className="fas fa-volume-up"></i>
+                            {channel.name}
+                        </button>
+                    </li>
+                );
+            });
         return (
             <div className="VoiceChannelSelect">
                 <h2>Voice Channels</h2>
                 <ul>{channelList}</ul>
                 {this.state.activeChannelId !== null &&
-                    <button onClick={() => this.leaveChannel()}>disconnect</button>
+                    <div className="Disconnect">
+                        <button onClick={() => this.leaveChannel()}>
+                            <i className="fas fa-times"></i>
+                            Disconnect
+                        </button>
+                    </div>
                 }
             </div>
         );
