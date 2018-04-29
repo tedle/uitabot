@@ -140,6 +140,32 @@ class AuthSucceedMessage(AbstractMessage):
         }
 
 
+class ChannelActiveGetMessage(AbstractMessage):
+    """Sent by client requesting the currently connected voice channel."""
+    header = "channel.active.get"
+    """"""
+
+
+class ChannelActiveSendMessage(AbstractMessage):
+    """Sent by server containing the currently connected voice channel.
+
+    Attributes
+    ----------
+    channel : uita.types.DiscordChannel
+        Voice channel currently connected to. `None` if not connected.
+
+    """
+    header = "channel.active.send"
+    """"""
+
+    def __init__(self, channel):
+        self.channel = {
+            "id": channel.id,
+            "name": channel.name,
+            "position": channel.position
+        } if channel else None
+
+
 class ChannelJoinMessage(AbstractMessage):
     """Sent by client containing a channel ID to join.
 
@@ -394,6 +420,8 @@ VALID_MESSAGES = {
     AuthFailMessage.header: (AuthFailMessage, []),
     AuthSessionMessage.header: (AuthSessionMessage, ["handle", "secret"]),
     AuthSucceedMessage.header: (AuthSucceedMessage, ["user"]),
+    ChannelActiveGetMessage.header: (ChannelActiveGetMessage, []),
+    ChannelActiveSendMessage.header: (ChannelActiveSendMessage, ["channel"]),
     ChannelJoinMessage.header: (ChannelJoinMessage, ["channel_id"]),
     ChannelLeaveMessage.header: (ChannelLeaveMessage, []),
     ChannelListGetMessage.header: (ChannelListGetMessage, []),

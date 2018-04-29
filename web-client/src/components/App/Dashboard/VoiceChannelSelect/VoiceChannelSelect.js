@@ -8,20 +8,29 @@ export default class VoiceChannelSelect extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            channels: Array()
+            channels: Array(),
+            activeChannelId: null
         };
     }
 
     componentDidMount() {
         // Once mounted, bind the event dispatchers callback for channel list queries
         this.props.eventDispatcher.setMessageHandler("channel.list.send", m => {
-            this.setState({channels: m.channels})
+            this.setState({channels: m.channels});
+        });
+        this.props.eventDispatcher.setMessageHandler("channel.active.send", m => {
+            if (m.channel !== null) {
+                this.setState({activeChannelId: m.channel.id});
+            } else {
+                this.setState({activeChannelId: null});
+            }
         });
         this.getChannelList();
     }
 
     componentWillUnmount() {
         this.props.eventDispatcher.clearMessageHandler("channel.list.send");
+        this.props.eventDispatcher.clearMessageHandler("channel.active.send");
     }
 
     joinChannel(id) {
@@ -34,6 +43,7 @@ export default class VoiceChannelSelect extends React.Component {
 
     getChannelList() {
         this.props.socket.send(new Message.ChannelListGetMessage().str());
+        this.props.socket.send(new Message.ChannelActiveGetMessage().str());
     }
 
     render() {
@@ -46,15 +56,24 @@ export default class VoiceChannelSelect extends React.Component {
             .map((channel) => {
             return (
                 <li key={channel.id}>
-                    <button onClick={() => this.joinChannel(channel.id)}>{channel.name}</button>
+                    <button onClick={() => this.joinChannel(channel.id)}>
+                        {this.state.activeChannelId == channel.id ? (
+                            <span>O</span>
+                        ) : (
+                            <span>X</span>
+                        )}
+                        {channel.name}
+                    </button>
                 </li>
             );
         });
         return (
-            <div>
-                <div>voice channel select</div>
+            <div className="VoiceChannelSelect">
+                <h2>Voice Channels</h2>
                 <ul>{channelList}</ul>
-                <button onClick={() => this.leaveChannel()}>disconnect</button>
+                {this.state.activeChannelId !== null &&
+                    <button onClick={() => this.leaveChannel()}>disconnect</button>
+                }
             </div>
         );
     }

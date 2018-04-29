@@ -13,6 +13,14 @@ import logging
 log = logging.getLogger(__name__)
 
 
+@uita.server.on_message("channel.active.get")
+async def channel_active_get(event):
+    """Get the actively connected voice channel for a current server."""
+    log.debug("channel active get")
+    voice = uita.state.voice_connections[event.active_server.id]
+    await event.socket.send(str(uita.message.ChannelActiveSendMessage(voice.active_channel)))
+
+
 @uita.server.on_message("channel.join")
 async def channel_join(event):
     """Connect the bot to a given channel of the active server."""

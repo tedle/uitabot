@@ -124,3 +124,18 @@ async def on_server_update(before, after):
     uita.state.server_add(discord_server, uita.bot.loop)
     # Kick any displaced users
     await uita.server.verify_active_servers()
+
+
+@uita.bot.event
+@bot_ready
+async def on_voice_state_update(before, after):
+    if after != uita.bot.user:
+        return
+    channel = uita.types.DiscordChannel(
+        after.voice.voice_channel.id,
+        after.voice.voice_channel.name,
+        after.voice.voice_channel.type,
+        after.voice.voice_channel.position
+    ) if after.voice.voice_channel is not None else None
+    message = uita.message.ChannelActiveSendMessage(channel)
+    uita.server.send_all(message, after.server.id)

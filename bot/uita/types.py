@@ -298,6 +298,13 @@ class DiscordVoiceClient():
         self._voice = None
         self._voice_lock = asyncio.Lock(loop=self.loop)
 
+    @property
+    def active_channel(self):
+        if self._voice is not None and self._voice.is_connected():
+            channel = self._voice.channel
+            return DiscordChannel(channel.id, channel.name, channel.type, channel.position)
+        return None
+
     async def connect(self, channel_id):
         """Connect bot to a voice a voice channel in this server.
 
