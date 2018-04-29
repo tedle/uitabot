@@ -1,4 +1,6 @@
 """Event triggers for Discord client to synchronize API state with uitabot."""
+import discord
+
 import uita.bot_commands
 import uita.types
 import uita
@@ -23,6 +25,14 @@ async def on_ready():
     await uita.bot_commands.set_prefix(".")
 
 
+def _sync_channels(server):
+    voice_channels = [
+        channel for channel in uita.state.servers[server.id].channels.values()
+        if channel.type is discord.ChannelType.voice
+    ]
+    uita.server.send_all(uita.message.ChannelListSendMessage(voice_channels), server.id)
+
+
 @uita.bot.event
 @bot_ready
 async def on_channel_create(channel):
@@ -30,12 +40,14 @@ async def on_channel_create(channel):
         channel.id, channel.name, channel.type, channel.position
     )
     uita.state.channel_add(discord_channel, channel.server.id)
+    _sync_channels(channel.server)
 
 
 @uita.bot.event
 @bot_ready
 async def on_channel_delete(channel):
     uita.state.channel_remove(channel.id, channel.server.id)
+    _sync_channels(channel.server)
 
 
 @uita.bot.event
@@ -45,6 +57,7 @@ async def on_channel_update(before, after):
         after.id, after.name, after.type, after.position
     )
     uita.state.channel_add(discord_channel, after.server.id)
+    _sync_channels(after.server)
 
 
 @uita.bot.event
