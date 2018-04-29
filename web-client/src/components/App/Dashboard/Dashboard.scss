@@ -11,6 +11,9 @@
     height: 100%;
     min-height: 100vh;
 
+    // Prevent child element shadows spilling off onto the background
+    overflow: hidden;
+
     @include desktop {
         box-shadow: 0 0 20px rgba($shadow, 0.3);
         max-width: 1200px;

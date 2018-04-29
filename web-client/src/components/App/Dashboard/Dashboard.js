@@ -24,12 +24,6 @@ export default class Dashboard extends React.Component {
                     discordServer={this.props.discordServer}
                 >
                     <div className="Dashboard-Inner">
-                        <div className="Dashboard-Header">
-                            <Header
-                                discordUser={this.props.discordUser}
-                                discordServer={this.props.discordServer}
-                            />
-                        </div>
                         <div className="Dashboard-Playlist">
                             {/* Searches for and queues audio */}
                             <SearchBox
@@ -47,6 +41,12 @@ export default class Dashboard extends React.Component {
                             <VoiceChannelSelect
                                 socket={this.props.socket}
                                 eventDispatcher={this.props.eventDispatcher}
+                            />
+                        </div>
+                        <div className="Dashboard-Header">
+                            <Header
+                                discordUser={this.props.discordUser}
+                                discordServer={this.props.discordServer}
                             />
                         </div>
                     </div>

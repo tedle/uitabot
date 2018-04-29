@@ -9,6 +9,8 @@
 
     background-color: $modal-color;
 
+    box-shadow: 0 0 10px rgba($shadow, 0.2);
+
     h1 {
         @include truncate-text;
 
