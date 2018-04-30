@@ -1,6 +1,8 @@
 // --- SearchBox.js ------------------------------------------------------------
 // Component for searching and queueing audio
 
+import "./SearchBox.scss";
+
 import React from "react";
 import * as Message from "utils/Message";
 import * as Youtube from "utils/YoutubeApi";
@@ -89,6 +91,19 @@ export default class SearchBox extends React.Component {
         }
     }
 
+    submitInput() {
+        const input = this.state.searchBox;
+        // Search queries get sent to Youtube
+        if (this.isQuery(input)) {
+            this.cancelRunningQueries();
+            this.search(input);
+        }
+        // URLs get sent to the backend
+        else if (this.isUrl(input)) {
+            this.submitUrl(this.state.searchBox);
+        }
+    }
+
     submitUrl(url) {
         this.props.socket.send(new Message.PlayURLMessage(url).str());
         this.setState({searchBox: ""});
@@ -101,16 +116,7 @@ export default class SearchBox extends React.Component {
     handleKeyDown(event) {
         // Submit search query to backend
         if (event.keyCode == 13) { // Enter
-            const input = this.state.searchBox;
-            // Search queries get sent to Youtube
-            if (this.isQuery(input)) {
-                this.cancelRunningQueries();
-                this.search(input);
-            }
-            // URLs get sent to the backend
-            else if (this.isUrl(input)) {
-                this.submitUrl(this.state.searchBox);
-            }
+            this.submitInput();
         }
     }
 
@@ -138,17 +144,24 @@ export default class SearchBox extends React.Component {
         }
         // Build the final component
         return (
-            <div>
-                <div>music goes here</div>
-                <input
-                    ref={(e) => this.searchInput = e}
-                    type="text"
-                    autoComplete="off"
-                    placeholder="Search"
-                    onChange={e => this.handleChange(e)}
-                    onKeyDown={e => this.handleKeyDown(e)}
-                    value={this.state.searchBox}
-                />
+            <div className="SearchBox">
+                <div className="SearchBox-Input">
+                    <input
+                        ref={(e) => this.searchInput = e}
+                        type="text"
+                        autoComplete="off"
+                        placeholder="Search / URL"
+                        onChange={e => this.handleChange(e)}
+                        onKeyDown={e => this.handleKeyDown(e)}
+                        value={this.state.searchBox}
+                    />
+                    <button onClick={() => this.submitInput()}>
+                        <i className="fas fa-search"></i>
+                    </button>
+                    <button onClick={() => alert("Don't forget to implement this next")}>
+                        <i className="fas fa-upload"></i>
+                    </button>
+                </div>
                 <ul>
                     {searchResults}
                 </ul>

@@ -1,0 +1,56 @@
+@import "~styles/common";
+
+.SearchBox {
+    margin: 0;
+    padding: 0;
+}
+
+.SearchBox-Input {
+    display: flex;
+
+    height: 60px;
+    margin: 0 50px;
+    margin-top: 50px;
+
+    box-shadow: 0 0 10px rgba($shadow, 0.2);
+    background-color: $modal-color;
+
+    border: 1px solid $bg-color;
+
+    transition: box-shadow 0.2s;
+
+    input {
+        flex-grow: 1;
+
+        padding: 0 30px;
+        min-width: 120px;
+
+        background-color: $modal-color;
+        border: none;
+
+        font-size: 1.5em;
+        font-family: $label-font;
+        color: $font-color;
+    }
+
+    button {
+        flex-shrink: 0;
+
+        width: 90px;
+
+        background: none;
+        border: none;
+        border-left: 1px solid $bg-color;
+
+        font-size: 1.4em;
+        color: $font-color;
+    }
+
+    button:hover {
+        color: $highlight;
+    }
+}
+
+.SearchBox-Input:focus-within {
+    box-shadow: 0 0 10px rgba($highlight, 0.2);
+}
