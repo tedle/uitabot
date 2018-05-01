@@ -6,9 +6,11 @@
 }
 
 .SearchBox-Input {
+    $search-height: 60px;
+
     display: flex;
 
-    height: 60px;
+    height: $search-height;
     margin: 0 50px;
     margin-top: 50px;
 
@@ -19,7 +21,7 @@
 
     transition: box-shadow 0.2s;
 
-    input {
+    input[type="text"] {
         flex-grow: 1;
 
         padding: 0 30px;
@@ -33,9 +35,14 @@
         color: $font-color;
     }
 
-    button {
+    input[type="file"] {
+        display: none;
+    }
+
+    button, label {
         flex-shrink: 0;
 
+        display: inline-block;
         width: 90px;
 
         background: none;
@@ -44,9 +51,11 @@
 
         font-size: 1.4em;
         color: $font-color;
+        text-align: center;
+        line-height: $search-height;
     }
 
-    button:hover {
+    button:hover, label:hover {
         color: $highlight;
     }
 }

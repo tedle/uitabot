@@ -17,6 +17,9 @@ var UploadStatus = {
 }
 Object.freeze(UploadStatus);
 
+// Allows nested components to upload files programmatically (upload buttons, etc)
+export const FileUploadContext = React.createContext(() => {});
+
 export default class FileUploadDropZone extends React.Component {
     constructor(props) {
         super(props);
@@ -40,13 +43,8 @@ export default class FileUploadDropZone extends React.Component {
         // Prevent default required to stop the browser from opening files in a new tab
         event.preventDefault();
         this.setState({showOverlay: false});
-        let files = Array();
-        for (let file of event.dataTransfer.files) {
-            // Only upload files that have an audio/* mime type
-            if (/^audio\//.test(file.type) && file.size > 0) {
-                files.push(file);
-            }
-        }
+        const files = Array.from(event.dataTransfer.files)
+            .filter(file => /^audio\//.test(file.type));
         this.upload(files);
     }
 
@@ -286,7 +284,9 @@ export default class FileUploadDropZone extends React.Component {
                         </div>
                     </div>
                 </CSSTransition>
-                {this.props.children}
+                <FileUploadContext.Provider value={(files) => this.upload(files)}>
+                    {this.props.children}
+                </FileUploadContext.Provider>
                 <CSSTransition
                     in={this.state.showProgress}
                     timeout={2200}

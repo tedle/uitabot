@@ -6,6 +6,7 @@ import "./SearchBox.scss";
 import React from "react";
 import * as Message from "utils/Message";
 import * as Youtube from "utils/YoutubeApi";
+import {FileUploadContext} from "components/App/Dashboard/FileUpload/FileUpload";
 
 export default class SearchBox extends React.Component {
     constructor(props) {
@@ -158,9 +159,20 @@ export default class SearchBox extends React.Component {
                     <button onClick={() => this.submitInput()}>
                         <i className="fas fa-search"></i>
                     </button>
-                    <button onClick={() => alert("Don't forget to implement this next")}>
+                    <label htmlFor="SearchBox-Upload">
                         <i className="fas fa-upload"></i>
-                    </button>
+                    </label>
+                    <FileUploadContext.Consumer>
+                        {upload => (
+                            <input
+                                id="SearchBox-Upload"
+                                type="file"
+                                accept="audio/*"
+                                multiple
+                                onChange={(e) => upload(Array.from(e.target.files))}
+                            />
+                        )}
+                    </FileUploadContext.Consumer>
                 </div>
                 <ul>
                     {searchResults}
