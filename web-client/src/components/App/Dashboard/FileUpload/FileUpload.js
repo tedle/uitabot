@@ -59,6 +59,9 @@ export default class FileUploadDropZone extends React.Component {
                 break;
             }
         }
+        if (event.dataTransfer.dropEffect != "copy") {
+            this.setState({showOverlay: false});
+        }
     }
 
     async fileSend(file, socket, dispatcher, progressCallback) {
