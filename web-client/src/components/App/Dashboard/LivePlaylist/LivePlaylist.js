@@ -4,6 +4,7 @@
 import "./LivePlaylist.scss";
 
 import React from "react";
+import {SortableContainer, SortableElement, arrayMove} from "react-sortable-hoc";
 import * as Message from "utils/Message";
 
 export default class LivePlaylist extends React.Component {
@@ -27,8 +28,14 @@ export default class LivePlaylist extends React.Component {
         this.props.eventDispatcher.clearMessageHandler("play.queue.send");
     }
 
-    queueMove(track_id, position) {
-        this.props.socket.send(new Message.PlayQueueMoveMessage(track_id, position).str());
+    queueMove({oldIndex, newIndex}) {
+        const track_id = this.state.queue[oldIndex].id;
+        // Update server
+        this.props.socket.send(new Message.PlayQueueMoveMessage(track_id, newIndex).str());
+        // Predictively update client
+        this.setState({
+            queue: arrayMove(this.state.queue, oldIndex, newIndex)
+        });
     }
 
     queueRemove(track_id) {
@@ -36,35 +43,50 @@ export default class LivePlaylist extends React.Component {
     }
 
     render() {
-        const queue = this.state.queue
-            .map((track) => {
-                const move_buttons = [...Array(this.state.queue.length)].map((_, position) => {
-                    return (
-                        <button key={position} onClick={() => this.queueMove(track.id, position)}>
-                            #{position + 1}
-                        </button>
-                    );
-                });
-                return (
-                    <li key={track.id}>
-                        <img className="Thumbnail" src={track.thumbnail}/>
-                        <div className="TrackTitle">
-                            {track.title}
-                        </div>
-                        {track.url.length > 0 &&
-                            <a className="TrackUrl" href={track.url}>
-                                <i className="fab fa-youtube"></i>
-                            </a>
-                        }
-                        <button onClick={() => this.queueRemove(track.id)}>
-                            <i className="fas fa-times"></i>
-                        </button>
-                    </li>
-                );
+        const Track = SortableElement(({track}) => {
+            return (
+                <li className="LivePlaylist-Track">
+                    <img className="Thumbnail" src={track.thumbnail}/>
+                    <div className="TrackTitle">
+                        {track.title}
+                    </div>
+                    {track.url.length > 0 &&
+                        <a
+                            className="TrackUrl DragCancel"
+                            href={track.url}
+                            onDragStart={(e) => e.preventDefault()}
+                        >
+                            <i className="fab fa-youtube DragCancel"></i>
+                        </a>
+                    }
+                    <button
+                        className="DragCancel"
+                        onClick={() => this.queueRemove(track.id)}
+                    >
+                        <i className="fas fa-times DragCancel"></i>
+                    </button>
+                </li>
+            );
         });
+
+        const Playlist = SortableContainer(({tracks}) => {
+            const a = tracks.map((track, index) =>
+                <Track key={track.id} index={index} track={track}/>
+            );
+            return (
+                <ol>
+                    {a}
+                </ol>
+            );
+        });
+
         return (
             <div className="LivePlaylist">
-                <ol>{queue}</ol>
+                <Playlist
+                    tracks={this.state.queue}
+                    shouldCancelStart={(e) => e.target.classList.contains("DragCancel")}
+                    onSortEnd={(i) => this.queueMove(i)}
+                />
             </div>
         );
     }
