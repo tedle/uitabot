@@ -32,28 +32,25 @@ class Result {
     }
 
     displayDuration() {
-        if (this.duration == null) {
-            return "";
-        }
-        let display = "";
-        if (this.duration > 60 * 60) {
-            display += `${Math.floor(this.duration / (60 * 60))}h`;
-        }
-        if (this.duration > 60) {
-            display += `${Math.floor(this.duration / 60) % 60}m`;
-        }
-        display += `${this.duration % 60}s`;
-        return display;
-    }
-
-    display() {
         switch(this.type) {
             case ResultType.VIDEO:
-                return `${this.title} ${this.displayDuration()}`;
+                if (this.duration == null) {
+                    return "";
+                }
+                let display = "";
+                // Formats as 1:03:00, 6:14, 0:05, etc
+                if (this.duration > 60 * 60) {
+                    display += `${Math.floor(this.duration / (60 * 60))}:`;
+                    display += `${Math.floor(this.duration / 60) % 60}:`.padStart(3, "0");
+                } else {
+                    display += `${Math.floor(this.duration / 60) % 60}:`;
+                }
+                display += `${this.duration % 60}`.padStart(2, "0");
+                return display;
             case ResultType.LIVE:
-                return `${this.title} (Live)`;
+                return "Live";
             case ResultType.PLAYLIST:
-                return `${this.title} (Playlist)`;
+                return "Playlist";
             default:
                 return "";
         }
@@ -64,7 +61,7 @@ export async function search(query) {
     // Make API request
     const url = `https://www.googleapis.com/youtube/v3/search/?`
         + `q=${encodeURI(query)}`
-        + `&maxResults=5`
+        + `&maxResults=10`
         + `&part=snippet`
         + `&type=video,playlist`
         + `&key=${Config.youtube_api}`;
@@ -96,7 +93,7 @@ export async function search(query) {
         }
         return new Result(
             id,
-            result.snippet.thumbnails.default.url,
+            result.snippet.thumbnails.medium.url,
             result.snippet.title,
             type,
             null

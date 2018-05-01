@@ -4,6 +4,7 @@
 import "./SearchBox.scss";
 
 import React from "react";
+import { CSSTransition } from "react-transition-group";
 import * as Message from "utils/Message";
 import * as Youtube from "utils/YoutubeApi";
 import {FileUploadContext} from "components/App/Dashboard/FileUpload/FileUpload";
@@ -13,7 +14,9 @@ export default class SearchBox extends React.Component {
         super(props);
         this.state = {
             searchBox: "",
-            searchResults: null
+            searchResults: null,
+            // Separate state so results may be referenced during transitions and deleted later
+            searchShowResults: false
         };
         // setTimeout callback is stored so that it can be cancelled when overwritten
         this.searchTimeout = null;
@@ -39,6 +42,7 @@ export default class SearchBox extends React.Component {
     componentWillUnmount() {
         this._isMounted = false;
         this.cancelRunningQueries();
+        this.setState({searchShowResults: false});
         this.props.eventDispatcher.clearMessageHandler("error.url.invalid");
     }
 
@@ -55,6 +59,11 @@ export default class SearchBox extends React.Component {
 
     async search(query) {
         try {
+            // Display the results popup immediately for a more responsive feel
+            this.setState({
+                searchResults: null,
+                searchShowResults: true
+            });
             // A YouTube search only provides cursory info, things like duration are not included
             const results = await Youtube.search(query);
             if (this._isMounted && this.state.searchBox == query) {
@@ -88,7 +97,7 @@ export default class SearchBox extends React.Component {
             this.searchTimeout = setTimeout(() => this.search(query), 500);
         }
         else {
-            this.setState({searchResults: null});
+            this.setState({searchShowResults: false});
         }
     }
 
@@ -135,9 +144,12 @@ export default class SearchBox extends React.Component {
                 .map(result => {
                     return (
                         <li key={result.id}>
-                            <img src={result.thumbnail}/>
                             <button onClick={() => this.handleSearchResultClick(result.url)}>
-                                {result.display()}
+                                <img className="Thumbnail" src={result.thumbnail}/>
+                                <div className="Description">
+                                    <div className="Title">{result.title}</div>
+                                    <div className="Duration">{result.displayDuration()}</div>
+                                </div>
                             </button>
                         </li>
                     );
@@ -174,9 +186,33 @@ export default class SearchBox extends React.Component {
                         )}
                     </FileUploadContext.Consumer>
                 </div>
-                <ul>
-                    {searchResults}
-                </ul>
+                <CSSTransition
+                    in={this.state.searchShowResults}
+                    timeout={300}
+                    classNames="SearchBox-Results"
+                    mountOnEnter
+                    unmountOnExit
+                >
+                    <div className="SearchBox-Results">
+                        <div className="Overlay">
+                            {searchResults.length > 0 ? (
+                                <ul>
+                                    {searchResults}
+                                </ul>
+                            ) : (
+                                this.state.searchResults === null ? (
+                                    <div className="Loading">
+                                        <i className="fas fa-spinner fa-spin"></i>
+                                    </div>
+                                ) : (
+                                    <div className="NoResults">
+                                        <i className="far fa-times-circle"></i>No results found
+                                    </div>
+                                )
+                            )}
+                        </div>
+                    </div>
+                </CSSTransition>
             </div>
         );
     }
