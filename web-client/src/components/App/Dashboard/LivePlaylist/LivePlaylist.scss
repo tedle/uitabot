@@ -1,5 +1,8 @@
 @import "~styles/common";
 
+// Global scope because keyframes need to reference this
+$LivePlaylist-Track-Height: 90px;
+
 .LivePlaylist {
     ol {
         list-style-type: none;
@@ -11,8 +14,6 @@
 
 .LivePlaylist-Track {
     @include user-select(none);
-
-    $item-height: 90px;
 
     display: flex;
     justify-content: space-between;
@@ -47,14 +48,14 @@
 
     .TrackUrl {
         flex-shrink: 0;
-        width: $item-height;
-        height: $item-height;
+        width: $LivePlaylist-Track-Height;
+        height: $LivePlaylist-Track-Height;
 
         display: inline-block;
 
         border-left: 1px solid $bg-color;
 
-        line-height: $item-height;
+        line-height: $LivePlaylist-Track-Height;
         font-size: 2em;
         text-align: center;
 
@@ -67,8 +68,8 @@
 
     button {
         flex-shrink: 0;
-        width: $item-height;
-        height: $item-height;
+        width: $LivePlaylist-Track-Height;
+        height: $LivePlaylist-Track-Height;
 
         display: inline-block;
 
@@ -86,4 +87,40 @@
     button:hover, button:focus {
         color: $highlight-error;
     }
+
+    overflow: hidden;
+}
+
+@keyframes LivePlaylist-EnterAnimation {
+    from {
+        margin-top: 0;
+        max-height: 0;
+        opacity: 0;
+    }
+    to {
+        margin-top: 10px;
+        max-height: $LivePlaylist-Track-Height;
+        opacity: 1;
+    }
+}
+
+@keyframes LivePlaylist-ExitAnimation {
+    from {
+        margin-top: 10px;
+        max-height: $LivePlaylist-Track-Height;
+        opacity: 1;
+    }
+    to {
+        margin: 0;
+        max-height: 0;
+        opacity: 0;
+    }
+}
+
+.LivePlaylist-Track.LivePlaylist-Track-Enter {
+    animation: LivePlaylist-EnterAnimation 0.12s forwards;
+}
+
+.LivePlaylist-Track.LivePlaylist-Track-Exit {
+    animation: LivePlaylist-ExitAnimation 0.12s forwards;
 }
