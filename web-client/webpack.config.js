@@ -53,7 +53,9 @@ module.exports = {
             bot_url: bot_url
         }),
         new MiniCssExtractPlugin({ filename: "assets/[contenthash].css" }),
-        new OptimizeCssAssetsPlugin()
+        new OptimizeCssAssetsPlugin({
+            cssProcessorOptions: { reduceIdents: false }
+        })
     ],
     externals: {
         config: JSON.stringify({
