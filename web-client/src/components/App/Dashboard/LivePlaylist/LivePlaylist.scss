@@ -61,7 +61,7 @@
         color: $font-color;
     }
 
-    .TrackUrl:hover {
+    .TrackUrl:hover, .TrackUrl:focus {
         color: $highlight;
     }
 
@@ -83,7 +83,7 @@
         font-size: 1.5em;
     }
 
-    button:hover {
+    button:hover, button:focus {
         color: $highlight-error;
     }
 }

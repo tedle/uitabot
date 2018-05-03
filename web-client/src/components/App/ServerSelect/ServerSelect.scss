@@ -92,7 +92,7 @@
             }
         }
 
-        button:hover {
+        button:hover, button:focus {
             color: $highlight;
 
             border-left-width: 5px;
@@ -141,7 +141,7 @@
             color: $font-color;
         }
 
-        button:hover {
+        button:hover, button:focus {
             color: $highlight;
         }
     }

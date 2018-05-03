@@ -58,7 +58,7 @@
         color: $font-color;
     }
 
-    .Logout:hover {
+    .Logout:hover, .Logout:focus {
         color: $highlight;
     }
 }
