@@ -18,9 +18,9 @@
     a {
         text-decoration: none;
         color: $highlight;
-    }
 
-    a:hover, a:focus {
-        border-bottom: 2px solid $highlight;
+        &:hover, &:focus {
+            border-bottom: 2px solid $highlight;
+        }
     }
 }

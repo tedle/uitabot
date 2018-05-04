@@ -11,7 +11,9 @@
     padding: 0;
 }
 
-:root, body { height: 100%; }
+:root, body {
+    height: 100%;
+}
 
 #App-Mount {
     // Horizontally and vertically center children by default

@@ -19,7 +19,7 @@
         background-color: rgba(0, 0, 0, 0.9);
     }
 
-    .FileUpload-Overlay-Container {
+    &-Container {
         @include modal;
         @include center-overlay;
 
@@ -50,24 +50,24 @@
             font-size: 2em;
         }
     }
-}
 
-.FileUpload-Overlay-enter {
-    opacity: 0;
-}
+    &-enter {
+        opacity: 0;
+    }
 
-.FileUpload-Overlay-enter.FileUpload-Overlay-enter-active {
-    opacity: 1;
-    transition: opacity 0.5s;
-}
+    &-enter#{&}-enter-active {
+        opacity: 1;
+        transition: opacity 0.5s;
+    }
 
-.FileUpload-Overlay-exit {
-    opacity: 1;
-}
+    &-exit {
+        opacity: 1;
+    }
 
-.FileUpload-Overlay-exit.FileUpload-Overlay-exit-active {
-    opacity: 0;
-    transition: opacity 0.5s;
+    &-exit#{&}-exit-active {
+        opacity: 0;
+        transition: opacity 0.5s;
+    }
 }
 
 .FileUpload-Progress {
@@ -151,26 +151,26 @@
             background-color: $modal-color;
         }
     }
-}
 
-.FileUpload-Progress-enter {
-    opacity: 0;
-    transform: translateY(120%);
-}
+    &-enter {
+        opacity: 0;
+        transform: translateY(120%);
+    }
 
-.FileUpload-Progress-enter.FileUpload-Progress-enter-active {
-    opacity: 1;
-    transform: translateY(0%);
-    transition: all 0.2s ease-out;
-}
+    &-enter#{&}-enter-active {
+        opacity: 1;
+        transform: translateY(0%);
+        transition: all 0.2s ease-out;
+    }
 
-.FileUpload-Progress-exit {
-    opacity: 1;
-    transform: translateY(0%);
-}
+    &-exit {
+        opacity: 1;
+        transform: translateY(0%);
+    }
 
-.FileUpload-Progress-exit.FileUpload-Progress-exit-active {
-    opacity: 0;
-    transform: translateY(120%);
-    transition: all 0.2s ease-in 2s;
+    &-exit#{&}-exit-active {
+        opacity: 0;
+        transform: translateY(120%);
+        transition: all 0.2s ease-in 2s;
+    }
 }

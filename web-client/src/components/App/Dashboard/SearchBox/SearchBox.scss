@@ -55,168 +55,170 @@
         color: $font-color;
         text-align: center;
         line-height: $search-height;
+
+        &:hover, &:focus {
+            color: $highlight;
+        }
     }
 
-    button:hover, button:focus, label:hover, label:focus {
-        color: $highlight;
-    }
-}
-
-.SearchBox-Input:focus-within {
-    box-shadow: 0 0 10px rgba($highlight, 0.2);
-}
-
-// focus-within will cause animations to be skipped, so only use this rule while not animating
-.SearchBox:focus-within .SearchBox-Results:not(.SearchBox-Results-enter):not(.SearchBox-Results-exit),
-.SearchBox-Results-enter.SearchBox-Results-enter-active,
-.SearchBox-Results-exit {
-    visibility: visible;
-    opacity: 1;
-    height: 350px;
-    transition: visibility 0s 0s, opacity 0.2s 0s, height 0.3s, box-shadow 0.3s;
-
-    .Overlay {
-        box-shadow: 0 0 20px rgba($shadow, 0.4);
+    &:focus-within {
+        box-shadow: 0 0 10px rgba($highlight, 0.2);
     }
 }
 
-.SearchBox-Results,
-.SearchBox-Results-enter,
-.SearchBox-Results-exit.SearchBox-Results-exit-active {
-    // Workaround for Firefox bug where the text truncation ellipsis of underlying elements will
-    // render ontop of the top-level overlay
-    z-index: 10;
+.SearchBox-Results {
+    // focus-within will cause animations to be skipped, so only use this rule while not animating
+    .SearchBox:focus-within &:not(&-enter):not(&-exit),
+    &-enter#{&}-enter-active,
+    &-exit {
+        visibility: visible;
+        opacity: 1;
+        height: 350px;
+        transition: visibility 0s 0s, opacity 0.2s 0s, height 0.3s, box-shadow 0.3s;
 
-    // Lets clicks passthrough the hidden parts of the overlay container
-    pointer-events: none;
+        .Overlay {
+            box-shadow: 0 0 20px rgba($shadow, 0.4);
+        }
+    }
 
-    position: absolute;
-    top: 90px;
-    left: 0;
-    width: 100%;
+    &,
+    &-enter,
+    &-exit#{&}-exit-active {
+        // Workaround for Firefox bug where the text truncation ellipsis of underlying elements will
+        // render ontop of the top-level overlay
+        z-index: 10;
 
-    visibility: hidden;
-    opacity: 0;
-    height: 0;
-    transition: visibility 0s 0.3s, opacity 0.2s 0.1s, height 0.3s;
+        // Lets clicks passthrough the hidden parts of the overlay container
+        pointer-events: none;
 
-    background: none;
+        position: absolute;
+        top: 90px;
+        left: 0;
+        width: 100%;
 
-    .Overlay {
-        pointer-events: auto;
+        visibility: hidden;
+        opacity: 0;
+        height: 0;
+        transition: visibility 0s 0.3s, opacity 0.2s 0.1s, height 0.3s;
 
-        width: 70%;
-        height: 100%;
+        background: none;
 
-        overflow-x: hidden;
-        overflow-y: auto;
+        .Overlay {
+            pointer-events: auto;
 
-        margin: 0 auto;
-        padding: 0;
+            width: 70%;
+            height: 100%;
 
-        background: $modal-color;
-        border: 1px solid $bg-color;
+            overflow-x: hidden;
+            overflow-y: auto;
 
-        box-shadow: 0 0 0 rgba($shadow, 0.4);
-        transition: box-shadow 0.3s;
-
-        ul {
-            list-style-type: none;
-
-            margin: 0;
+            margin: 0 auto;
             padding: 0;
 
-            li {
-                button {
-                    display: flex;
+            background: $modal-color;
+            border: 1px solid $bg-color;
 
-                    position: relative;
-                    width: 100%;
+            box-shadow: 0 0 0 rgba($shadow, 0.4);
+            transition: box-shadow 0.3s;
 
-                    overflow: hidden;
+            ul {
+                list-style-type: none;
 
-                    background: none;
-                    border: none;
-                    padding: 0px;
+                margin: 0;
+                padding: 0;
 
-                    z-index: 1;
+                li {
+                    button {
+                        display: flex;
 
-                    border-left: 0 solid $highlight;
-                    box-shadow: 0 0 0 rgba($shadow, 0.2);
-                    transition: border-width 0.1s, box-shadow 0.2s;
+                        position: relative;
+                        width: 100%;
 
-                    .Thumbnail {
-                        flex-shrink: 0;
+                        overflow: hidden;
 
-                        $img-width: 130px;
-                        width: $img-width;
-                        height: $img-width * 9 / 16;
-                    }
+                        background: none;
+                        border: none;
+                        padding: 0px;
 
-                    .Description {
-                        @include truncate-text;
+                        z-index: 1;
 
-                        flex-grow: 1;
+                        border-left: 0 solid $highlight;
+                        box-shadow: 0 0 0 rgba($shadow, 0.2);
+                        transition: border-width 0.1s, box-shadow 0.2s;
 
-                        padding: 18px 30px 0 30px;
+                        .Thumbnail {
+                            flex-shrink: 0;
 
-                        font-family: $label-font;
-                        text-align: left;
+                            $img-width: 130px;
+                            width: $img-width;
+                            height: $img-width * 9 / 16;
+                        }
 
-                        border-bottom: 1px solid $bg-color;
-
-                        .Title {
+                        .Description {
                             @include truncate-text;
 
-                            color: $font-color;
-                            font-size: 1.4em;
+                            flex-grow: 1;
+
+                            padding: 18px 30px 0 30px;
+
+                            font-family: $label-font;
+                            text-align: left;
+
+                            border-bottom: 1px solid $bg-color;
+
+                            .Title {
+                                @include truncate-text;
+
+                                color: $font-color;
+                                font-size: 1.4em;
+                            }
+
+                            .Duration {
+                                color: $font-faded-color;
+                                font-size: 1.1em;
+                            }
                         }
 
-                        .Duration {
-                            color: $font-faded-color;
-                            font-size: 1.1em;
+                        &:hover, &:focus {
+                            z-index: 2;
+
+                            border-left: 5px solid $highlight;
+                            box-shadow: 0 0 10px rgba($shadow, 0.2);
+
+                            .Thumbnail {
+                                box-shadow: 0 0 200px rgba($highlight, 0.8);
+                            }
+
+                            .Title {
+                                color: $highlight;
+                            }
                         }
-                    }
-                }
-
-                button:hover, button:focus {
-                    z-index: 2;
-
-                    border-left: 5px solid $highlight;
-                    box-shadow: 0 0 10px rgba($shadow, 0.2);
-
-                    .Thumbnail {
-                        box-shadow: 0 0 200px rgba($highlight, 0.8);
-                    }
-
-                    .Title {
-                        color: $highlight;
                     }
                 }
             }
-        }
 
-        .Loading, .NoResults {
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            .Loading, .NoResults {
+                display: flex;
+                justify-content: center;
+                align-items: center;
 
-            width: 100%;
-            height: 100%;
+                width: 100%;
+                height: 100%;
 
-        }
+            }
 
-        .Loading {
-            color: $font-color;
-            font-size: 3em;
-        }
+            .Loading {
+                color: $font-color;
+                font-size: 3em;
+            }
 
-        .NoResults {
-            color: $font-faded-color;
-            font-size: 2em;
+            .NoResults {
+                color: $font-faded-color;
+                font-size: 2em;
 
-            i {
-                padding-right: 10px;
+                i {
+                    padding-right: 10px;
+                }
             }
         }
     }

@@ -90,15 +90,15 @@
                 padding: 0 32px;
                 flex-shrink: 0;
             }
-        }
 
-        button:hover, button:focus {
-            color: $highlight;
+            &:hover, &:focus {
+                color: $highlight;
 
-            border-left-width: 5px;
+                border-left-width: 5px;
 
-            box-shadow: 0 0 10px rgba($shadow, 0.2);
-            z-index: 2;
+                box-shadow: 0 0 10px rgba($shadow, 0.2);
+                z-index: 2;
+            }
         }
     }
 
@@ -139,10 +139,10 @@
             font-size: 1.3em;
 
             color: $font-color;
-        }
 
-        button:hover, button:focus {
-            color: $highlight;
+            &:hover, &:focus {
+                color: $highlight;
+            }
         }
     }
 }

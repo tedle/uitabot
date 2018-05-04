@@ -56,11 +56,11 @@
 
             visibility: visible;
         }
-    }
 
-    div.Disconnect:hover, div.Disconnect:focus-within {
-        i {
-            color: $highlight-error;
+        &:hover, &:focus-within {
+            i {
+                color: $highlight-error;
+            }
         }
     }
 
