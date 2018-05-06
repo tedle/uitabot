@@ -247,7 +247,9 @@ class DiscordUser():
     def __init__(self, id, name, avatar, session, active_server_id):
         self.id = id
         self.name = name
-        self.avatar = avatar
+        # Hack for discord.py forcing WebP extensions even though it has terrible browser support
+        # This also replaces animated GIFs with static PNGs, but thats for the best
+        self.avatar = avatar.rpartition(".")[0] + ".png"
         self.session = session
         self.active_server_id = active_server_id
 
