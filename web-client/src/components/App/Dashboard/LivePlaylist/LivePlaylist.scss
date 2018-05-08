@@ -36,14 +36,23 @@ $LivePlaylist-Track-Height: 90px;
         padding: 0 30px;
     }
 
-    .TrackTitle {
-        @include truncate-text;
-
+    .TrackInfo {
         flex-grow: 1;
 
-        padding-right: 30px;
+        overflow: hidden;
 
-        font-size: 1.5em;
+        .TrackTitle {
+            @include truncate-text;
+            padding-right: 30px;
+            font-size: 1.5em;
+            // Mixed fonts for glyph fills (CJK text, etc) causes variable line-height
+            line-height: 30px;
+        }
+
+        .TrackDuration {
+            font-size: 0.9em;
+            color: $font-faded-color;
+        }
     }
 
     .TrackUrl {

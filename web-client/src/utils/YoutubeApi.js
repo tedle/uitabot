@@ -2,6 +2,7 @@
 // YouTube API request functions
 
 import * as Config from "config";
+import TimestampFormat from "utils/TimestampFormat";
 
 var ResultType = {
     VIDEO: 1,
@@ -37,16 +38,7 @@ class Result {
                 if (this.duration == null) {
                     return "";
                 }
-                let display = "";
-                // Formats as 1:03:00, 6:14, 0:05, etc
-                if (this.duration > 60 * 60) {
-                    display += `${Math.floor(this.duration / (60 * 60))}:`;
-                    display += `${Math.floor(this.duration / 60) % 60}:`.padStart(3, "0");
-                } else {
-                    display += `${Math.floor(this.duration / 60) % 60}:`;
-                }
-                display += `${this.duration % 60}`.padStart(2, "0");
-                return display;
+                return TimestampFormat(this.duration);
             case ResultType.LIVE:
                 return "Live";
             case ResultType.PLAYLIST:

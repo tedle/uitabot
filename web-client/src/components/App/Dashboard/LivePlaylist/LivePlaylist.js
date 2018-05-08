@@ -6,6 +6,7 @@ import "./LivePlaylist.scss";
 import React from "react";
 import {SortableContainer, SortableElement, arrayMove} from "react-sortable-hoc";
 import * as Message from "utils/Message";
+import TimestampFormat from "utils/TimestampFormat";
 
 export default class LivePlaylist extends React.Component {
     constructor(props) {
@@ -96,8 +97,13 @@ export default class LivePlaylist extends React.Component {
             return (
                 <li className={classes.join(" ")}>
                     <img className="Thumbnail" src={track.thumbnail}/>
-                    <div className="TrackTitle">
-                        {track.title}
+                    <div className="TrackInfo">
+                        <div className="TrackTitle">
+                            {track.title}
+                        </div>
+                        <div className="TrackDuration">
+                            {track.live ? "Live" : TimestampFormat(track.duration)}
+                        </div>
                     </div>
                     {track.url.length > 0 &&
                         <a
