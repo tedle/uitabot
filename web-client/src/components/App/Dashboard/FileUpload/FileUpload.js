@@ -29,6 +29,8 @@ export default class FileUploadDropZone extends React.Component {
             showProgress: false
         };
         this._isMounted = false;
+        this._isUploading = false;
+        this.uploadQueue = Array();
     }
 
     componentDidMount() {
@@ -78,7 +80,7 @@ export default class FileUploadDropZone extends React.Component {
             socket.send(file.slice(start, end));
         }
         // Wait for the server response
-        let interval = setInterval(() => {
+        const interval = setInterval(() => {
             if (!this._isMounted) {
                 clearInterval(interval);
                 socket.close(1000);
@@ -133,86 +135,22 @@ export default class FileUploadDropZone extends React.Component {
     }
 
     upload(files) {
-        this.setState({showProgress: false});
-
         if (files.length == 0) {
             return;
         }
-        // Create a new authenticated socket to do the file uploads from asynchronously without
-        // jamming up the send buffer queue
-        let eventDispatcher = new Message.EventDispatcher();
-        let socket = new WebSocket(Config.bot_url);
-        try {
-            // Load up the stored credentials that absolutely most likely exist
-            let session = Session.load();
-            if (session === null) {
-                throw new Error("No session cookie");
-            }
-            // Initialize socket callbacks
-            socket.onmessage = e => eventDispatcher.dispatch(Message.parse(e.data));
-            socket.onerror = e => console.log(e);
-            socket.onopen = e => {
-                socket.send(new Message.AuthSessionMessage(session.handle, session.secret).str());
+        // Append given files to the upload queue for the running task to handle
+        this.uploadQueue = this.uploadQueue.concat(files.map(file => {
+            return {
+                name: file.name,
+                size: file.size,
+                progress: 0.0,
+                status: UploadStatus.QUEUED,
+                blob: file,
+                error: ""
             };
-            // After authentication, join the selected server and upload the files
-            eventDispatcher.setMessageHandler("auth.succeed", async (m) => {
-                try {
-                    // Select the server to upload files to
-                    socket.send(new Message.ServerJoinMessage(this.props.discordServer.id).str());
-                    // Organize file data into React consumable state
-                    let fileProgress = files.map(file => {
-                        return {
-                            name: file.name,
-                            size: file.size,
-                            progress: 0.0,
-                            status: UploadStatus.QUEUED,
-                            error: ""
-                        };
-                    });
-                    this.setState({progress: fileProgress, progressIndex: 0, showProgress: true})
-                    // Iterate over each file and upload it to the server
-                    for (let [index, file] of files.entries()) {
-                        try {
-                            if (socket.readyState != WebSocket.OPEN) {
-                                throw new Error("Server disconnected");
-                            }
-                            this.setState({progressIndex: index});
-                            await this.fileSend(file, socket, eventDispatcher, (buffered) => {
-                                fileProgress[index].status = UploadStatus.UPLOADING;
-                                fileProgress[index].progress = (file.size - buffered) / file.size;
-                                this.setState({progress: fileProgress, showProgress: true});
-                            });
-                            // Check after every control flow yield that is followed by state
-                            // changes that we are still mounted.
-                            // Sorry for this wild asynchronous mess, I blame sticking to basic
-                            // React since it'd be overkill to get a state library for just this
-                            // one component... but still...
-                            if (!this._isMounted) {
-                                socket.close(1000);
-                                return;
-                            }
-                            fileProgress[index].status = UploadStatus.COMPLETED;
-                        } catch (error) {
-                            fileProgress[index].status = UploadStatus.CANCELLED;
-                            fileProgress[index].error = error;
-                        } finally {
-                            fileProgress[index].progress = 1.0;
-                            this.setState({progress: fileProgress, showProgress: true});
-                        }
-                    }
-                } finally {
-                    this.setState({showProgress: false});
-                    socket.close(1000);
-                }
-            });
-            // There is a very rare chance that the server side credentials have expired and failed to renew
-            eventDispatcher.setMessageHandler("auth.fail", m => {
-                alert("File upload authentication failed, try refreshing");
-                socket.close(1000);
-            });
-        } catch (error) {
-            alert(`Error uploading files: ${error.message}`);
-            socket.close(1000);
+        }));
+        if (!this._isUploading) {
+            this._spawnUploadTask();
         }
     }
 
@@ -258,6 +196,93 @@ export default class FileUploadDropZone extends React.Component {
                 </div>
             </div>
         );
+    }
+
+    _spawnUploadTask() {
+        // Create a new authenticated socket to do the file uploads from asynchronously without
+        // jamming up the send buffer queue
+        let eventDispatcher = new Message.EventDispatcher();
+        let socket = new WebSocket(Config.bot_url);
+        try {
+            this._isUploading = true;
+            // Load up the stored credentials that absolutely most likely exist
+            let session = Session.load();
+            if (session === null) {
+                throw new Error("No session cookie");
+            }
+            // Initialize socket callbacks
+            socket.onmessage = e => eventDispatcher.dispatch(Message.parse(e.data));
+            socket.onerror = e => console.log(e);
+            socket.onopen = e => {
+                socket.send(new Message.AuthSessionMessage(session.handle, session.secret).str());
+            };
+            // After authentication, join the selected server and upload the files
+            eventDispatcher.setMessageHandler("auth.succeed", async (m) => {
+                await this._uploadTask(socket, eventDispatcher);
+            });
+            // There is a very rare chance that the server side credentials have expired and failed to renew
+            eventDispatcher.setMessageHandler("auth.fail", m => {
+                this._isUploading = false;
+                alert("File upload authentication failed, try refreshing");
+                socket.close(1000);
+            });
+        } catch (error) {
+            this._isUploading = false;
+            alert(`Error uploading files: ${error.message}`);
+            socket.close(1000);
+        }
+    }
+
+    async _uploadTask(socket, dispatcher) {
+        try {
+            // Select the server to upload files to
+            socket.send(new Message.ServerJoinMessage(this.props.discordServer.id).str());
+            let index = -1;
+            // Recheck the queue after each upload in case new files are added
+            while ((index = this.uploadQueue.findIndex(f => f.status == UploadStatus.QUEUED)) != -1) {
+                try {
+                    if (socket.readyState != WebSocket.OPEN) {
+                        throw new Error("Server disconnected");
+                    }
+
+                    this.setState({
+                        progress: this.uploadQueue,
+                        progressIndex: index,
+                        showProgress: true
+                    });
+
+                    const file = this.uploadQueue[index];
+                    await this.fileSend(file.blob, socket, dispatcher, (buffered) => {
+                        this.uploadQueue[index].status = UploadStatus.UPLOADING;
+                        this.uploadQueue[index].progress = (file.size - buffered) / file.size;
+                        this.setState({progress: this.uploadQueue, showProgress: true});
+                    });
+                    // Check after every control flow yield that is followed by state
+                    // changes that we are still mounted.
+                    // Sorry for this wild asynchronous mess, I blame sticking to basic
+                    // React since it'd be overkill to get a state library for just this
+                    // one component... but still...
+                    if (!this._isMounted) {
+                        socket.close(1000);
+                        return;
+                    }
+                    this.uploadQueue[index].status = UploadStatus.COMPLETED;
+                } catch (error) {
+                    this.uploadQueue[index].status = UploadStatus.CANCELLED;
+                    this.uploadQueue[index].error = error;
+                } finally {
+                    this.uploadQueue[index].progress = 1.0;
+                    this.setState({progress: this.uploadQueue, showProgress: true});
+                }
+            }
+        } finally {
+            // Make sure that _isUploading resets in the same synchronous control block as the
+            // while loop exits, so the component knows to spawn new tasks for later files
+            this._isUploading = false;
+            this.uploadQueue = Array();
+            this.setState({showProgress: false});
+            socket.close(1000);
+        }
     }
 
     render() {
