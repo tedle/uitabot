@@ -1,8 +1,5 @@
 @import "~styles/common";
 
-// Global scope because keyframes need to reference this
-$LivePlaylist-Track-Height: 90px;
-
 .LivePlaylist {
     ol {
         list-style-type: none;
@@ -14,6 +11,8 @@ $LivePlaylist-Track-Height: 90px;
 
 .LivePlaylist-Track {
     @include user-select(none);
+
+    $track-height: 90px;
 
     padding: 0;
     margin-top: 10px;
@@ -72,14 +71,14 @@ $LivePlaylist-Track-Height: 90px;
 
         .TrackUrl {
             flex-shrink: 0;
-            width: $LivePlaylist-Track-Height;
-            height: $LivePlaylist-Track-Height;
+            width: $track-height;
+            height: $track-height;
 
             display: inline-block;
 
             border-left: 1px solid $bg-color;
 
-            line-height: $LivePlaylist-Track-Height;
+            line-height: $track-height;
             font-size: 2em;
             text-align: center;
 
@@ -92,8 +91,8 @@ $LivePlaylist-Track-Height: 90px;
 
         button {
             flex-shrink: 0;
-            width: $LivePlaylist-Track-Height;
-            height: $LivePlaylist-Track-Height;
+            width: $track-height;
+            height: $track-height;
 
             display: inline-block;
 
@@ -128,37 +127,21 @@ $LivePlaylist-Track-Height: 90px;
         transition: width 1.5s linear;
     }
 
-    &#{&}-Enter {
-        animation: LivePlaylist-EnterAnimation 0.12s forwards;
+    &-enter#{&}-enter-active,
+    &-exit {
+        margin-top: 10px;
+        max-height: $track-height;
+        opacity: 1;
+
+        transition: all 0.12s;
     }
 
-    &#{&}-Exit {
-        animation: LivePlaylist-ExitAnimation 0.12s forwards;
-    }
-}
-
-@keyframes LivePlaylist-EnterAnimation {
-    from {
+    &-exit#{&}-exit-active,
+    &-enter {
         margin-top: 0;
         max-height: 0;
         opacity: 0;
-    }
-    to {
-        margin-top: 10px;
-        max-height: $LivePlaylist-Track-Height;
-        opacity: 1;
-    }
-}
 
-@keyframes LivePlaylist-ExitAnimation {
-    from {
-        margin-top: 10px;
-        max-height: $LivePlaylist-Track-Height;
-        opacity: 1;
-    }
-    to {
-        margin: 0;
-        max-height: 0;
-        opacity: 0;
+        transition: all 0.12s;
     }
 }
