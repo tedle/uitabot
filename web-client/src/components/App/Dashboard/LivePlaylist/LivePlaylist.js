@@ -161,73 +161,15 @@ export default class LivePlaylist extends React.Component {
     }
 
     render() {
-        const Track = SortableElement(({track}) => {
-            let classes = ["LivePlaylist-Track"];
-            if (this.state.animatingExit.includes(track.id)) {
-                classes.push("LivePlaylist-Track-Exit");
-            } else if (this.state.animatingEnter.includes(track.id)) {
-                classes.push("LivePlaylist-Track-Enter");
-            }
-
-            let playTimeRemaining = Math.max(track.duration - track.offset, 0);
-            if (this.state.queue[0].id == track.id) {
-                playTimeRemaining = Math.max(
-                    track.duration -
-                    track.offset -
-                    (this.state.playCurrentTime - this.playStartTime) / 1000,
-                0);
-            }
-            playTimeRemaining = Math.trunc(playTimeRemaining);
-            const playTimeProgress = 1.0 - playTimeRemaining / Math.max(track.duration, 1.0);
-
-            return (
-                <li className={classes.join(" ")}>
-                    <div className="Metadata">
-                        <img className="Thumbnail" src={track.thumbnail}/>
-                        <div className="TrackInfo">
-                            <div className="TrackTitle">
-                                {track.title}
-                            </div>
-                            <div className="TrackDuration">
-                                {track.live ? "Live" : TimestampFormat(playTimeRemaining)}
-                            </div>
-                        </div>
-                        {track.url.length > 0 &&
-                            <a
-                                className="TrackUrl DragCancel"
-                                href={track.url}
-                                onDragStart={(e) => e.preventDefault()}
-                            >
-                                <i className="fab fa-youtube DragCancel"></i>
-                            </a>
-                        }
-                        <button
-                            className="DragCancel"
-                            onClick={() => this.queueRemove(track.id)}
-                        >
-                            <i className="fas fa-times DragCancel"></i>
-                        </button>
-                    </div>
-                    <div className="Progress" style={{width: `${playTimeProgress * 100}%`}}></div>
-                </li>
-            );
-        });
-
-        const Playlist = SortableContainer(({tracks}) => {
-            const a = tracks.map((track, index) =>
-                <Track key={track.id} index={index} track={track}/>
-            );
-            return (
-                <ol>
-                    {a}
-                </ol>
-            );
-        });
-
         return (
             <div className="LivePlaylist">
                 <Playlist
                     tracks={this.state.queue}
+                    animatingEnterList={this.state.animatingEnter}
+                    animatingExitList={this.state.animatingExit}
+                    playStartTime={this.playStartTime}
+                    playCurrentTime={this.state.playCurrentTime}
+                    onTrackRemove={(id) => this.queueRemove(id)}
                     shouldCancelStart={(e) => e.target.classList.contains("DragCancel")}
                     onSortStart={() => this.handleSortStart()}
                     onSortEnd={(i) => this.handleSortEnd(i)}
@@ -236,3 +178,93 @@ export default class LivePlaylist extends React.Component {
         );
     }
 }
+
+const Track = SortableElement(({
+        // Track props
+        track,
+        isAnimatingEnter,
+        isAnimatingExit,
+        isFirstTrack,
+        playStartTime,
+        playCurrentTime,
+        onTrackRemove
+    }) => {
+    let classes = ["LivePlaylist-Track"];
+    if (isAnimatingExit) {
+        classes.push("LivePlaylist-Track-Exit");
+    } else if (isAnimatingEnter) {
+        classes.push("LivePlaylist-Track-Enter");
+    }
+
+    let playTimeRemaining = Math.max(track.duration - track.offset, 0);
+    if (isFirstTrack) {
+        playTimeRemaining = Math.max(
+            track.duration -
+            track.offset -
+            (playCurrentTime - playStartTime) / 1000,
+        0);
+    }
+    playTimeRemaining = Math.trunc(playTimeRemaining);
+    const playTimeProgress = 1.0 - playTimeRemaining / Math.max(track.duration, 1.0);
+
+    return (
+        <li className={classes.join(" ")}>
+            <div className="Metadata">
+                <img className="Thumbnail" src={track.thumbnail}/>
+                <div className="TrackInfo">
+                    <div className="TrackTitle">
+                        {track.title}
+                    </div>
+                    <div className="TrackDuration">
+                        {track.live ? "Live" : TimestampFormat(playTimeRemaining)}
+                    </div>
+                </div>
+                {track.url.length > 0 &&
+                    <a
+                        className="TrackUrl DragCancel"
+                        href={track.url}
+                        onDragStart={(e) => e.preventDefault()}
+                    >
+                        <i className="fab fa-youtube DragCancel"></i>
+                    </a>
+                }
+                <button
+                    className="DragCancel"
+                    onClick={() => onTrackRemove(track.id)}
+                >
+                    <i className="fas fa-times DragCancel"></i>
+                </button>
+            </div>
+            <div className="Progress" style={{width: `${playTimeProgress * 100}%`}}></div>
+        </li>
+    );
+});
+
+const Playlist = SortableContainer(({
+        // Playlist props
+        tracks,
+        animatingEnterList,
+        animatingExitList,
+        playStartTime,
+        playCurrentTime,
+        onTrackRemove
+    }) => {
+    const trackList = tracks.map((track, index) =>
+        <Track
+            key={track.id}
+            index={index}
+            track={track}
+            isAnimatingEnter={animatingEnterList.includes(track.id)}
+            isAnimatingExit={animatingExitList.includes(track.id)}
+            isFirstTrack={index == 0}
+            playStartTime={playStartTime}
+            playCurrentTime={playCurrentTime}
+            onTrackRemove={onTrackRemove}
+        />
+    );
+    return (
+        <ol>
+            {trackList}
+        </ol>
+    );
+});
