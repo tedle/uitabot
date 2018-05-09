@@ -291,9 +291,15 @@ class DiscordVoiceClient():
                 await self.disconnect()
             message = uita.message.PlayQueueSendMessage(queue)
             uita.server.send_all(message, self.server_id)
+
+        async def on_status_change(status):
+            message = uita.message.PlayStatusSendMessage(status)
+            uita.server.send_all(message, self.server_id)
+
         self._playlist = uita.audio.Queue(
             maxlen=100,
             on_queue_change=on_queue_change,
+            on_status_change=on_status_change,
             loop=self.loop
         )
 
@@ -389,6 +395,17 @@ class DiscordVoiceClient():
 
         """
         return self._playlist.queue_full()
+
+    def status(self):
+        """Returns the current playback status.
+
+        Returns
+        -------
+        uita.audio.Status
+            Enum of current playback status (playing, paused, etc).
+
+        """
+        return self._playlist.status
 
     async def move(self, track_id, position):
         """Moves a track to a new position in the playback queue.

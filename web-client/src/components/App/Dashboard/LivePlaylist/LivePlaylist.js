@@ -14,9 +14,17 @@ export default class LivePlaylist extends React.Component {
         this.state = {
             queue: Array(),
             animatingEnter: Array(),
-            animatingExit: Array()
+            animatingExit: Array(),
+            playCurrentTime: 0
         };
         this.animatingTasks = new Set();
+
+        this.isPlaying = false;
+        this.playStartTime = 0;
+        this.playUpdateTask = null;
+        // Render updates while dragging break react-sortable-hoc and playUpdateTask causes render
+        // updates at frequent intervals
+        this.skipPlayUpdateTask = false;
     }
 
     componentDidMount() {
@@ -24,12 +32,27 @@ export default class LivePlaylist extends React.Component {
         this.props.eventDispatcher.setMessageHandler("play.queue.send", m => {
             this.handleQueueChange(m.queue);
         });
+        this.props.eventDispatcher.setMessageHandler("play.status.send", m => {
+            switch (m.status) {
+                case Message.PlayStatusSendMessage.PLAYING:
+                    this.startPlayProgress();
+                    break;
+                case Message.PlayStatusSendMessage.PAUSED:
+                    this.pausePlayProgress();
+                    break;
+                default:
+                    throw new Error("play.status.send enum had unexpected value");
+                    break;
+            }
+        });
         // Request the initial queue state
         this.props.socket.send(new Message.PlayQueueGetMessage().str());
+        this.props.socket.send(new Message.PlayStatusGetMessage().str());
     }
 
     componentWillUnmount() {
         this.props.eventDispatcher.clearMessageHandler("play.queue.send");
+        this.props.eventDispatcher.clearMessageHandler("play.status.send");
 
         this.setState({
             queue: Array(),
@@ -41,6 +64,8 @@ export default class LivePlaylist extends React.Component {
             clearTimeout(task);
         }
         this.animatingTasks.clear();
+
+        this.pausePlayProgress();
     }
 
     // Manually manage CSS transition animations, as react-sortable-hoc breaks react-transition-groups
@@ -68,11 +93,22 @@ export default class LivePlaylist extends React.Component {
                 animatingExit: this.state.animatingExit.filter(id => !removedIds.has(id))
             });
             this.animatingTasks.delete(timeoutId);
+            // Reset play progress once the new track offsets take hold
+            this.resetPlayProgress();
         }, 100);
         this.animatingTasks.add(timeoutId);
     }
 
-    queueMove({oldIndex, newIndex}) {
+    handleSortStart() {
+        this.skipPlayUpdateTask = true;
+    }
+
+    handleSortEnd({oldIndex, newIndex}) {
+        this.skipPlayUpdateTask = false;
+        this.queueMove(oldIndex, newIndex);
+    }
+
+    queueMove(oldIndex, newIndex) {
         const trackId = this.state.queue[oldIndex].id;
         // Update server
         this.props.socket.send(new Message.PlayQueueMoveMessage(trackId, newIndex).str());
@@ -86,6 +122,44 @@ export default class LivePlaylist extends React.Component {
         this.props.socket.send(new Message.PlayQueueRemoveMessage(trackId).str());
     }
 
+    startPlayProgress() {
+        this.pausePlayProgress();
+
+        this.playStartTime = performance.now();
+        this.setState({playCurrentTime: this.playStartTime});
+
+        // Use recursive timeouts instead of an interval to have the timer based relative to a
+        // ground truth starting point, this keeps the update calls in sync with visually distinct
+        // state changes and also minimizes the amount of updates that need to be made.
+        const update = () => {
+            const timeOffset = this.playStartTime % 1000;
+            const timeUntilNext = 1000 - (performance.now() % 1000) + timeOffset;
+            this.playUpdateTask = setTimeout(update, timeUntilNext);
+
+            if (this.skipPlayUpdateTask) {
+                return;
+            }
+
+            this.setState({playCurrentTime: performance.now()});
+        };
+        update();
+
+        this.isPlaying = true;
+    }
+
+    pausePlayProgress() {
+        if (this.playUpdateTask != null) {
+            clearInterval(this.playUpdateTask);
+        }
+
+        this.isPlaying = false;
+    }
+
+    resetPlayProgress() {
+        this.playStartTime = performance.now();
+        this.setState({playCurrentTime: this.playStartTime});
+    }
+
     render() {
         const Track = SortableElement(({track}) => {
             let classes = ["LivePlaylist-Track"];
@@ -94,32 +168,47 @@ export default class LivePlaylist extends React.Component {
             } else if (this.state.animatingEnter.includes(track.id)) {
                 classes.push("LivePlaylist-Track-Enter");
             }
+
+            let playTimeRemaining = Math.max(track.duration - track.offset, 0);
+            if (this.state.queue[0].id == track.id) {
+                playTimeRemaining = Math.max(
+                    track.duration -
+                    track.offset -
+                    (this.state.playCurrentTime - this.playStartTime) / 1000,
+                0);
+            }
+            playTimeRemaining = Math.trunc(playTimeRemaining);
+            const playTimeProgress = 1.0 - playTimeRemaining / Math.max(track.duration, 1.0);
+
             return (
                 <li className={classes.join(" ")}>
-                    <img className="Thumbnail" src={track.thumbnail}/>
-                    <div className="TrackInfo">
-                        <div className="TrackTitle">
-                            {track.title}
+                    <div className="Metadata">
+                        <img className="Thumbnail" src={track.thumbnail}/>
+                        <div className="TrackInfo">
+                            <div className="TrackTitle">
+                                {track.title}
+                            </div>
+                            <div className="TrackDuration">
+                                {track.live ? "Live" : TimestampFormat(playTimeRemaining)}
+                            </div>
                         </div>
-                        <div className="TrackDuration">
-                            {track.live ? "Live" : TimestampFormat(track.duration)}
-                        </div>
-                    </div>
-                    {track.url.length > 0 &&
-                        <a
-                            className="TrackUrl DragCancel"
-                            href={track.url}
-                            onDragStart={(e) => e.preventDefault()}
+                        {track.url.length > 0 &&
+                            <a
+                                className="TrackUrl DragCancel"
+                                href={track.url}
+                                onDragStart={(e) => e.preventDefault()}
+                            >
+                                <i className="fab fa-youtube DragCancel"></i>
+                            </a>
+                        }
+                        <button
+                            className="DragCancel"
+                            onClick={() => this.queueRemove(track.id)}
                         >
-                            <i className="fab fa-youtube DragCancel"></i>
-                        </a>
-                    }
-                    <button
-                        className="DragCancel"
-                        onClick={() => this.queueRemove(track.id)}
-                    >
-                        <i className="fas fa-times DragCancel"></i>
-                    </button>
+                            <i className="fas fa-times DragCancel"></i>
+                        </button>
+                    </div>
+                    <div className="Progress" style={{width: `${playTimeProgress * 100}%`}}></div>
                 </li>
             );
         });
@@ -140,7 +229,8 @@ export default class LivePlaylist extends React.Component {
                 <Playlist
                     tracks={this.state.queue}
                     shouldCancelStart={(e) => e.target.classList.contains("DragCancel")}
-                    onSortEnd={(i) => this.queueMove(i)}
+                    onSortStart={() => this.handleSortStart()}
+                    onSortEnd={(i) => this.handleSortEnd(i)}
                 />
             </div>
         );

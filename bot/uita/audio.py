@@ -2,6 +2,8 @@
 import asyncio
 import atexit
 import collections
+import copy
+import enum
 import json
 import os
 import queue
@@ -67,6 +69,12 @@ class Track():
         self.offset = 0.0
 
 
+# NOTE: These values must be synced with the enum used in utils/Message.js:PlayStatusSendMessage
+class Status(enum.IntEnum):
+    PLAYING = 1
+    PAUSED = 2
+
+
 class Queue():
     """Queues audio resources to be played by a looping task.
 
@@ -77,6 +85,9 @@ class Queue():
     on_queue_change : callback(list), optional
         Callback that is triggered everytime the state of the playback queue changes. Function
         accepts a list of `uita.audio.Track` as its only argument.
+    on_status_change : callback(uita.audio.Status), optional
+        Callback that is triggered everytime the playback status changes. Function accepts a
+        `uita.audio.Status` as its only argument.
     loop : asyncio.AbstractEventLoop, optional
         Event loop for audio tasks to run in.
 
@@ -84,14 +95,20 @@ class Queue():
     ----------
     loop : asyncio.AbstractEventLoop
         Event loop for audio tasks to run in.
+    status : uita.audio.Status
+        Current playback status (playing, paused, etc).
 
     """
-    def __init__(self, maxlen=None, on_queue_change=None, loop=None):
+    def __init__(self, maxlen=None, on_queue_change=None, on_status_change=None, loop=None):
         # async lambdas don't exist
         async def dummy_queue_change(q): pass
         self._on_queue_change = on_queue_change or dummy_queue_change
 
+        async def dummy_status_change(s): pass
+        self._on_status_change = on_status_change or dummy_status_change
+
         self.loop = loop or asyncio.get_event_loop()
+        self.status = Status.PAUSED
         self._now_playing = None
         self._queue = collections.deque()
         self._queue_lock = asyncio.Lock(loop=self.loop)
@@ -111,7 +128,17 @@ class Queue():
             Ordered list of audio resources queued for playback.
 
         """
-        return ([self._now_playing] if self._now_playing is not None else []) + list(self._queue)
+        if self._now_playing is not None:
+            # To maintain timer precision we want to avoid modifying the current tracks offset
+            # outside of pause/resumes
+            now_playing = copy.copy(self._now_playing)
+            if self._play_start_time is not None:
+                now_playing.offset += max(
+                    time.perf_counter() - self._play_start_time,
+                    0.0
+                )
+            return [now_playing] + list(self._queue)
+        return list(self._queue)
 
     def queue_full(self):
         """Tests if the queue is at capacity.
@@ -340,8 +367,13 @@ class Queue():
     async def _after_song(self):
         with await self._queue_lock:
             self._now_playing = None
+            await self._change_status(Status.PAUSED)
             await self._notify_queue_change()
             self._end_stream()
+
+    async def _change_status(self, status):
+        self.status = status
+        await self._on_status_change(self.status)
 
     async def _play_loop(self, voice):
         try:
@@ -381,6 +413,7 @@ class Queue():
                         # Sync play start time to player start
                         self._play_start_time = time.perf_counter()
                         self._player.start()
+                        await self._change_status(Status.PLAYING)
                 await self._queue_update_flag.wait()
         except asyncio.CancelledError:
             pass

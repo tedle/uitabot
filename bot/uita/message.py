@@ -340,8 +340,31 @@ class PlayQueueSendMessage(AbstractMessage):
             "title": track.title,
             "duration": track.duration,
             "live": track.live,
-            "thumbnail": track.user.avatar
+            "thumbnail": track.user.avatar,
+            "offset": track.offset
         } for track in queue]
+
+
+class PlayStatusGetMessage(AbstractMessage):
+    """Sent by client requesting current playback status."""
+    header = "play.status.get"
+    """"""
+
+
+class PlayStatusSendMessage(AbstractMessage):
+    """Sent by server containing current playback status.
+
+    Attributes
+    ----------
+    status : uita.audio.Status
+        Enum of current playback status.
+
+    """
+    header = "play.status.send"
+    """"""
+
+    def __init__(self, status):
+        self.status = status
 
 
 class PlayURLMessage(AbstractMessage):
@@ -436,6 +459,8 @@ VALID_MESSAGES = {
     PlayQueueMoveMessage.header: (PlayQueueMoveMessage, ["id", "position"]),
     PlayQueueRemoveMessage.header: (PlayQueueRemoveMessage, ["id"]),
     PlayQueueSendMessage.header: (PlayQueueSendMessage, ["queue"]),
+    PlayStatusGetMessage.header: (PlayStatusGetMessage, []),
+    PlayStatusSendMessage.header: (PlayStatusSendMessage, ["status"]),
     PlayURLMessage.header: (PlayURLMessage, ["url"]),
     ServerJoinMessage.header: (ServerJoinMessage, ["server_id"]),
     ServerKickMessage.header: (ServerKickMessage, []),

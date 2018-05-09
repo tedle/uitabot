@@ -150,6 +150,14 @@ async def play_queue_remove(event):
     await voice.remove(event.message.id)
 
 
+@uita.server.on_message("play.status.get")
+async def play_status_get(event):
+    """Requests the current playback status from the active server."""
+    log.debug("play.status.get")
+    voice = uita.state.voice_connections[event.active_server.id]
+    await event.socket.send(str(uita.message.PlayStatusSendMessage(voice.status())))
+
+
 @uita.server.on_message("play.url")
 async def play_url(event):
     """Queues the audio from a given URL."""

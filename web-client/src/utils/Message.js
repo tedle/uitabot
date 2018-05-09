@@ -196,6 +196,32 @@ export class PlayQueueSendMessage extends AbstractMessage {
     }
 }
 
+export class PlayStatusGetMessage extends AbstractMessage {
+    static get header() {
+        return "play.status.get";
+    }
+}
+
+// NOTE: These values must be synced with the enum used in uita/audio.py:Status
+export class PlayStatusSendMessage extends AbstractMessage {
+    static get header() {
+        return "play.status.send";
+    }
+
+    static get PLAYING() {
+        return 1;
+    }
+
+    static get PAUSED() {
+        return 2;
+    }
+
+    constructor(status) {
+        super();
+        this.status = status;
+    }
+}
+
 export class PlayURLMessage extends AbstractMessage {
     static get header() {
         return "play.url";
@@ -263,6 +289,8 @@ const VALID_MESSAGES = {
     "play.queue.move": [PlayQueueMoveMessage, ["id", "position"]],
     "play.queue.remove": [PlayQueueRemoveMessage, ["id"]],
     "play.queue.send": [PlayQueueSendMessage, ["queue"]],
+    "play.status.get": [PlayStatusGetMessage, []],
+    "play.status.send": [PlayStatusSendMessage, ["status"]],
     "play.url": [PlayURLMessage, ["url"]],
     "server.kick": [ServerKickMessage, []],
     "server.join": [ServerJoinMessage, ["server_id"]],
