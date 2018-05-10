@@ -4,6 +4,7 @@
 // Formats seconds as 1:03:00, 6:14, 0:05, etc
 export default function(seconds) {
     let display = "";
+    seconds = Math.round(seconds);
     if (seconds > 60 * 60) {
         display += `${Math.floor(seconds / (60 * 60))}:`;
         display += `${Math.floor(seconds / 60) % 60}:`.padStart(3, "0");

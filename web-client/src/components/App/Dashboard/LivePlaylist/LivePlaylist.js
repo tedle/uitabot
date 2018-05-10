@@ -156,7 +156,6 @@ const Track = SortableElement(({
             (playCurrentTime - playStartTime) / 1000,
         0);
     }
-    playTimeRemaining = Math.trunc(playTimeRemaining);
     const playTimeProgress = 1.0 - playTimeRemaining / Math.max(track.duration, 1.0);
 
     return (
