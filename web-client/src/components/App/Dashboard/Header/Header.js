@@ -11,7 +11,7 @@ export default function Header(props) {
         <div className="Header">
             <h1>{props.discordServer.name}</h1>
             <img className="Avatar" src={props.discordUser.avatar}/>
-            <div className="Username">
+            <div className="Username hidden-xs">
                 {props.discordUser.name}
             </div>
             <button className="Logout" onClick={Session.logout}>

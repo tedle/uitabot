@@ -16,17 +16,33 @@
 
         flex-grow: 1;
 
-        padding-left: 50px;
+        @include desktop {
+            padding-left: 50px;
+
+            font-size: 2.5em;
+        }
+        @include phone {
+            padding-left: 30px;
+
+            font-size: 1.2em;
+        }
 
         font-family: $header-font;
-        font-size: 2.5em;
     }
 
     .Avatar {
         flex-shrink: 0;
 
-        width: 50px;
-        height: 50px;
+        @include desktop {
+            width: 50px;
+            height: 50px;
+        }
+        @include phone {
+            width: 30px;
+            height: 30px;
+            margin-right: 20px;
+        }
+
         border-radius: 50%;
         margin: 0 15px;
     }
@@ -42,7 +58,15 @@
     .Logout {
         flex-shrink: 0;
 
-        width: 100px;
+        @include desktop {
+            width: 100px;
+            font-size: 1.5em;
+        }
+        @include phone {
+            width: 60px;
+            font-size: 1.2em;
+        }
+
         height: 100%;
 
         padding: 0;
@@ -52,7 +76,6 @@
         background: none;
 
         text-align: center;
-        font-size: 1.5em;
         font-family: $label-font;
 
         color: $font-color;

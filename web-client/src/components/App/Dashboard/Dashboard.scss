@@ -26,7 +26,7 @@
                   [playlist-start] 1fr [playlist-end voicechannel-start] 250px [voicechannel-end];
         }
         @include phone {
-            grid: [header-start] 100px [header-end content-start] auto [content-end] /
+            grid: [header-start] 60px [header-end content-start] auto [content-end] /
                   100%;
         }
 
