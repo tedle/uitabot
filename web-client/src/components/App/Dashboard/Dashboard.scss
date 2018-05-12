@@ -26,7 +26,7 @@
                   [playlist-start] 1fr [playlist-end voicechannel-start] 250px [voicechannel-end];
         }
         @include phone {
-            grid: [header-start] 60px [header-end content-start] auto [content-end] /
+            grid: [header-start] 60px [header-end tab-start] 60px [tab-end content-start] auto [content-end] /
                   100%;
         }
 
@@ -41,6 +41,12 @@
         @include phone {
             grid-column: 1;
         }
+        min-width: 0;
+    }
+
+    &-TabSelect {
+        grid-row: tab-start / tab-end;
+        grid-column: 1;
         min-width: 0;
     }
 

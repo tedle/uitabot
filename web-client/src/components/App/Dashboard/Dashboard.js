@@ -6,6 +6,7 @@ import "./Dashboard.scss";
 import React from "react";
 import FileUploadDropZone from "./FileUpload/FileUpload";
 import Header from "./Header/Header";
+import TabSelect from "./TabSelect/TabSelect";
 import LivePlaylist from "./LivePlaylist/LivePlaylist";
 import SearchBox from "./SearchBox/SearchBox";
 import VoiceChannelSelect from "./VoiceChannelSelect/VoiceChannelSelect";
@@ -13,6 +14,10 @@ import VoiceChannelSelect from "./VoiceChannelSelect/VoiceChannelSelect";
 export default class Dashboard extends React.Component {
     constructor(props) {
         super(props);
+
+        this.state = {
+            activeTab: "playlist"
+        };
     }
 
     render() {
@@ -24,7 +29,7 @@ export default class Dashboard extends React.Component {
                     discordServer={this.props.discordServer}
                 >
                     <div className="Dashboard-Inner">
-                        <div className="Dashboard-Playlist">
+                        <div className={`Dashboard-Playlist ${this.state.activeTab=="playlist" ? "" : "hidden-xs"}`}>
                             {/* Searches for and queues audio */}
                             <SearchBox
                                 socket={this.props.socket}
@@ -36,11 +41,21 @@ export default class Dashboard extends React.Component {
                                 eventDispatcher={this.props.eventDispatcher}
                             />
                         </div>
-                        <div className="Dashboard-VoiceChannel hidden-xs">
+                        <div className={`Dashboard-VoiceChannel ${this.state.activeTab=="voice" ? "" : "hidden-xs"}`}>
                             {/* Controls which channel the bot plays music in */}
                             <VoiceChannelSelect
                                 socket={this.props.socket}
                                 eventDispatcher={this.props.eventDispatcher}
+                            />
+                        </div>
+                        <div className="Dashboard-TabSelect visible-xs">
+                            <TabSelect
+                                tabs={[
+                                    {id: "playlist", display: "Playlist"},
+                                    {id: "voice", display: "Voice Channels"}
+                                ]}
+                                active={this.state.activeTab}
+                                onSelect={id => this.setState({activeTab: id})}
                             />
                         </div>
                         <div className="Dashboard-Header">
