@@ -21,27 +21,48 @@
         margin: 0 auto;
 
         display: grid;
-        grid: [header-start] 100px [header-end content-start] auto [content-end] /
-              [playlist-start] 1fr [playlist-end voicechannel-start] 250px [voicechannel-end];
+        @include desktop {
+            grid: [header-start] 100px [header-end content-start] auto [content-end] /
+                  [playlist-start] 1fr [playlist-end voicechannel-start] 250px [voicechannel-end];
+        }
+        @include phone {
+            grid: [header-start] 100px [header-end content-start] auto [content-end] /
+                  100%;
+        }
 
         background-color: $bg-color;
     }
 
     &-Header {
         grid-row: header-start / header-end;
-        grid-column: playlist-start / voicechannel-end;
+        @include desktop {
+            grid-column: playlist-start / voicechannel-end;
+        }
+        @include phone {
+            grid-column: 1;
+        }
         min-width: 0;
     }
 
     &-Playlist {
         grid-row: content-start / content-end;
-        grid-column: playlist-start / playlist-end;
+        @include desktop {
+            grid-column: playlist-start / playlist-end;
+        }
+        @include phone {
+            grid-column: 1;
+        }
         min-width: 0;
     }
 
     &-VoiceChannel {
         grid-row: content-start / content-end;
-        grid-column: voicechannel-start / voicechannel-end;
+        @include desktop {
+            grid-column: voicechannel-start / voicechannel-end;
+        }
+        @include phone {
+            grid-column: 1;
+        }
         min-width: 0;
     }
 }

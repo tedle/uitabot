@@ -14,10 +14,8 @@ $phone-width: 768px;
 
 .hidden-xs {
     @include phone { display: none !important; }
-    @include desktop { visibility: visible !important; }
 }
 
 .visible-xs {
-    @include phone { visibility: visible !important; }
     @include desktop { display: none !important; }
 }

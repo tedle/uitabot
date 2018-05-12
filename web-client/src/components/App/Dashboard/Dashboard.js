@@ -36,7 +36,7 @@ export default class Dashboard extends React.Component {
                                 eventDispatcher={this.props.eventDispatcher}
                             />
                         </div>
-                        <div className="Dashboard-VoiceChannel">
+                        <div className="Dashboard-VoiceChannel hidden-xs">
                             {/* Controls which channel the bot plays music in */}
                             <VoiceChannelSelect
                                 socket={this.props.socket}
