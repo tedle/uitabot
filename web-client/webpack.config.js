@@ -67,6 +67,8 @@ module.exports = {
     },
     devtool: "none",
     devServer: {
-        contentBase: "./build"
+        contentBase: "./build",
+        host: config.client.domain,
+        port: config.client.port
     }
 };
