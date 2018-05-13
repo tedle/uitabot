@@ -78,6 +78,8 @@
     left: 0;
     right: 0;
 
+    z-index: 998;
+
     box-shadow: 0 0 10px rgba($shadow, 0.2);
 
     @include desktop {
