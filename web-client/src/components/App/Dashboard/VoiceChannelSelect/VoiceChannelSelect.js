@@ -68,7 +68,7 @@ export default class VoiceChannelSelect extends React.Component {
             });
         return (
             <div className="VoiceChannelSelect">
-                <h2>Voice Channels</h2>
+                <h2 className="hidden-xs">Voice Channels</h2>
                 <ul>{channelList}</ul>
                 {this.state.activeChannelId !== null &&
                     <div className="Disconnect">
