@@ -2,15 +2,23 @@
 
 .LivePlaylist {
     ol {
+        @include desktop {
+            margin: 50px;
+        }
+        @include phone {
+            margin: 0px;
+            margin-top: 30px;
+        }
+
         padding: 0;
-        margin: 50px;
     }
 }
 
 .LivePlaylist-Track {
     @include user-select(none);
 
-    $track-height: 90px;
+    $track-height-desktop: 90px;
+    $track-height-phone: 60px;
 
     padding: 0;
     margin-top: 10px;
@@ -36,14 +44,23 @@
 
         .Thumbnail {
             flex-shrink: 0;
-            width: 50px;
-            height: 50px;
+
+            @include desktop {
+                width: 50px;
+                height: 50px;
+                margin-right: 20px;
+                margin-left: 30px;
+            }
+            @include phone {
+                width: 30px;
+                height: 30px;
+                margin-right: 5px;
+                margin-left: 15px;
+            }
 
             pointer-events: none;
 
             border-radius: 50%;
-            margin-right: 20px;
-            margin-left: 30px;
         }
 
         .TrackInfo {
@@ -53,16 +70,30 @@
 
             .TrackTitle {
                 @include truncate-text;
-                padding-right: 30px;
-                font-size: 1.5em;
-                // Mixed fonts for glyph fills (CJK text, etc) causes variable line-height
-                line-height: 30px;
+
+                @include desktop {
+                    padding-right: 30px;
+                    font-size: 1.5em;
+                    // Mixed fonts for glyph fills (CJK text, etc) causes variable line-height
+                    line-height: 30px;
+                }
+                @include phone {
+                    padding-right: 10px;
+                    font-size: 1.0em;
+                    // Mixed fonts for glyph fills (CJK text, etc) causes variable line-height
+                    line-height: 20px;
+                }
 
                 padding-left: 10px;
             }
 
             .TrackDuration {
-                font-size: 0.9em;
+                @include desktop {
+                    font-size: 0.9em;
+                }
+                @include phone {
+                    font-size: 0.7em;
+                }
                 color: $font-faded-color;
 
                 padding-left: 10px;
@@ -71,15 +102,24 @@
 
         .TrackUrl {
             flex-shrink: 0;
-            width: $track-height;
-            height: $track-height;
+
+            @include desktop {
+                width: $track-height-desktop;
+                height: $track-height-desktop;
+                line-height: $track-height-desktop;
+                font-size: 2em;
+            }
+            @include phone {
+                width: $track-height-phone;
+                height: $track-height-phone;
+                line-height: $track-height-phone;
+                font-size: 1.4em;
+            }
 
             display: inline-block;
 
             border-left: 1px solid $bg-color;
 
-            line-height: $track-height;
-            font-size: 2em;
             text-align: center;
 
             color: $font-color;
@@ -91,8 +131,17 @@
 
         button {
             flex-shrink: 0;
-            width: $track-height;
-            height: $track-height;
+
+            @include desktop {
+                width: $track-height-desktop;
+                height: $track-height-desktop;
+                font-size: 1.5em;
+            }
+            @include phone {
+                width: $track-height-phone;
+                height: $track-height-phone;
+                font-size: 1.1em;
+            }
 
             display: inline-block;
 
@@ -104,7 +153,6 @@
             color: $font-color;
             background-color: inherit;
 
-            font-size: 1.5em;
             text-shadow: 0 0 5px rgba($shadow, 0.2);
 
             &:hover, &:focus {
@@ -129,8 +177,14 @@
 
     &-enter#{&}-enter-active,
     &-exit {
+        @include desktop {
+            max-height: $track-height-desktop;
+        }
+        @include phone {
+            max-height: $track-height-phone;
+        }
+
         margin-top: 10px;
-        max-height: $track-height;
         opacity: 1;
 
         transition: all 0.12s;
