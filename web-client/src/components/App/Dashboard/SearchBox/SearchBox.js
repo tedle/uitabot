@@ -4,12 +4,14 @@
 import "./SearchBox.scss";
 
 import React from "react";
-import { CSSTransition } from "react-transition-group";
+import {CSSTransition} from "react-transition-group";
 import * as Message from "utils/Message";
 import * as Youtube from "utils/YoutubeApi";
 import {FileUploadContext} from "components/App/Dashboard/FileUpload/FileUpload";
+import * as Error from "components/App/Error/Error";
+import ContextAsProp from "utils/ContextAsProp";
 
-export default class SearchBox extends React.Component {
+class SearchBox extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -32,10 +34,10 @@ export default class SearchBox extends React.Component {
 
         // Handler for URL errors
         this.props.eventDispatcher.setMessageHandler("error.url.invalid", m => {
-            alert("ERROR: We sent a bad URL");
+            this.props.onError("Invalid URL requested");
         });
         this.props.eventDispatcher.setMessageHandler("error.queue.full", m => {
-            alert("ERROR: The queue is full");
+            this.props.onError("Playback queue is full");
         });
     }
 
@@ -75,7 +77,7 @@ export default class SearchBox extends React.Component {
                 this.setState({searchResults: detailedResults});
             }
         } catch (error) {
-            console.log(error);
+            this.props.onError(error);
         }
     }
 
@@ -217,3 +219,5 @@ export default class SearchBox extends React.Component {
         );
     }
 }
+
+export default ContextAsProp(SearchBox, Error.Context, "onError");

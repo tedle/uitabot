@@ -5,7 +5,10 @@ import "./Error.scss";
 
 import React from "react";
 
-export default function Error({children}) {
+const Context = React.createContext(() => {});
+export {Context};
+
+export function Fatal({children}) {
     return (
         <div className="Error">
             <i className="fas fa-times"></i> {children}

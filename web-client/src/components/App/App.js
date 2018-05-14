@@ -10,7 +10,7 @@ import * as Session from "utils/Session";
 import * as DiscordOauth from "utils/DiscordOauth";
 import Authenticate from "./Authenticate/Authenticate";
 import Dashboard from "./Dashboard/Dashboard";
-import Error from "./Error/Error";
+import * as Error from "./Error/Error";
 import Loading from "./Loading/Loading";
 import Login from "./Login/Login";
 import ServerSelect from "./ServerSelect/ServerSelect";
@@ -60,18 +60,21 @@ export default class App extends React.Component {
 
         // Setup the websocket after we're ready to receive and act on messages
         try {
-            console.log(`Connecting to ${Config.bot_url}`);
             this.socket = new WebSocket(Config.bot_url);
             this.socket.onmessage = e => this.eventDispatcher.dispatch(Message.parse(e.data));
-            this.socket.onerror = e => console.log(e);
+            this.socket.onerror = e => this.onError(e);
             this.socket.onclose = e => this.onSocketClose();
             this.socket.onopen = e => this.onSocketOpen();
             this.setState({connection: this.socket.readyState});
         }
         catch (e) {
-            console.log(e);
+            this.onError(e);
             this.setState({connection: WebSocket.CLOSED});
         }
+    }
+
+    onError(error) {
+        alert(error);
     }
 
     onSocketOpen() {
@@ -91,7 +94,7 @@ export default class App extends React.Component {
     }
 
     // Big, messy state machine acting as a view router
-    render() {
+    renderView() {
         // Display the login page if authentication has failed
         if (this.state.needLogin) {
             const oauthUrl = DiscordOauth.createOauthUrl(Config.client_id, Config.client_url);
@@ -105,7 +108,7 @@ export default class App extends React.Component {
 
         // Connection error displays when server closes connection
         if (this.state.connection != WebSocket.OPEN) {
-            return <Error>Connection error. <a href="/">Refresh</a>?</Error>
+            return <Error.Fatal>Connection error. <a href="/">Refresh</a>?</Error.Fatal>
         }
 
         // Attempt authentication with stored credentials (if they exist)
@@ -132,5 +135,13 @@ export default class App extends React.Component {
             discordUser={this.state.discordUser}
             discordServer={this.state.discordServer}
         />;
+    }
+
+    render() {
+        return (
+            <Error.Context.Provider value={(error) => this.onError(error)}>
+                {this.renderView()}
+            </Error.Context.Provider>
+        );
     }
 }

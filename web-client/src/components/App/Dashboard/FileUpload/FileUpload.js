@@ -4,10 +4,12 @@
 import "./FileUpload.scss";
 
 import React from "react";
-import { CSSTransition } from "react-transition-group";
+import {CSSTransition} from "react-transition-group";
 import * as Config from "config";
 import * as Message from "utils/Message";
 import * as Session from "utils/Session";
+import * as Error from "components/App/Error/Error";
+import ContextAsProp from "utils/ContextAsProp";
 
 var UploadStatus = {
     QUEUED: 1,
@@ -20,7 +22,7 @@ Object.freeze(UploadStatus);
 // Allows nested components to upload files programmatically (upload buttons, etc)
 export const FileUploadContext = React.createContext(() => {});
 
-export default class FileUploadDropZone extends React.Component {
+class DropZone extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -212,7 +214,7 @@ export default class FileUploadDropZone extends React.Component {
             }
             // Initialize socket callbacks
             socket.onmessage = e => eventDispatcher.dispatch(Message.parse(e.data));
-            socket.onerror = e => console.log(e);
+            socket.onerror = e => this.props.onError(e);
             socket.onopen = e => {
                 socket.send(new Message.AuthSessionMessage(session.handle, session.secret).str());
             };
@@ -223,12 +225,12 @@ export default class FileUploadDropZone extends React.Component {
             // There is a very rare chance that the server side credentials have expired and failed to renew
             eventDispatcher.setMessageHandler("auth.fail", m => {
                 this._isUploading = false;
-                alert("File upload authentication failed, try refreshing");
+                this.props.onError("File upload authentication failed. Try refreshing.");
                 socket.close(1000);
             });
         } catch (error) {
             this._isUploading = false;
-            alert(`Error uploading files: ${error.message}`);
+            this.props.onError(`File upload error: ${error.message}`);
             socket.close(1000);
         }
     }
@@ -328,3 +330,5 @@ export default class FileUploadDropZone extends React.Component {
         );
     }
 }
+
+export default ContextAsProp(DropZone, Error.Context, "onError");
