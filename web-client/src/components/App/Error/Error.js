@@ -1,5 +1,5 @@
 // --- Error.js ----------------------------------------------------------------
-// Fatal error display component
+// Components for displaying fatal errors or a list of error-related popups
 
 import "./Error.scss";
 
