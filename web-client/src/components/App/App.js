@@ -8,6 +8,7 @@ import * as Config from "config";
 import * as Message from "utils/Message";
 import * as Session from "utils/Session";
 import * as DiscordOauth from "utils/DiscordOauth";
+import RandomString from "utils/RandomString";
 import Authenticate from "./Authenticate/Authenticate";
 import Dashboard from "./Dashboard/Dashboard";
 import * as Error from "./Error/Error";
@@ -24,7 +25,8 @@ export default class App extends React.Component {
             connection: WebSocket.CLOSED,
             needLogin: false,
             discordUser: null,
-            discordServer: null
+            discordServer: null,
+            errors: Array()
         };
 
         // Interval callback handler for sending heartbeat packets to server
@@ -73,8 +75,28 @@ export default class App extends React.Component {
         }
     }
 
-    onError(error) {
-        alert(error);
+    componentWillUnmount() {
+        this.setState({errors: Array()});
+    }
+
+    onError(message) {
+        const error = {
+            id: RandomString(16),
+            message: message
+        };
+        this.setState({errors: this.state.errors.concat([error])});
+
+        setTimeout(() => {
+            this.onErrorRemove(error.id);
+        }, 5000);
+    }
+
+    onErrorRemove(id) {
+        // Equivilent to a this.isMounted check... kind of dirty, but reliable enough
+        if (this.state.errors.length == 0) {
+            return;
+        }
+        this.setState({errors: this.state.errors.filter(e => e.id != id)});
     }
 
     onSocketOpen() {
@@ -141,6 +163,7 @@ export default class App extends React.Component {
         return (
             <Error.Context.Provider value={(error) => this.onError(error)}>
                 {this.renderView()}
+                <Error.List errors={this.state.errors} onRemove={id => this.onErrorRemove(id)}/>
             </Error.Context.Provider>
         );
     }
