@@ -94,7 +94,6 @@
 
     .Info {
         display: flex;
-        justify-content: space-between;
         align-items: center;
 
         @include desktop {
@@ -106,11 +105,9 @@
             padding-bottom: 0;
         }
 
-        .File, .Status {
-            display: inline-block;
-        }
-
         .File {
+            flex-grow: 1;
+
             @include truncate-text;
 
             @include desktop {
@@ -124,6 +121,8 @@
         }
 
         .Status {
+            flex-shrink: 0;
+
             color: $font-faded-color;
 
             @include desktop {
@@ -144,6 +143,28 @@
             }
 
             .Cancelled {
+                color: $highlight-error;
+            }
+        }
+
+        .CancelUploads {
+            flex-shrink: 0;
+
+            @include desktop {
+                font-size: 1.1em;
+            }
+            @include phone {
+                font-size: 0.9em;
+            }
+
+            border: none;
+            background: none;
+
+            padding: 0px 8px;
+
+            color: $font-faded-color;
+
+            &:hover, &:focus {
                 color: $highlight-error;
             }
         }

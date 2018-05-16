@@ -32,6 +32,7 @@ class DropZone extends React.Component {
         };
         this._isMounted = false;
         this._isUploading = false;
+        this._cancelUploadFlag = false;
         this.uploadQueue = Array();
     }
 
@@ -41,6 +42,10 @@ class DropZone extends React.Component {
 
     componentWillUnmount() {
         this._isMounted = false;
+    }
+
+    cancelUploads() {
+        this._cancelUploadFlag = true;
     }
 
     handleFileDrop(event) {
@@ -83,7 +88,7 @@ class DropZone extends React.Component {
         }
         // Wait for the server response
         const interval = setInterval(() => {
-            if (!this._isMounted) {
+            if (!this._isMounted || this._cancelUploadFlag) {
                 clearInterval(interval);
                 socket.close(1000);
                 return;
@@ -116,23 +121,35 @@ class DropZone extends React.Component {
     fileComplete(dispatcher, socket) {
         // Create an awaitable event that triggers after a server response
         return new Promise((resolve, reject) => {
+            let complete = false;
             dispatcher.setMessageHandler("file.upload.complete", m => {
+                complete = true;
                 resolve();
             });
             dispatcher.setMessageHandler("error.file.invalid", m => {
+                complete = true;
                 reject(m.error);
             });
             dispatcher.setMessageHandler("error.queue.full", m => {
+                complete = true;
                 reject("Queue is full");
             });
             let oldBufferedAmount = socket.bufferedAmount;
             let bufferInterval = setInterval(() => {
-                if (oldBufferedAmount == socket.bufferedAmount) {
+                if (oldBufferedAmount == socket.bufferedAmount || complete) {
+                    complete = true;
                     clearInterval(bufferInterval);
                     reject("Server timed out or disconnected");
                 }
                 oldBufferedAmount = socket.bufferedAmount;
             }, 5000);
+            let cancelInterval = setInterval(() => {
+                if (this._cancelUploadFlag || complete) {
+                    complete = true;
+                    clearInterval(cancelInterval);
+                    reject("Cancelled");
+                }
+            }, 200);
         });
     }
 
@@ -191,6 +208,9 @@ class DropZone extends React.Component {
                 <div className="Info">
                     <div className="File">{file.name}</div>
                     {status}
+                    <button className="CancelUploads" onClick={() => this.cancelUploads()}>
+                        <i className="fas fa-times"></i>
+                    </button>
                 </div>
                 <div className="Bar">
                     <div className="Filled" style={{width: `${progress}%`}}></div>
@@ -246,6 +266,9 @@ class DropZone extends React.Component {
                     if (socket.readyState != WebSocket.OPEN) {
                         throw new Error("Server disconnected");
                     }
+                    if (this._cancelUploadFlag) {
+                        throw new Error("Cancelled");
+                    }
 
                     this.setState({
                         progress: this.uploadQueue,
@@ -282,6 +305,7 @@ class DropZone extends React.Component {
             // while loop exits, so the component knows to spawn new tasks for later files
             this._isUploading = false;
             this.uploadQueue = Array();
+            this._cancelUploadFlag = false;
             this.setState({showProgress: false});
             socket.close(1000);
         }
