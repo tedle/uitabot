@@ -5,6 +5,7 @@ import "./SearchBox.scss";
 
 import React from "react";
 import {CSSTransition} from "react-transition-group";
+import TouchButton from "components/TouchButton/TouchButton";
 import * as Message from "utils/Message";
 import * as Youtube from "utils/YoutubeApi";
 import {FileUploadContext} from "components/App/Dashboard/FileUpload/FileUpload";
@@ -132,10 +133,14 @@ class SearchBox extends React.Component {
         }
     }
 
-    handleSearchResultClick(url) {
+    handleSearchResultClick(url, tapped) {
         this.setSearchBox("");
         this.submitUrl(url);
-        this.focus();
+        // Don't auto-refocus when tapped
+        // This forces the on-screen keyboard for mobile devices to popup and it can be annoying
+        if (!tapped) {
+            this.focus();
+        }
     }
 
     render() {
@@ -146,13 +151,15 @@ class SearchBox extends React.Component {
                 .map(result => {
                     return (
                         <li key={result.id}>
-                            <button onClick={() => this.handleSearchResultClick(result.url)}>
+                            <TouchButton
+                                onClick={e => this.handleSearchResultClick(result.url, e.wasTapped)}
+                            >
                                 <img className="Thumbnail" src={result.thumbnail}/>
                                 <div className="Description">
                                     <div className="Title">{result.title}</div>
                                     <div className="Duration">{result.displayDuration()}</div>
                                 </div>
-                            </button>
+                            </TouchButton>
                         </li>
                     );
             });
