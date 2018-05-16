@@ -99,7 +99,7 @@ _INIT_DATABASE_QUERY = """
 CREATE TABLE IF NOT EXISTS sessions (
     handle INTEGER PRIMARY KEY,
     secret TEXT UNIQUE,
-    token TEXT UNIQUE,
+    token TEXT,
     created DATETIME DEFAULT CURRENT_TIMESTAMP,
     expiry INT
 );"""
