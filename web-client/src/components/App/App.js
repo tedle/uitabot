@@ -64,7 +64,6 @@ export default class App extends React.Component {
         try {
             this.socket = new WebSocket(Config.bot_url);
             this.socket.onmessage = e => this.eventDispatcher.dispatch(Message.parse(e.data));
-            this.socket.onerror = e => this.onError(e);
             this.socket.onclose = e => this.onSocketClose();
             this.socket.onopen = e => this.onSocketOpen();
             this.setState({connection: this.socket.readyState});
