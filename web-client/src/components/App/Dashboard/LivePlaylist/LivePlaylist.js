@@ -174,6 +174,7 @@ const Track = SortableElement(({
                     <a
                         className="TrackUrl DragCancel"
                         href={track.url}
+                        target="_blank"
                         onDragStart={(e) => e.preventDefault()}
                     >
                         <i className="fab fa-youtube DragCancel"></i>
