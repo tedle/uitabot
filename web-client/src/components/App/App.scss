@@ -20,3 +20,9 @@
     @include center-flex;
     min-height: 100%;
 }
+
+:focus {
+    // All of our UI elements should have good focus effects already
+    // This removes the nasty orange outline on mobile Chrome, etc
+    outline: none;
+}
