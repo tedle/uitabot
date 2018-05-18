@@ -10,7 +10,7 @@
     height: 100vh;
     position: fixed;
 
-    z-index: 999;
+    z-index: $layer-screen-overlay;
 
     @include desktop {
         background-color: rgba(0, 0, 0, 0.4);
@@ -78,7 +78,7 @@
     left: 0;
     right: 0;
 
-    z-index: 998;
+    z-index: $layer-screen-popup;
 
     box-shadow: 0 0 10px rgba($shadow, 0.2);
 
