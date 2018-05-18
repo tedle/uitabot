@@ -41,7 +41,7 @@ class DiscordState():
             Bot containing initial Discord state to copy.
 
         """
-        log.debug("initialize_from_bot")
+        log.info("Bot state synced to Discord")
         for server in bot.servers:
             discord_channels = {
                 channel.id: DiscordChannel(

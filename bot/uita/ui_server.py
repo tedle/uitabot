@@ -198,7 +198,7 @@ class Server():
         self.database = None
         self.loop = None
         self.connections.clear()
-        log.info("Server closed successfully")
+        log.info("Server closed")
 
     def on_message(self, header, require_active_server=True, block=False):
         """Decorator to bind event callbacks.

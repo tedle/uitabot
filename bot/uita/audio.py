@@ -230,7 +230,7 @@ class Queue():
                 tags.get("artist", "Unknown artist"),
                 tags.get("title", "Unknown title")
             )
-        log.debug("[{}]Enqueue [Local]{}, {}s".format(
+        log.info("[{}]Enqueue [Local]{}, {}s".format(
             user.name,
             title,
             probe["format"]["duration"]
@@ -269,7 +269,7 @@ class Queue():
         if self.queue_full():
             raise uita.exceptions.ClientError(uita.message.ErrorQueueFullMessage())
         if info["extractor"] == "Youtube":
-            log.debug("[{}]Enqueue [YouTube]{}({}) {}@{}abr, {}s".format(
+            log.info("[{}]Enqueue [YouTube]{}({}) {}@{}abr, {}s".format(
                 user.name,
                 info["title"],
                 info["id"],
@@ -382,7 +382,7 @@ class Queue():
                 with await self._queue_lock:
                     if self._player is None and len(self._queue) > 0:
                         self._now_playing = self._queue.popleft()
-                        log.debug("[{}]Now playing {}".format(
+                        log.info("[{}]Now playing {}".format(
                             self._now_playing.user.name,
                             self._now_playing.title
                         ))
