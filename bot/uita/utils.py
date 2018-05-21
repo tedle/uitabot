@@ -64,7 +64,7 @@ def cache_dir():
     if os.path.exists(cache) and not os.path.isdir(cache):
         os.remove(cache)
     if not os.path.exists(cache):
-        os.mkdir(cache, mode=0o600)
+        os.mkdir(cache, mode=0o700)
     return cache
 
 
