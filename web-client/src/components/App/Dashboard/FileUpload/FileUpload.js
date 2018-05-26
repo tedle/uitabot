@@ -75,31 +75,27 @@ class DropZone extends React.Component {
 
     async fileSend(file, socket, dispatcher, progressCallback) {
         socket.send(new Message.FileUploadStartMessage(file.size).str());
-        // Wait for the server response
-        await this.fileReady(dispatcher);
-        // Stream the file data in one go
-        const chunk_size = 4096;
+        // Stream the file data in chunks
+        //
+        // Ideally this number scales depending on the user's ping and bandwidth to get the best
+        // available throughput, but that is a lot of added effort for a small feature in a small
+        // project.
+        const chunk_size = 1024 * 512;
         let start = 0;
         let end = 0;
         while (end < file.size) {
+            // Wait for the server response
+            await this.fileReady(dispatcher);
             start = end;
             end = Math.min(end + chunk_size, file.size);
             socket.send(file.slice(start, end));
+            if (!this._isMounted || this._cancelUploadFlag) {
+                throw "Cancelled";
+            }
+            progressCallback(file.size - end);
         }
         // Wait for the server response
-        const interval = setInterval(() => {
-            if (!this._isMounted || this._cancelUploadFlag) {
-                clearInterval(interval);
-                socket.close(1000);
-                return;
-            }
-            progressCallback(socket.bufferedAmount);
-        }, 200);
-        try {
-            await this.fileComplete(dispatcher, socket);
-        } finally {
-            clearInterval(interval);
-        }
+        await this.fileComplete(dispatcher, socket);
     }
 
     fileReady(dispatcher) {

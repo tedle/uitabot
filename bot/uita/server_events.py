@@ -68,8 +68,6 @@ async def file_upload_start(event):
         raise uita.exceptions.ClientError(
             uita.message.ErrorFileInvalidMessage("Playback cache has exceeded capacity")
         )
-    # Return the original message to signal binary data stream
-    await event.socket.send(str(event.message))
     # Loop socket reads until file is complete
     with uita.utils.prune_cache_guard(file_path):
         with open(file_path, "wb") as f:
@@ -82,6 +80,8 @@ async def file_upload_start(event):
             # Data receiving loop
             bytes_read = 0
             while bytes_read < file_size:
+                # Return the original message to signal next file slice
+                await event.socket.send(str(event.message))
                 data = await asyncio.wait_for(event.socket.recv(), 5, loop=uita.loop)
                 if type(data) is str:
                     raise uita.exceptions.MalformedFile("Non-binary data transferred unexpectedly")
