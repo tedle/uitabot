@@ -116,9 +116,11 @@ def prune_cache_guard(path):
         Absolute path to be exempted from pruning.
 
     """
-    prune_cache_dir.whitelist.add(path)
-    yield
-    prune_cache_dir.whitelist.discard(path)
+    try:
+        prune_cache_dir.whitelist.add(path)
+        yield
+    finally:
+        prune_cache_dir.whitelist.discard(path)
 
 
 def build_client_url(config):
