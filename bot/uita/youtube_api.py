@@ -71,7 +71,7 @@ async def scrape(url, loop=None):
     raise uita.exceptions.ClientError(uita.message.ErrorUrlInvalidMessage())
 
 
-async def search(query, api_key=None, results=5, loop=None):
+async def search(query, api_key=None, referrer=None, results=5, loop=None):
     """Queries YouTube for search results.
 
     Parameters
@@ -81,6 +81,8 @@ async def search(query, api_key=None, results=5, loop=None):
     api_key : str, optional
         API key for Youtube searches. Defaults to `None` which performs a much slower search using
         youtube-dl.
+    referrer : str, optional
+        Referrer for HTTP requests, in case API restrictions are in place.
     results : int, optional
         Number of results to retrieve, default ``5``.
     loop : asyncio.AbstractEventLoop, optional
@@ -110,9 +112,12 @@ async def search(query, api_key=None, results=5, loop=None):
         + "&type=video"
         + "&key={}"
     ).format(API_URL, urllib.parse.quote_plus(query), results, api_key)
+    headers = BASE_HEADERS
+    if referrer is not None:
+        headers["referer"] = referrer
     response = await loop.run_in_executor(
         None,
-        lambda: requests.get(url, headers=BASE_HEADERS)
+        lambda: requests.get(url, headers=headers)
     )
     if response.status_code != 200:
         raise uita.exceptions.ClientError(uita.message.ErrorUrlInvalidMessage())
@@ -127,7 +132,7 @@ async def search(query, api_key=None, results=5, loop=None):
     ).format(API_URL, ",".join(video_ids), api_key)
     details_response = await loop.run_in_executor(
         None,
-        lambda: requests.get(details_url, headers=BASE_HEADERS)
+        lambda: requests.get(details_url, headers=headers)
     )
     if details_response.status_code != 200:
         raise uita.exceptions.ClientError(uita.message.ErrorUrlInvalidMessage())

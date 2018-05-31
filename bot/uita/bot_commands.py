@@ -174,6 +174,7 @@ async def search(message, params):
         results = await uita.youtube_api.search(
             params,
             api_key=uita.server.config.youtube.api_key,
+            referrer=uita.utils.build_client_url(uita.server.config),
             results=result_max,
             loop=uita.bot.loop
         )
