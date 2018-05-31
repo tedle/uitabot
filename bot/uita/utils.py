@@ -135,7 +135,7 @@ def build_client_url(config):
     return "http{}://{}{}".format(
         "s" if config.ssl.cert_file is not None else "",
         config.client.domain,
-        (":" + str(config.client.port)) if config.client.port is not 80 or 443 else ""
+        (":" + str(config.client.port)) if config.client.port not in (80, 443) else ""
     )
 
 
@@ -151,5 +151,5 @@ def build_websocket_url(config):
     return "ws{}://{}{}".format(
         "s" if config.ssl.cert_file is not None else "",
         config.bot.domain,
-        (":" + str(config.bot.port)) if config.bot.port is not 80 or 443 else ""
+        (":" + str(config.bot.port)) if config.bot.port not in (80, 443) else ""
     )
