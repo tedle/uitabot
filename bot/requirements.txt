@@ -1,5 +1,4 @@
-discord.py==0.16.12
-PyNaCl==1.0.1
-websockets==3.4
-youtube-dl==2019.5.11
-Sphinx==1.7.0
+discord.py[voice]==1.2.2
+websockets==6.0
+youtube-dl==2019.6.21
+Sphinx==2.1.2
