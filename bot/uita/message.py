@@ -130,7 +130,7 @@ class AuthSucceedMessage(AbstractMessage):
 
     def __init__(self, user):
         self.user = {
-            "id": str(user.id),
+            "id": int(user.id),
             "name": str(user.name),
             "avatar": str(user.avatar),
             "session": {

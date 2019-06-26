@@ -62,7 +62,7 @@ class DiscordState():
         ----------
         channel : uita.types.DiscordChannel
             Channel to be added to server.
-        server_id : str
+        server_id : int
             ID of server that channel belongs to.
 
         """
@@ -148,7 +148,7 @@ class DiscordChannel():
 
     Parameters
     ----------
-    id : str
+    id : int
         Unique channel ID.
     name : str
         Channel name.
@@ -159,7 +159,7 @@ class DiscordChannel():
 
     Attributes
     ----------
-    id : str
+    id : int
         Unique channel ID.
     name : str
         Channel name.
@@ -181,7 +181,7 @@ class DiscordServer():
 
     Parameters
     ----------
-    id : str
+    id : int
         Unique server ID.
     name : str
         Server name.
@@ -194,7 +194,7 @@ class DiscordServer():
 
     Attributes
     ----------
-    id : str
+    id : int
         Unique server ID.
     name : str
         Server name.
@@ -219,7 +219,7 @@ class DiscordUser():
 
     Parameters
     ----------
-    id : str
+    id : int
         Unique user ID.
     name : str
         User name.
@@ -232,7 +232,7 @@ class DiscordUser():
 
     Attributes
     ----------
-    id : str
+    id : int
         Unique user ID.
     name : str
         User name.

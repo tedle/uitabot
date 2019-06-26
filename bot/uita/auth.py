@@ -57,7 +57,7 @@ async def verify_session(session, database, config, loop):
         try:
             user = await uita.discord_api.get("/users/@me", token, loop)
             return uita.types.DiscordUser(
-                id=user["id"],
+                id=int(user["id"]),
                 name=user["username"],
                 avatar=uita.discord_api.avatar_url(user),
                 session=session,
