@@ -126,7 +126,7 @@ async def play(message, params):
     user = uita.types.DiscordUser(
         message.author.id,
         message.author.name,
-        message.author.avatar_url or message.author.default_avatar_url,
+        str(message.author.avatar_url),
         None,
         message.guild.id
     )
@@ -238,7 +238,7 @@ async def search(message, params):
         user = uita.types.DiscordUser(
             message.author.id,
             message.author.name,
-            message.author.avatar_url or message.author.default_avatar_url,
+            str(message.author.avatar_url),
             None,
             message.guild.id
         )
