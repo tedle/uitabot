@@ -1,4 +1,5 @@
 """Bot commands issued by Discord chat."""
+import asyncio
 import discord
 
 import uita.types
@@ -74,9 +75,8 @@ async def parse(message):
     if command in _COMMANDS:
         await _COMMANDS[command](message, params)
     else:
-        await uita.bot.send_message(
-            message.channel, (
-                "{} Unknown command. Try `{}help` for a list of commands."
+        await message.channel.send((
+            "{} Unknown command. Try `{}help` for a list of commands."
             ).format(_EMOJI["error"], _COMMAND_PREFIX)
         )
 
@@ -114,7 +114,7 @@ async def help(message, params):
             value=cmd[1],
             inline=False
         )
-    await uita.bot.send_message(message.channel, content="", embed=help_message)
+    await message.channel.send("", embed=help_message)
 
 
 @command("play", "p", help="Enqueues a provided `<URL>`")
@@ -127,47 +127,36 @@ async def play(message, params):
         None,
         message.guild.id
     )
-    response = await uita.bot.send_message(
-        message.channel,
-        content="{} Processing...".format(_EMOJI["loading"])
-    )
+    response = await message.channel.send("{} Processing...".format(_EMOJI["loading"]))
     try:
         await voice.enqueue_url(params, user)
-        await uita.bot.edit_message(
-            response,
-            new_content="{} Got it!".format(_EMOJI["ok"])
+        await response.edit(
+            content="{} Got it!".format(_EMOJI["ok"])
         )
     except uita.exceptions.ClientError as error:
         if error.message.header == uita.message.ErrorQueueFullMessage.header:
-            await uita.bot.edit_message(
-                response,
-                new_content="{} Queue is full, sorry!".format(_EMOJI["error"])
+            await response.edit(
+                content="{} Queue is full, sorry!".format(_EMOJI["error"])
             )
         elif error.message.header == uita.message.ErrorUrlInvalidMessage.header:
-            await uita.bot.edit_message(
-                response,
-                new_content="{} That URL was no good, sorry!".format(_EMOJI["error"])
+            await response.edit(
+                content="{} That URL was no good, sorry!".format(_EMOJI["error"])
             )
         else:
-            await uita.bot.edit_message(
-                response,
-                new_content="{} Not feeling up to it, sorry!".format(_EMOJI["error"])
+            await response.edit(
+                content="{} Not feeling up to it, sorry!".format(_EMOJI["error"])
             )
             log.warn("Uncaught exception in play {}".format(error.message.header))
     except Exception:
-        await uita.bot.edit_message(
-            response,
-            new_content="{} Not feeling up to it, sorry!".format(_EMOJI["error"])
+        await response.edit(
+            content="{} Not feeling up to it, sorry!".format(_EMOJI["error"])
         )
         raise
 
 
 @command("search", "s", help="Searches YouTube for a provided `<QUERY>`")
 async def search(message, params):
-    response = await uita.bot.send_message(
-        message.channel,
-        content="{} Searching...".format(_EMOJI["loading"])
-    )
+    response = await message.channel.send("{} Searching...".format(_EMOJI["loading"]))
     try:
         # Scrape YouTube for search result
         result_max = 5
@@ -198,9 +187,8 @@ async def search(message, params):
             color=_EMBED_COLOUR
         )
         # Display the results to the user
-        await uita.bot.edit_message(
-            response,
-            new_content="{} Choose your future song".format(_EMOJI["wait"]),
+        await response.edit(
+            content="{} Choose your future song".format(_EMOJI["wait"]),
             embed=embed_results
         )
 
@@ -208,31 +196,36 @@ async def search(message, params):
         async def add_reactions():
             for i in range(result_max):
                 emoji = _EMOJI["numbers"][i+1]
-                await uita.bot.add_reaction(response, emoji)
+                await response.add_reaction(emoji)
         # Run the task separately so if a reaction is clicked while the loop is running we will
         # still respond to it
         uita.bot.loop.create_task(add_reactions())
         # Wait for the user to make a choice
-        reaction = await uita.bot.wait_for_reaction(
-            emoji=[_EMOJI["numbers"][i+1] for i in range(result_max)],
-            message=response,
-            user=message.author,
-            timeout=30
-        )
-        # If we timed out just delete the message
-        if reaction is None:
-            await uita.bot.delete_message(response)
+        def reaction_predicate(reaction, user):
+            valid_emoji = [_EMOJI["numbers"][i+1] for i in range(result_max)]
+            return (
+                reaction.message.id == response.id
+                and user.id == message.author.id
+                and reaction.emoji in valid_emoji
+            )
+        try:
+            reaction, _ = await uita.bot.wait_for(
+                "reaction_add",
+                timeout=30,
+                check=reaction_predicate
+            )
+        except asyncio.TimeoutError:
+            await response.delete()
             return
         # Translate the raw emoji code back into a choice index
-        choice = reaction.reaction.emoji
+        choice = reaction.emoji
         choice_index = None
         for index, value in _EMOJI["numbers"].items():
             if choice == value:
                 choice_index = index - 1
         if choice_index is None or choice_index < 0 or choice_index > result_max:
-            await uita.bot.edit_message(
-                response,
-                new_content="{} There were unicode problems, sorry!".format(_EMOJI["error"])
+            await response.edit(
+                content="{} There were unicode problems, sorry!".format(_EMOJI["error"])
             )
             return
         # We finally have a song to queue!
@@ -271,32 +264,27 @@ async def search(message, params):
             inline=True
         )
         # Finally display the enqueued song to the user
-        await uita.bot.edit_message(
-            response,
-            new_content="{} Enqueued".format(_EMOJI["ok"]),
+        await response.edit(
+            content="{} Enqueued".format(_EMOJI["ok"]),
             embed=song_info
         )
     except uita.exceptions.ClientError as error:
         if error.message.header == uita.message.ErrorQueueFullMessage.header:
-            await uita.bot.edit_message(
-                response,
-                new_content="{} Queue is full, sorry!".format(_EMOJI["error"])
+            await response.edit(
+                content="{} Queue is full, sorry!".format(_EMOJI["error"])
             )
         elif error.message.header == uita.message.ErrorUrlInvalidMessage.header:
-            await uita.bot.edit_message(
-                response,
-                new_content="{} That URL was no good, sorry!".format(_EMOJI["error"])
+            await response.edit(
+                content="{} That URL was no good, sorry!".format(_EMOJI["error"])
             )
         else:
-            await uita.bot.edit_message(
-                response,
-                new_content="{} Not feeling up to it, sorry!".format(_EMOJI["error"])
+            await response.edit(
+                content="{} Not feeling up to it, sorry!".format(_EMOJI["error"])
             )
             log.warn("Uncaught exception in play {}".format(error.message.header))
     except Exception:
-        await uita.bot.edit_message(
-            response,
-            new_content="{} Not feeling up to it, sorry!".format(_EMOJI["error"])
+        await response.edit(
+            content="{} Not feeling up to it, sorry!".format(_EMOJI["error"])
         )
         raise
 
@@ -307,15 +295,9 @@ async def skip(message, params):
     queue = voice.queue()
     if len(queue) > 0:
         await voice.remove(queue[0].id)
-        await uita.bot.send_message(
-            message.channel,
-            content="{} Skipped `{}`".format(_EMOJI["ok"], queue[0].title)
-        )
+        await message.channel.send("{} Skipped `{}`".format(_EMOJI["ok"], queue[0].title))
     else:
-        await uita.bot.send_message(
-            message.channel,
-            content="{} The queue is already empty".format(_EMOJI["error"])
-        )
+        await message.channel.send("{} The queue is already empty".format(_EMOJI["error"]))
 
 
 @command("clear", help="Empties the playback queue")
@@ -324,10 +306,7 @@ async def clear(message, params):
     # Start from the back so we don't have to await currently playing songs
     for track in reversed(voice.queue()):
         await voice.remove(track.id)
-    await uita.bot.send_message(
-        message.channel,
-        content="{} The queue has been emptied".format(_EMOJI["ok"])
-    )
+    await message.channel.send("{} The queue has been emptied".format(_EMOJI["ok"]))
 
 
 @command("join", "j", help="Joins your voice channel")
@@ -337,10 +316,7 @@ async def join(message, params):
         voice = uita.state.voice_connections[message.guild.id]
         await voice.connect(channel.id)
     else:
-        await uita.bot.send_message(
-            message.channel,
-            content="{} You aren't in a voice channel (that I can see)".format(_EMOJI["error"])
-        )
+        await message.channel.send("{} You aren't in a voice channel (that I can see)".format(_EMOJI["error"]))
 
 
 @command("leave", "l", help="Leaves the voice channel")
