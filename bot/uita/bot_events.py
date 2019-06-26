@@ -83,7 +83,10 @@ async def on_member_update(before, after):
 @uita.bot.event
 @bot_ready
 async def on_message(message):
-    if message.author == uita.bot.user or message.channel.is_private is True:
+    if (
+        message.author.id == uita.bot.user.id
+        or isinstance(message.channel, discord.abc.PrivateChannel)
+    ):
         return
     await uita.bot_commands.parse(message)
 
