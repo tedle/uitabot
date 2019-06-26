@@ -93,7 +93,10 @@ async def set_prefix(prefix):
     global _COMMAND_PREFIX
     _COMMAND_PREFIX = prefix
     await uita.bot.change_presence(
-        game=discord.Game(name="{}help".format(_COMMAND_PREFIX), type=2)
+        activity=discord.Activity(
+            name="{}help".format(_COMMAND_PREFIX),
+            type=discord.ActivityType.listening
+        )
     )
 
 
