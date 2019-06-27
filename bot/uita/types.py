@@ -284,7 +284,7 @@ class DiscordVoiceClient():
             if self._voice is None and user is not None and len(queue) > 0:
                 discord_user = uita.bot.get_guild(self.server_id).get_member(user.id)
                 if discord_user is not None:
-                    channel = discord_user.voice.voice_channel
+                    channel = discord_user.voice.channel
                     if channel is not None:
                         await self.connect(channel.id)
             elif len(queue) == 0:
@@ -325,7 +325,7 @@ class DiscordVoiceClient():
         channel = uita.bot.get_guild(self.server_id).get_channel(channel_id)
         with await self._voice_lock:
             if self._voice is None:
-                self._voice = await uita.bot.join_voice_channel(channel)
+                self._voice = await channel.connect()
                 await self._playlist.play(self._voice)
             else:
                 await self._voice.move_to(channel)

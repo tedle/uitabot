@@ -3,6 +3,7 @@ import asyncio
 import atexit
 import collections
 import copy
+import discord
 import enum
 import json
 import os
@@ -117,7 +118,7 @@ class Queue():
         self._play_task = None
         self._play_start_time = None
         self._stream = None
-        self._player = None
+        self._voice = None
 
     def queue(self):
         """Retrieves a list of currently queued audio resources.
@@ -311,7 +312,7 @@ class Queue():
                 log.debug("Requested queue index out of bounds")
                 return
             # Check if re-ordering the queue will change the currently playing song
-            if self._now_playing is not None and self._player is not None:
+            if self._now_playing is not None and self._voice is not None:
                 # No need to swap with self while playing, would restart the track
                 if self._now_playing.id == track_id and position == 0:
                     return
@@ -319,7 +320,7 @@ class Queue():
                     self._now_playing.offset = 0
                     self._queue.appendleft(self._now_playing)
                     self._now_playing = None
-                    self._player.stop()
+                    self._voice.stop()
                 # Since now_playing will not be added to the queue, offset the index to compensate
                 else:
                     position -= 1
@@ -341,8 +342,8 @@ class Queue():
         """
         with await self._queue_lock:
             if self._now_playing is not None and self._now_playing.id == track_id:
-                if self._player is not None:
-                    self._player.stop()
+                if self._voice is not None:
+                    self._voice.stop()
                 return
             for track in self._queue:
                 if track.id == track_id:
@@ -380,39 +381,33 @@ class Queue():
             while voice.is_connected():
                 self._queue_update_flag.clear()
                 with await self._queue_lock:
-                    if self._player is None and len(self._queue) > 0:
+                    if self._voice is None and len(self._queue) > 0:
                         self._now_playing = self._queue.popleft()
                         log.info("[{}]Now playing {}".format(
                             self._now_playing.user.name,
                             self._now_playing.title
                         ))
-                        # Set encoder options that are injected into ffmpeg
-                        voice.encoder_options(
-                            sample_rate=FfmpegStream.SAMPLE_RATE,
-                            channels=FfmpegStream.CHANNELS
-                        )
                         # Launch ffmpeg process
                         self._stream = FfmpegStream(
                             self._now_playing,
-                            voice.encoder.frame_size
+                            discord.opus.Encoder
                         )
-                        self._player = voice.create_stream_player(
-                            self._stream,
-                            after=lambda: asyncio.run_coroutine_threadsafe(
-                                self._after_song(),
-                                loop=self.loop
-                            )
-                        )
+                        self._voice = voice
                         # Waits until ffmpeg has buffered audio before playing
                         await self._stream.wait_ready(loop=self.loop)
                         # Wait an extra second for livestreams so player clock runs behind input
                         if self._now_playing.live is True:
                             await asyncio.sleep(1, loop=self.loop)
-                        # About the same as a max volume YouTube video, I think
-                        self._player.volume = 0.3
                         # Sync play start time to player start
                         self._play_start_time = time.perf_counter()
-                        self._player.start()
+                        self._voice.play(
+                            # About the same as a max volume YouTube video, I think
+                            discord.PCMVolumeTransformer(self._stream, volume=0.3),
+                            after=lambda: asyncio.run_coroutine_threadsafe(
+                                self._after_song(),
+                                loop=self.loop
+                            )
+                        )
                         await self._change_status(Status.PLAYING)
                 await self._queue_update_flag.wait()
         except asyncio.CancelledError:
@@ -428,15 +423,15 @@ class Queue():
         if self._stream is not None:
             self._stream.stop()
             self._stream = None
-        if self._player is not None:
-            self._player.stop()
-            self._player = None
+        if self._voice is not None:
+            self._voice.stop()
+            self._voice = None
 
 
-class FfmpegStream():
+class FfmpegStream(discord.AudioSource):
     """Provides a data stream interface from an ffmpeg process for a `discord.StreamPlayer`
 
-    Compared to the ffmpeg stream player provided by `discord.VoiceClient.create_ffmpeg_player()`,
+    Compared to the ffmpeg stream player provided by `discord.FFmpegPCMAudio`,
     this implementation will attempt to pre-fetch and cache (buffer) a sizable amount of audio
     data in a concurrently running thread to minimize any hiccups while fetching audio data for
     the consumer thread. This noticably cuts down on stuttering during playback, especially for
@@ -446,21 +441,14 @@ class FfmpegStream():
     ----------
     track : uita.audio.Track
         Track to be played.
-    frame_size : int
-        Amount of bytes to be returned by `FfmpegStream.read()`. **Note that `FfmpegStream.read()`
-        actually ignores its byte input parameter as the buffered audio data chunks are of
-        uniform size.** This is because Python lacks a good ring buffer implementation, so this is
-        a hacky work around to avoid creating a new one. Judging by discord.py's implementation
-        it will always call `FfmpegStream.read()` with a size of
-        `discord.VoiceClient.encoder.frame_size`, so just pass that into the constructor and
-        things should be okay. Sorry.
+    encoder : discord.opus.Encoder
+        discord.py opus encoder is needed to configure sampling rate for FFmpeg.
 
     """
-    SAMPLE_RATE = 48000
-    CHANNELS = 2
 
-    def __init__(self, track, frame_size):
+    def __init__(self, track, encoder):
         self._track = track
+        self._encoder = encoder
         process_options = [
             "ffmpeg"
         ]
@@ -471,8 +459,8 @@ class FfmpegStream():
             "-ss", str(track.offset if not track.live else 0.0),
             "-i", track.path,
             "-f", "s16le",
-            "-ac", str(FfmpegStream.CHANNELS),
-            "-ar", str(FfmpegStream.SAMPLE_RATE),
+            "-ac", str(self._encoder.CHANNELS),
+            "-ar", str(self._encoder.SAMPLING_RATE),
             "-acodec", "pcm_s16le",
             "-vn",
             "-loglevel", "quiet",
@@ -482,7 +470,6 @@ class FfmpegStream():
         self._process = subprocess.Popen(process_options, stdout=subprocess.PIPE)
         # Ensure ffmpeg processes are cleaned up at exit, since Python handles this horribly
         atexit.register(self.stop)
-        self._frame_size = frame_size
 
         # Expecting a frame size of 3840 currently, queue should max out at 3.5MB~ of memory
         self._buffer = queue.Queue(maxsize=1000)
@@ -499,24 +486,17 @@ class FfmpegStream():
         # Set once queue has buffered audio data available
         self._is_ready = threading.Event()
 
-    def read(self, size):
+    def read(self):
         """Returns a `bytes` array of raw audio data.
-
-        Parameters
-        ----------
-        size : int
-            Ignored. See the `frame_size` parameter of `FfmpegStream()` for the terrifying details.
 
         Returns
         -------
         bytes
             Array of raw audio data. Size of array is equal to (or less than if EOF has been
-            reached) the `frame_size` parameter passed into the object constructor.
+            reached) the `FRAME_SIZE` of the opus Encoder parameter passed into the object
+            constructor.
 
         """
-        if size != self._frame_size:
-            log.error("Audio process queue has mismatched frame_size and read size.")
-            return b""
         try:
             return self._buffer.get(timeout=10)
         except queue.Empty:
@@ -524,6 +504,14 @@ class FfmpegStream():
             self.stop()
             # Empty read indicates completion
             return b""
+
+    def is_opus(self):
+        """Produces raw PCM audio data."""
+        return False
+
+    def cleanup(self):
+        """Cleanup is handled outside the discord.py API."""
+        pass
 
     def stop(self):
         """Stops any currently running processes."""
@@ -554,7 +542,7 @@ class FfmpegStream():
     def _buffer_audio_packets(self):
         need_set_ready = True
         # Read from process stdout until an empty byte string is returned
-        for data in iter(lambda: self._process.stdout.read(self._frame_size), b""):
+        for data in iter(lambda: self._process.stdout.read(self._encoder.FRAME_SIZE), b""):
             try:
                 # If the buffer fills and times out it means the queue is no longer being
                 # consumed, this likely means we're running in a zombie thread and should
