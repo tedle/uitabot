@@ -44,16 +44,16 @@ class DiscordState():
         log.info("Bot state synced to Discord")
         for server in bot.guilds:
             discord_channels = {
-                channel.id: DiscordChannel(
+                str(channel.id): DiscordChannel(
                     channel.id, channel.name, channel.type, channel.position
                 )
                 for channel in server.channels
             }
-            discord_users = {user.id: user.name for user in server.members}
-            self.servers[server.id] = DiscordServer(
+            discord_users = {str(user.id): user.name for user in server.members}
+            self.servers[str(server.id)] = DiscordServer(
                 server.id, server.name, discord_channels, discord_users, server.icon
             )
-            self.voice_connections[server.id] = DiscordVoiceClient(server.id, bot.loop)
+            self.voice_connections[str(server.id)] = DiscordVoiceClient(server.id, bot.loop)
 
     def channel_add(self, channel, server_id):
         """Add a server channel to Discord state.
@@ -62,7 +62,7 @@ class DiscordState():
         ----------
         channel : uita.types.DiscordChannel
             Channel to be added to server.
-        server_id : int
+        server_id : str
             ID of server that channel belongs to.
 
         """
@@ -148,7 +148,7 @@ class DiscordChannel():
 
     Parameters
     ----------
-    id : int
+    id : str
         Unique channel ID.
     name : str
         Channel name.
@@ -159,7 +159,7 @@ class DiscordChannel():
 
     Attributes
     ----------
-    id : int
+    id : str
         Unique channel ID.
     name : str
         Channel name.
@@ -170,7 +170,7 @@ class DiscordChannel():
 
     """
     def __init__(self, id, name, type, position):
-        self.id = id
+        self.id = str(id)
         self.name = name
         self.type = type
         self.position = position
@@ -181,7 +181,7 @@ class DiscordServer():
 
     Parameters
     ----------
-    id : int
+    id : str
         Unique server ID.
     name : str
         Server name.
@@ -194,7 +194,7 @@ class DiscordServer():
 
     Attributes
     ----------
-    id : int
+    id : str
         Unique server ID.
     name : str
         Server name.
@@ -207,7 +207,7 @@ class DiscordServer():
 
     """
     def __init__(self, id, name, channels, users, icon):
-        self.id = id
+        self.id = str(id)
         self.name = name
         self.channels = channels
         self.users = users
@@ -219,7 +219,7 @@ class DiscordUser():
 
     Parameters
     ----------
-    id : int
+    id : str
         Unique user ID.
     name : str
         User name.
@@ -232,7 +232,7 @@ class DiscordUser():
 
     Attributes
     ----------
-    id : int
+    id : str
         Unique user ID.
     name : str
         User name.
@@ -245,13 +245,13 @@ class DiscordUser():
 
     """
     def __init__(self, id, name, avatar, session, active_server_id):
-        self.id = id
+        self.id = str(id)
         self.name = name
         # Hack for discord.py forcing WebP extensions even though it has terrible browser support
         # This also replaces animated GIFs with static PNGs, but thats for the best
         self.avatar = avatar.rpartition(".")[0] + ".png"
         self.session = session
-        self.active_server_id = active_server_id
+        self.active_server_id = str(active_server_id) if active_server_id else None
 
 
 class DiscordVoiceClient():
@@ -273,7 +273,7 @@ class DiscordVoiceClient():
 
     """
     def __init__(self, server_id, loop=None):
-        self.server_id = server_id
+        self.server_id = str(server_id)
         self.loop = loop or asyncio.get_event_loop()
 
         async def on_queue_change(queue, user=None):
@@ -282,11 +282,11 @@ class DiscordVoiceClient():
             # User is None for queue change callbacks that should not cause the bot to join a
             # channel, such as queue re-ordering and removal
             if self._voice is None and user is not None and len(queue) > 0:
-                discord_user = uita.bot.get_guild(self.server_id).get_member(user.id)
-                if discord_user is not None:
+                discord_user = uita.bot.get_guild(int(self.server_id)).get_member(int(user.id))
+                if discord_user is not None and discord_user.voice is not None:
                     channel = discord_user.voice.channel
                     if channel is not None:
-                        await self.connect(channel.id)
+                        await self.connect(str(channel.id))
             elif len(queue) == 0:
                 await self.disconnect()
             message = uita.message.PlayQueueSendMessage(queue)
@@ -322,7 +322,7 @@ class DiscordVoiceClient():
             ID of channel to connect to.
 
         """
-        channel = uita.bot.get_guild(self.server_id).get_channel(channel_id)
+        channel = uita.bot.get_guild(int(self.server_id)).get_channel(int(channel_id))
         with await self._voice_lock:
             if self._voice is None:
                 self._voice = await channel.connect()

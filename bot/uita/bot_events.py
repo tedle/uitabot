@@ -27,10 +27,10 @@ async def on_ready():
 
 def _sync_channels(guild):
     voice_channels = [
-        channel for channel in uita.state.servers[guild.id].channels.values()
+        channel for channel in uita.state.servers[str(guild.id)].channels.values()
         if channel.type is discord.ChannelType.voice
     ]
-    uita.server.send_all(uita.message.ChannelListSendMessage(voice_channels), guild.id)
+    uita.server.send_all(uita.message.ChannelListSendMessage(voice_channels), str(guild.id))
 
 
 @uita.bot.event
@@ -39,14 +39,14 @@ async def on_channel_create(channel):
     discord_channel = uita.types.DiscordChannel(
         channel.id, channel.name, channel.type, channel.position
     )
-    uita.state.channel_add(discord_channel, channel.guild.id)
+    uita.state.channel_add(discord_channel, str(channel.guild.id))
     _sync_channels(channel.guild)
 
 
 @uita.bot.event
 @bot_ready
 async def on_channel_delete(channel):
-    uita.state.channel_remove(channel.id, channel.guild.id)
+    uita.state.channel_remove(str(channel.id), str(channel.guild.id))
     _sync_channels(channel.guild)
 
 
@@ -56,20 +56,20 @@ async def on_channel_update(before, after):
     discord_channel = uita.types.DiscordChannel(
         after.id, after.name, after.type, after.position
     )
-    uita.state.channel_add(discord_channel, after.guild.id)
+    uita.state.channel_add(discord_channel, str(after.guild.id))
     _sync_channels(after.guild)
 
 
 @uita.bot.event
 @bot_ready
 async def on_member_join(member):
-    uita.state.user_add_server(member.id, member.name, member.guild.id)
+    uita.state.user_add_server(str(member.id), member.name, str(member.guild.id))
 
 
 @uita.bot.event
 @bot_ready
 async def on_member_remove(member):
-    uita.state.user_remove_server(member.id, member.guild.id)
+    uita.state.user_remove_server(str(member.id), str(member.guild.id))
     # Kick any displaced users
     await uita.server.verify_active_servers()
 
@@ -108,7 +108,7 @@ async def on_guild_join(guild):
 @uita.bot.event
 @bot_ready
 async def on_guild_remove(guild):
-    uita.state.server_remove(guild.id)
+    uita.state.server_remove(str(guild.id))
     # Kick any displaced users
     await uita.server.verify_active_servers()
 
@@ -141,4 +141,4 @@ async def on_voice_state_update(member, before, after):
         after.channel.position
     ) if after.channel is not None else None
     message = uita.message.ChannelActiveSendMessage(channel)
-    uita.server.send_all(message, after.channel.guild.id)
+    uita.server.send_all(message, str(member.guild.id))

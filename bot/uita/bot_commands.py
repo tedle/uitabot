@@ -122,7 +122,7 @@ async def help(message, params):
 
 @command("play", "p", help="Enqueues a provided `<URL>`")
 async def play(message, params):
-    voice = uita.state.voice_connections[message.guild.id]
+    voice = uita.state.voice_connections[str(message.guild.id)]
     user = uita.types.DiscordUser(
         message.author.id,
         message.author.name,
@@ -234,7 +234,7 @@ async def search(message, params):
         # We finally have a song to queue!
         song = results[choice_index]
         # Load it up...
-        voice = uita.state.voice_connections[message.guild.id]
+        voice = uita.state.voice_connections[str(message.guild.id)]
         user = uita.types.DiscordUser(
             message.author.id,
             message.author.name,
@@ -294,7 +294,7 @@ async def search(message, params):
 
 @command("skip", help="Skips the currently playing song")
 async def skip(message, params):
-    voice = uita.state.voice_connections[message.guild.id]
+    voice = uita.state.voice_connections[str(message.guild.id)]
     queue = voice.queue()
     if len(queue) > 0:
         await voice.remove(queue[0].id)
@@ -305,7 +305,7 @@ async def skip(message, params):
 
 @command("clear", help="Empties the playback queue")
 async def clear(message, params):
-    voice = uita.state.voice_connections[message.guild.id]
+    voice = uita.state.voice_connections[str(message.guild.id)]
     # Start from the back so we don't have to await currently playing songs
     for track in reversed(voice.queue()):
         await voice.remove(track.id)
@@ -316,7 +316,7 @@ async def clear(message, params):
 async def join(message, params):
     channel = message.author.voice.voice_channel
     if channel is not None:
-        voice = uita.state.voice_connections[message.guild.id]
+        voice = uita.state.voice_connections[str(message.guild.id)]
         await voice.connect(channel.id)
     else:
         await message.channel.send("{} You aren't in a voice channel (that I can see)".format(_EMOJI["error"]))
@@ -324,5 +324,5 @@ async def join(message, params):
 
 @command("leave", "l", help="Leaves the voice channel")
 async def leave(message, params):
-    voice = uita.state.voice_connections[message.guild.id]
+    voice = uita.state.voice_connections[str(message.guild.id)]
     await voice.disconnect()
