@@ -403,7 +403,7 @@ class Queue():
                         self._voice.play(
                             # About the same as a max volume YouTube video, I think
                             discord.PCMVolumeTransformer(self._stream, volume=0.3),
-                            after=lambda: asyncio.run_coroutine_threadsafe(
+                            after=lambda err: asyncio.run_coroutine_threadsafe(
                                 self._after_song(),
                                 loop=self.loop
                             )
