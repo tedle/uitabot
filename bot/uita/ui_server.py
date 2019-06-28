@@ -310,8 +310,11 @@ class Server():
     async def _cancel_active_events(self):
         """Cancels all events spawned by the UI server."""
         tasks = asyncio.gather(*self._active_events, loop=self.loop, return_exceptions=True)
-        tasks.cancel()
-        await tasks
+        try:
+            tasks.cancel()
+            await tasks
+        except asyncio.CancelledError:
+            pass
 
     def _create_task(self, coroutine):
         """Creates a managed task that will be tracked and cancelled on server shutdown."""
