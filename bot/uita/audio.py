@@ -552,6 +552,8 @@ class FfmpegStream(discord.AudioSource):
                 # However! Since we use daemon threads, this method would just leave dangling
                 # ffmpeg processes on exit, and so we must register every spawned process to be
                 # cleaned up on exit. Python is really pretty terrible for concurrency. Chears.
+                if len(data) != self._encoder.FRAME_SIZE:
+                    break
                 self._buffer.put(data, timeout=10)
                 if need_set_ready is True:
                     self._is_ready.set()
