@@ -318,10 +318,10 @@ async def clear(message, params):
 
 @command("join", "j", help="Joins your voice channel")
 async def join(message, params):
-    channel = message.author.voice.voice_channel
-    if channel is not None:
-        voice = uita.state.voice_connections[str(message.guild.id)]
-        await voice.connect(channel.id)
+    message_voice = message.author.voice
+    if message_voice is not None:
+        bot_voice = uita.state.voice_connections[str(message.guild.id)]
+        await bot_voice.connect(message_voice.channel.id)
     else:
         await message.channel.send("{} You aren't in a voice channel (that I can see)".format(_EMOJI["error"]))
 
