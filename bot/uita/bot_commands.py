@@ -170,9 +170,13 @@ async def search(message, params):
             results=result_max,
             loop=uita.bot.loop
         )
+        results_found = min(result_max, len(results))
+        if results_found == 0:
+            raise uita.exceptions.ClientError(uita.message.ErrorUrlInvalidMessage())
+
         # Build a choice picking menu from the results
         description = ""
-        for i in range(result_max):
+        for i in range(results_found):
             result = results[i]
             emoji = _EMOJI["numbers"][i+1]
             description += "{}**{}** ({})\n".format(
@@ -197,7 +201,7 @@ async def search(message, params):
 
         # Build a responsive UI out of emoji reactions
         async def add_reactions():
-            for i in range(result_max):
+            for i in range(results_found):
                 emoji = _EMOJI["numbers"][i+1]
                 await response.add_reaction(emoji)
         # Run the task separately so if a reaction is clicked while the loop is running we will
@@ -205,7 +209,7 @@ async def search(message, params):
         uita.bot.loop.create_task(add_reactions())
         # Wait for the user to make a choice
         def reaction_predicate(reaction, user):
-            valid_emoji = [_EMOJI["numbers"][i+1] for i in range(result_max)]
+            valid_emoji = [_EMOJI["numbers"][i+1] for i in range(results_found)]
             return (
                 reaction.message.id == response.id
                 and user.id == message.author.id
@@ -226,7 +230,7 @@ async def search(message, params):
         for index, value in _EMOJI["numbers"].items():
             if choice == value:
                 choice_index = index - 1
-        if choice_index is None or choice_index < 0 or choice_index > result_max:
+        if choice_index is None or choice_index < 0 or choice_index > results_found:
             await response.edit(
                 content="{} There were unicode problems, sorry!".format(_EMOJI["error"])
             )
