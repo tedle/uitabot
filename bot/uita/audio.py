@@ -454,7 +454,11 @@ class FfmpegStream(discord.AudioSource):
         ]
         # The argument order is very important
         if not self._track.local:
-            process_options += ["-reconnect", "1"]
+            process_options += [
+                "-reconnect", "1",
+                "-reconnect_streamed", "1",
+                "-reconnect_delay_max", "10"
+            ]
         process_options += [
             "-ss", str(track.offset if not track.live else 0.0),
             "-i", track.path,

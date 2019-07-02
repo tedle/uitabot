@@ -6,7 +6,7 @@
 * [YouTube API key](https://developers.google.com/youtube/v3/)
 * Python 3.5
 * npm
-* ffmpeg & ffprobe
+* ffmpeg & ffprobe (version 4 or newer needed for some live streams)
 
 ## Linux Installation from Source
 ### Setup
