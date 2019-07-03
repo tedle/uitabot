@@ -209,8 +209,8 @@ class DiscordServer():
     def __init__(self, id, name, channels, users, icon):
         self.id = str(id)
         self.name = name
-        self.channels = channels
-        self.users = users
+        self.channels = {str(c.id): c for _, c in channels.items()}
+        self.users = {str(uid): uname for uid, uname in users.items()}
         self.icon = icon
 
 
