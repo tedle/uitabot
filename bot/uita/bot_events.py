@@ -35,7 +35,7 @@ def _sync_channels(guild):
 
 @uita.bot.event
 @bot_ready
-async def on_channel_create(channel):
+async def on_guild_channel_create(channel):
     discord_channel = uita.types.DiscordChannel(
         channel.id, channel.name, channel.type, channel.position
     )
@@ -45,14 +45,14 @@ async def on_channel_create(channel):
 
 @uita.bot.event
 @bot_ready
-async def on_channel_delete(channel):
+async def on_guild_channel_delete(channel):
     uita.state.channel_remove(str(channel.id), str(channel.guild.id))
     _sync_channels(channel.guild)
 
 
 @uita.bot.event
 @bot_ready
-async def on_channel_update(before, after):
+async def on_guild_channel_update(before, after):
     discord_channel = uita.types.DiscordChannel(
         after.id, after.name, after.type, after.position
     )
@@ -95,12 +95,12 @@ async def on_message(message):
 @bot_ready
 async def on_guild_join(guild):
     channels = {
-        channel.id: uita.types.DiscordChannel(
+        str(channel.id): uita.types.DiscordChannel(
             channel.id, channel.name, channel.type, channel.position
         )
         for channel in guild.channels
     }
-    users = {user.id: user.name for user in guild.members}
+    users = {str(user.id): user.name for user in guild.members}
     discord_server = uita.types.DiscordServer(guild.id, guild.name, channels, users, guild.icon)
     uita.state.server_add(discord_server, uita.bot)
 
@@ -117,12 +117,12 @@ async def on_guild_remove(guild):
 @bot_ready
 async def on_guild_update(before, after):
     channels = {
-        channel.id: uita.types.DiscordChannel(
+        str(channel.id): uita.types.DiscordChannel(
             channel.id, channel.name, channel.type, channel.position
         )
         for channel in after.channels
     }
-    users = {user.id: user.name for user in after.members}
+    users = {str(user.id): user.name for user in after.members}
     discord_server = uita.types.DiscordServer(after.id, after.name, channels, users, after.icon)
     uita.state.server_add(discord_server, uita.bot.loop)
     # Kick any displaced users
