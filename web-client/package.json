@@ -6,7 +6,8 @@
   "main": "index.js",
   "scripts": {
     "build": "webpack --mode production",
-    "dev": "webpack-dev-server --mode development --devtool source-map"
+    "dev": "webpack-dev-server --mode development --devtool source-map",
+    "lint": "eslint src"
   },
   "author": "Dominic Bowden",
   "license": "ISC",
@@ -34,6 +35,9 @@
     "webpack-cli": "^3.3.4"
   },
   "devDependencies": {
+    "babel-eslint": "^10.0.2",
+    "eslint": "^6.0.1",
+    "eslint-plugin-react": "^7.14.2",
     "webpack-dev-server": "^3.7.2"
   }
 }
