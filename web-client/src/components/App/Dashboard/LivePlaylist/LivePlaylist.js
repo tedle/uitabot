@@ -156,7 +156,9 @@ const Track = SortableElement(({
             (playCurrentTime - playStartTime) / 1000,
         0);
     }
-    const playTimeProgress = 1.0 - playTimeRemaining / Math.max(track.duration, 1.0);
+    const playTimeProgress = track.live ?
+        0.0 :
+        1.0 - playTimeRemaining / Math.max(track.duration, 1.0);
 
     return (
         <li className="LivePlaylist-Track">
