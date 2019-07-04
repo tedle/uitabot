@@ -165,7 +165,7 @@ def parse_time(time):
 
     """
     duration = 0
-    for match in re.finditer("(\d+)(H|M|S)", time):
+    for match in re.finditer("(\\d+)(H|M|S)", time):
         number, interval = match.group(1, 2)
         if interval == "H":
             duration += int(number) * 60 * 60

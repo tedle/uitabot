@@ -48,7 +48,7 @@ async def auth(code, config, loop):
     redirect = "http{}://{}{}".format(
         "s" if config.ssl.cert_file is not None else "",
         config.client.domain,
-        (":{}".format(config.client.port)) if config.client.port is not 80 else ""
+        (":{}".format(config.client.port)) if config.client.port != 80 else ""
     )
     data = {
         "code": code,

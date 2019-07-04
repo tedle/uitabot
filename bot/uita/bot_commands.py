@@ -207,6 +207,7 @@ async def search(message, params):
         # Run the task separately so if a reaction is clicked while the loop is running we will
         # still respond to it
         uita.bot.loop.create_task(add_reactions())
+
         # Wait for the user to make a choice
         def reaction_predicate(reaction, user):
             valid_emoji = [_EMOJI["numbers"][i+1] for i in range(results_found)]
@@ -323,7 +324,9 @@ async def join(message, params):
         bot_voice = uita.state.voice_connections[str(message.guild.id)]
         await bot_voice.connect(message_voice.channel.id)
     else:
-        await message.channel.send("{} You aren't in a voice channel (that I can see)".format(_EMOJI["error"]))
+        await message.channel.send(
+            "{} You aren't in a voice channel (that I can see)".format(_EMOJI["error"])
+        )
 
 
 @command("leave", "l", help="Leaves the voice channel")
