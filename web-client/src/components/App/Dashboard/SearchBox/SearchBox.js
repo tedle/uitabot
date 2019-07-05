@@ -162,7 +162,7 @@ class SearchBox extends React.Component {
                             </TouchButton>
                         </li>
                     );
-            });
+                });
         }
         // Build the final component
         return (

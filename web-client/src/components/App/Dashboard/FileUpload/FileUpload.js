@@ -16,7 +16,7 @@ var UploadStatus = {
     UPLOADING: 2,
     COMPLETED: 3,
     CANCELLED: 4
-}
+};
 Object.freeze(UploadStatus);
 
 // Allows nested components to upload files programmatically (upload buttons, etc)

@@ -39,7 +39,7 @@ export default class App extends React.Component {
 
         // Handler for authentication failure
         this.eventDispatcher.setMessageHandler("auth.fail", m => {
-            this.setState({needLogin: true})
+            this.setState({needLogin: true});
         });
 
         // Handler for authentication success
@@ -57,7 +57,7 @@ export default class App extends React.Component {
 
         // Handler for server kick messages
         this.eventDispatcher.setMessageHandler("server.kick", m => {
-            this.setState({discordServer: null})
+            this.setState({discordServer: null});
         });
 
         // Setup the websocket after we're ready to receive and act on messages
@@ -76,6 +76,10 @@ export default class App extends React.Component {
 
     componentWillUnmount() {
         this.setState({errors: Array()});
+        this.socket.close();
+        this.eventDispatcher.clearMessageHandler("auth.fail");
+        this.eventDispatcher.clearMessageHandler("auth.succeed");
+        this.eventDispatcher.clearMessageHandler("server.kick");
     }
 
     onError(message) {
@@ -107,13 +111,6 @@ export default class App extends React.Component {
         clearInterval(this.heartbeatInterval);
     }
 
-    componentWillUnmount() {
-        this.socket.close();
-        this.eventDispatcher.clearMessageHandler("auth.fail");
-        this.eventDispatcher.clearMessageHandler("auth.succeed");
-        this.eventDispatcher.clearMessageHandler("server.kick");
-    }
-
     // Big, messy state machine acting as a view router
     renderView() {
         // Display the login page if authentication has failed
@@ -129,7 +126,7 @@ export default class App extends React.Component {
 
         // Connection error displays when server closes connection
         if (this.state.connection != WebSocket.OPEN) {
-            return <Error.Fatal>Connection error. <a href="/">Refresh</a>?</Error.Fatal>
+            return <Error.Fatal>Connection error. <a href="/">Refresh</a>?</Error.Fatal>;
         }
 
         // Attempt authentication with stored credentials (if they exist)

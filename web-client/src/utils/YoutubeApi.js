@@ -8,7 +8,7 @@ var ResultType = {
     VIDEO: 1,
     LIVE: 2,
     PLAYLIST: 3
-}
+};
 Object.freeze(ResultType);
 
 class Result {
@@ -133,7 +133,7 @@ export function parseYoutubeTime(time) {
     let duration = 0;
     let regex = /(\d+)(H|M|S)/g;
     let match = null;
-    while (match = regex.exec(time)) {
+    while ((match = regex.exec(time))) {
         switch(match[2]) {
             case "H":
                 duration += parseInt(match[1]) * 60 * 60;

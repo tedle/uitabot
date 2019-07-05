@@ -40,7 +40,6 @@ export default class LivePlaylist extends React.Component {
                     break;
                 default:
                     throw new Error("play.status.send enum had unexpected value");
-                    break;
             }
         });
         // Request the initial queue state
@@ -141,20 +140,19 @@ export default class LivePlaylist extends React.Component {
 }
 
 const Track = SortableElement(({
-        // Track props
-        track,
-        isFirstTrack,
-        playStartTime,
-        playCurrentTime,
-        onTrackRemove
-    }) => {
+    // Track props
+    track,
+    isFirstTrack,
+    playStartTime,
+    playCurrentTime,
+    onTrackRemove
+}) => {
     let playTimeRemaining = Math.max(track.duration - track.offset, 0);
     if (isFirstTrack) {
         playTimeRemaining = Math.max(
-            track.duration -
-            track.offset -
-            (playCurrentTime - playStartTime) / 1000,
-        0);
+            track.duration - track.offset - (playCurrentTime - playStartTime) / 1000,
+            0
+        );
     }
     const playTimeProgress = track.live ?
         0.0 :
@@ -177,6 +175,7 @@ const Track = SortableElement(({
                         className="TrackUrl DragCancel"
                         href={track.url}
                         target="_blank"
+                        rel="noopener noreferrer"
                         onDragStart={(e) => e.preventDefault()}
                     >
                         <i className="fab fa-youtube DragCancel"></i>
@@ -195,12 +194,12 @@ const Track = SortableElement(({
 });
 
 const Playlist = SortableContainer(({
-        // Playlist props
-        tracks,
-        playStartTime,
-        playCurrentTime,
-        onTrackRemove
-    }) => {
+    // Playlist props
+    tracks,
+    playStartTime,
+    playCurrentTime,
+    onTrackRemove
+}) => {
     const trackList = tracks.map((track, index) =>
         <CSSTransition
             key={track.id}

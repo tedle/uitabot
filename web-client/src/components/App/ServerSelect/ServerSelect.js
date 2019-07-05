@@ -19,7 +19,7 @@ export default class ServerSelect extends React.Component {
     componentDidMount() {
         // Once mounted, bind the event dispatchers callback for server list queries
         this.props.eventDispatcher.setMessageHandler("server.list.send", m => {
-            this.setState({servers: m.servers})
+            this.setState({servers: m.servers});
         });
         this.getServerList();
     }
@@ -28,7 +28,7 @@ export default class ServerSelect extends React.Component {
         this.props.eventDispatcher.clearMessageHandler("server.list.send");
     }
 
-    getServerList(socket) {
+    getServerList() {
         this.props.socket.send(new Message.ServerListGetMessage().str());
     }
 
@@ -44,20 +44,20 @@ export default class ServerSelect extends React.Component {
                 return a.name.localeCompare(b.name);
             })
             .map((server) => {
-            return (
-                <li key={server.id}>
-                    <button onClick={() => this.joinServer(server)}>
-                        {server.icon === null ? (
-                            <i className="NullLogo fab fa-discord"></i>
-                        ) : (
-                            <img src={DiscordOauth.createServerIconUrl(server.id, server.icon)}/>
-                        )}
-                        <span>{server.name}</span>
-                        <i className="EndIcon fas fa-angle-right"></i>
-                    </button>
-                </li>
-            );
-        });
+                return (
+                    <li key={server.id}>
+                        <button onClick={() => this.joinServer(server)}>
+                            {server.icon === null ? (
+                                <i className="NullLogo fab fa-discord"></i>
+                            ) : (
+                                <img src={DiscordOauth.createServerIconUrl(server.id, server.icon)}/>
+                            )}
+                            <span>{server.name}</span>
+                            <i className="EndIcon fas fa-angle-right"></i>
+                        </button>
+                    </li>
+                );
+            });
 
         // Display the list and an amazing gaming culture reference. It is very funny
         return (

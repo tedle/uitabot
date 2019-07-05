@@ -313,7 +313,7 @@ export class EventDispatcher {
     }
 
     dispatch(message) {
-        if (!message instanceof AbstractMessage) {
+        if (!(message instanceof AbstractMessage)) {
             throw new TypeError("EventDispatcher.dispatch requires a subclass of AbstractMessage");
         }
 
