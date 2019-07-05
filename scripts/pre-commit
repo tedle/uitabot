@@ -1,0 +1,16 @@
+#!/bin/sh
+
+exec 1>&2
+
+cd `git rev-parse --show-toplevel`
+
+(cd bot; python -m flake8 uita.py uita)
+PYLINT_EXIT_CODE=$?
+(cd web-client; npm run --silent lint -- -f unix)
+JSLINT_EXIT_CODE=$?
+
+if [ $PYLINT_EXIT_CODE -ne 0 ] || [ $JSLINT_EXIT_CODE -ne 0 ]; then
+    exit 1
+fi
+
+exit 0
