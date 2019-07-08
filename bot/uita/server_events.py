@@ -106,9 +106,13 @@ async def server_join(event):
     """Connect a user to the web client interface for a given Discord server."""
     log.debug("server join {}".format(event.message.server_id))
     # Check that user has access to this server
-    if event.user.id in uita.state.servers[event.message.server_id].users:
+    if (
+        event.message.server_id in uita.state.servers and
+        event.user.id in uita.state.servers[event.message.server_id].users
+    ):
         event.user.active_server_id = event.message.server_id
     else:
+        event.user.active_server_id = None
         await event.socket.send(str(uita.message.ServerKickMessage()))
 
 
