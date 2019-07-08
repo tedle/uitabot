@@ -402,7 +402,7 @@ class Server():
         finally:
             # Close and cleanup connection
             if conn.user is not None:
-                del self.connections[websocket]
                 log.info("{} disconnected".format(conn.user.name))
+            del self.connections[websocket]
             await websocket.close()
             log.debug("Websocket closed")
