@@ -132,13 +132,22 @@ async def on_guild_update(before, after):
 @uita.bot.event
 @bot_ready
 async def on_voice_state_update(member, before, after):
-    if member.id != uita.bot.user.id:
-        return
-    channel = uita.types.DiscordChannel(
-        after.channel.id,
-        after.channel.name,
-        after.channel.type,
-        after.channel.position
-    ) if after.channel is not None else None
-    message = uita.message.ChannelActiveSendMessage(channel)
-    uita.server.send_all(message, str(member.guild.id))
+    if member.id == uita.bot.user.id:
+        channel = uita.types.DiscordChannel(
+            after.channel.id,
+            after.channel.name,
+            after.channel.type,
+            after.channel.position
+        ) if after.channel is not None else None
+        message = uita.message.ChannelActiveSendMessage(channel)
+        uita.server.send_all(message, str(member.guild.id))
+    else:
+        # Member is leaving a channel, check if bot is in that channel and if it is now empty
+        if before.channel is not None:
+            bot_voice = uita.state.voice_connections[str(before.channel.guild.id)]
+            if (
+                bot_voice.active_channel is not None and
+                str(before.channel.id) == bot_voice.active_channel.id and
+                len(before.channel.members) <= 1
+            ):
+                await bot_voice.disconnect()
