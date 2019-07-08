@@ -235,8 +235,6 @@ class Server():
 
         Parameters
         ----------
-        user : uita.types.DiscordUser
-            Connected user to send message to.
         message : uita.message.AbstractMessage
             Message to send to user.
         server_id : str
