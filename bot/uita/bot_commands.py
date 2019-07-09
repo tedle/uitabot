@@ -45,6 +45,14 @@ def command(*args, **kwargs):
     """
     def decorator(function):
         async def wrapper(message, params):
+            if (
+                kwargs.get("require_administrator", False) and
+                not message.author.guild_permissions.administrator
+            ):
+                await message.channel.send(
+                    "{} This command requires administrator privileges".format(_EMOJI["error"])
+                )
+                return
             return await function(message, params)
         for arg in args:
             _COMMANDS[arg] = wrapper
