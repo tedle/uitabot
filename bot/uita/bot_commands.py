@@ -47,6 +47,7 @@ def command(*args, **kwargs):
     """
     def decorator(function):
         async def wrapper(message, params):
+            # Check if command requires admin privileges
             if (
                 kwargs.get("require_administrator", False) and
                 not message.author.guild_permissions.administrator
@@ -55,15 +56,16 @@ def command(*args, **kwargs):
                     "{} This command requires administrator privileges".format(_EMOJI["error"])
                 )
                 return
-
+            # Check if command is role restricted
             role = uita.state.server_get_role(str(message.author.guild.id))
             if not uita.utils.verify_user_permissions(message.author, role):
                 await message.channel.send(
                     "{} Insufficient privileges for bot commands".format(_EMOJI["error"])
                 )
                 return
-
+            # Run command
             return await function(message, params)
+
         for arg in args:
             _COMMANDS[arg] = wrapper
         _COMMAND_HELP.append((args, kwargs.get("help", "No description")))
