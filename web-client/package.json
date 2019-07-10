@@ -2,7 +2,7 @@
   "name": "uitabot-client",
   "version": "0.2.0",
   "description": "Web frontend for uitabot",
-  "repository": "https://github.com/tedle",
+  "repository": "https://github.com/tedle/uitabot",
   "main": "index.js",
   "scripts": {
     "build": "webpack --mode production",

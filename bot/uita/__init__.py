@@ -4,6 +4,7 @@ __version__ = "0.2.0"
 __author__ = "Dominic Bowden"
 __copyright__ = "2018, Dominic Bowden"
 __license__ = "ISC"
+__url__ = "https://github.com/tedle/uitabot"
 
 from discord import Client
 from uita.ui_server import Server

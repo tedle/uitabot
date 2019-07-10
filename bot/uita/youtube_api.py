@@ -14,7 +14,7 @@ log = logging.getLogger(__name__)
 # API config definitions
 BASE_HEADERS = {
     "Content-Type": "application/x-www-form-urlencoded",
-    "User-Agent": "uitabot (https://github.com/tedle, {})".format(uita.__version__)
+    "User-Agent": "uitabot ({}, {})".format(uita.__url__, uita.__version__)
 }
 API_URL = "https://www.googleapis.com/youtube/v3"
 
