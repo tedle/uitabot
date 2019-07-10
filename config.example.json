@@ -11,7 +11,11 @@
     },
     "bot": {
         "domain": "localhost",
-        "port": 3189
+        "port": 3189,
+        "trial_mode": {
+            "enabled": false,
+            "server_whitelist": ["discord server id", "discord server id"]
+        }
     },
     "client": {
         "domain": "localhost",

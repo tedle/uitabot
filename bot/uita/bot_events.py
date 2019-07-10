@@ -1,4 +1,5 @@
 """Event triggers for Discord client to synchronize API state with uitabot."""
+import asyncio
 import discord
 
 import uita.bot_commands
@@ -24,6 +25,14 @@ async def on_ready():
     log.info("Bot connected to Discord")
     uita.state.initialize_from_bot(uita.bot)
     await uita.bot_commands.set_prefix(".")
+
+    if uita.server.config.bot.trial_mode.enabled:
+        tasks = [
+            server.leave()
+            for server in uita.bot.guilds
+            if str(server.id) not in uita.server.config.bot.trial_mode.server_whitelist
+        ]
+        await asyncio.gather(*tasks, loop=uita.bot.loop)
 
 
 def _sync_channels(guild):
@@ -129,11 +138,31 @@ async def on_guild_join(guild):
         guild.icon
     )
     uita.state.server_add(discord_server, uita.bot)
+    log.info("Joined {}".format(discord_server.name))
+
+    if (
+        uita.server.config.bot.trial_mode.enabled and
+        str(guild.id) not in uita.server.config.bot.trial_mode.server_whitelist
+    ):
+        async def trial_leave():
+            await asyncio.sleep(60 * 60, loop=uita.bot.loop)
+            await uita.bot.wait_until_ready()
+            trial_server = discord.utils.get(uita.bot.guilds, id=guild.id)
+            if trial_server:
+                await trial_server.leave()
+        uita.bot.loop.create_task(trial_leave())
+        if guild.system_channel:
+            await guild.system_channel.send((
+                "Hello! This is a trial version of **uitabot** and will leave the server shortly."
+                " If you want unrestricted access, you can host your own instance for free @ {}"
+                ).format(uita.__url__)
+            )
 
 
 @uita.bot.event
 @bot_ready
 async def on_guild_remove(guild):
+    log.info("Leaving {}".format(guild.name))
     uita.state.server_remove(str(guild.id))
     # Kick any displaced users
     await uita.server.verify_active_servers()
