@@ -82,7 +82,7 @@ async def file_upload_start(event):
             while bytes_read < file_size:
                 # Return the original message to signal next file slice
                 await event.socket.send(str(event.message))
-                data = await asyncio.wait_for(event.socket.recv(), 5, loop=uita.loop)
+                data = await asyncio.wait_for(event.socket.recv(), 30, loop=uita.loop)
                 if type(data) is str:
                     raise uita.exceptions.MalformedFile("Non-binary data transferred unexpectedly")
                 f.write(data)

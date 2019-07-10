@@ -110,7 +110,7 @@ class DropZone extends React.Component {
             dispatcher.setMessageHandler("error.queue.full", m => {
                 reject("Queue is full");
             });
-            setTimeout(() => reject("Server timed out or disconnected"), 5000);
+            setTimeout(() => reject("Server timed out or disconnected"), 30000);
         });
     }
 
