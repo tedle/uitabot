@@ -1,5 +1,6 @@
 # project
 config.json
+*.db
 build/
 cache/
 # python
