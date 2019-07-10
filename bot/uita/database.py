@@ -20,7 +20,7 @@ class Database():
     def __init__(self, uri):
         self._connection = sqlite3.connect(uri)
         c = self._connection.cursor()
-        c.execute(_INIT_DATABASE_QUERY)
+        c.executescript(_INIT_DATABASE_QUERY)
         self._connection.commit()
 
     def maintenance(self):
@@ -94,6 +94,42 @@ class Database():
             return db_session[1]
         return None
 
+    def set_server_role(self, server_id, role_id):
+        """Configures the required role setting for a server.
+
+        Parameters
+        ----------
+        server_id : str
+            Server ID to change setting for.
+        role_id : str
+            Role ID for required role to use bot commands. `None` for free access.
+
+        """
+        c = self._connection.cursor()
+        c.execute(_SET_SERVER_ROLE_QUERY, (server_id, role_id))
+        self._connection.commit()
+
+    def get_server_role(self, server_id):
+        """Retrieves the required role setting for a server.
+
+        Parameters
+        ----------
+        server_id : str
+            Server ID to change setting for.
+
+        Returns
+        -------
+        str
+            Role ID if server has configured this setting, `None` otherwise.
+
+        """
+        c = self._connection.cursor()
+        c.execute(_GET_SERVER_ROLE_QUERY, (server_id,))
+        role = c.fetchone()
+        if role is None:
+            return None
+        return role[0]
+
 
 _INIT_DATABASE_QUERY = """
 CREATE TABLE IF NOT EXISTS sessions (
@@ -102,6 +138,10 @@ CREATE TABLE IF NOT EXISTS sessions (
     token TEXT,
     created DATETIME DEFAULT CURRENT_TIMESTAMP,
     expiry INT
+);
+CREATE TABLE IF NOT EXISTS server_roles (
+    server_id TEXT PRIMARY KEY,
+    role_id TEXT
 );"""
 
 _ADD_SESSION_QUERY = """
@@ -120,3 +160,13 @@ DELETE FROM sessions WHERE ((strftime('%s', created) + expiry) - strftime('%s', 
 
 _GET_SESSION_QUERY = """
 SELECT secret, token FROM sessions WHERE handle=?"""
+
+_SET_SERVER_ROLE_QUERY = """
+INSERT OR REPLACE INTO server_roles(
+    server_id,
+    role_id
+)
+VALUES(?, ?)"""
+
+_GET_SERVER_ROLE_QUERY = """
+SELECT role_id FROM server_roles WHERE server_id=?"""

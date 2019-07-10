@@ -2,6 +2,7 @@
 import asyncio
 
 import uita.audio
+import uita.utils
 
 import logging
 log = logging.getLogger(__name__)
@@ -49,9 +50,18 @@ class DiscordState():
                 )
                 for channel in server.channels
             }
-            discord_users = {str(user.id): user.name for user in server.members}
+            role = uita.server.database.get_server_role(str(server.id))
+            discord_users = {
+                str(user.id):
+                user.name for user in server.members
+                if uita.utils.verify_user_permissions(user, role)
+            }
             self.servers[str(server.id)] = DiscordServer(
-                server.id, server.name, discord_channels, discord_users, server.icon
+                server.id,
+                server.name,
+                discord_channels,
+                discord_users,
+                server.icon
             )
             self.voice_connections[str(server.id)] = DiscordVoiceClient(server.id, bot.loop)
 
@@ -113,33 +123,71 @@ class DiscordState():
         del self.servers[server_id]
         del self.voice_connections[server_id]
 
-    def user_add_server(self, user_id, user_name, server_id):
+    def server_add_user(self, server_id, user_id, user_name):
         """Add an accessible server for a user.
 
         Parameters
         ----------
+        server_id : str
+            Server that can be accessed.
         user_id : str
             User to update.
         user_name : str
             New username.
-        server_id : str
-            Server that can be accessed.
 
         """
         self.servers[server_id].users[user_id] = user_name
 
-    def user_remove_server(self, user_id, server_id):
+    def server_remove_user(self, server_id, user_id):
         """Remove an inaccessible server for a user.
 
         Parameters
         ----------
-        user_id : str
-            User to update.
         server_id : str
             Server that can no longer be accessed.
+        user_id : str
+            User to update.
 
         """
         del self.servers[server_id].users[user_id]
+
+    def server_get_role(self, server_id):
+        """Get the role required to use bot commands.
+
+        Parameters
+        ----------
+        server_id : str
+            Server that can no longer be accessed.
+
+        Returns
+        -------
+        str
+            ID of required role. Can be `None` for no requirement.
+
+        """
+        try:
+            return self.servers[server_id].role
+        except KeyError:
+            pass
+        # Get database value if server is not stored in state yet (like in on_guild_join)
+        return uita.server.database.get_server_role(server_id)
+
+    def server_set_role(self, server_id, role_id):
+        """Set a role required to use bot commands. `None` for free access.
+
+        Parameters
+        ----------
+        server_id : str
+            Server that can no longer be accessed.
+        role_id : str
+            Role requirement.
+
+        """
+        uita.server.database.set_server_role(server_id, role_id)
+        try:
+            self.servers[server_id].role = role_id
+        except KeyError:
+            pass
 
 
 # TODO: Add category support if discord.py rewrite ever goes live
@@ -188,7 +236,7 @@ class DiscordServer():
     channels : dict(channel_id: uita.types.DiscordChannel)
         Dictionary of channels in server.
     users : dict(user_id: user_name)
-        Dictionary of users in server.
+        Dictionary of users in server with access to bot commands.
     icon : str
         Server icon hash.
 
@@ -201,9 +249,11 @@ class DiscordServer():
     channels : dict(channel_id: uita.types.DiscordChannel)
         Dictionary of channels in server.
     users : dict(user_id: user_name)
-        Dictionary of users in server.
+        Dictionary of users in server with access to bot commands.
     icon : str
         Server icon hash.
+    role : str
+        Role ID needed to use bot commands. Set to `None` for unrestricted access.
 
     """
     def __init__(self, id, name, channels, users, icon):
@@ -212,6 +262,7 @@ class DiscordServer():
         self.channels = {str(c.id): c for _, c in channels.items()}
         self.users = {str(uid): uname for uid, uname in users.items()}
         self.icon = icon
+        self.role = uita.server.database.get_server_role(self.id)
 
 
 class DiscordUser():

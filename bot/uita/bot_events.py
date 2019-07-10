@@ -3,6 +3,7 @@ import discord
 
 import uita.bot_commands
 import uita.types
+import uita.utils
 import uita
 
 import logging
@@ -31,6 +32,11 @@ def _sync_channels(guild):
         if channel.type is discord.ChannelType.voice
     ]
     uita.server.send_all(uita.message.ChannelListSendMessage(voice_channels), str(guild.id))
+
+
+def _verify_member(member):
+    role = uita.state.server_get_role(str(member.guild.id))
+    return uita.utils.verify_user_permissions(member, role)
 
 
 @uita.bot.event
@@ -63,13 +69,14 @@ async def on_guild_channel_update(before, after):
 @uita.bot.event
 @bot_ready
 async def on_member_join(member):
-    uita.state.user_add_server(str(member.id), member.name, str(member.guild.id))
+    if _verify_member(member):
+        uita.state.server_add_user(str(member.guild.id), str(member.id), member.name)
 
 
 @uita.bot.event
 @bot_ready
 async def on_member_remove(member):
-    uita.state.user_remove_server(str(member.id), str(member.guild.id))
+    uita.state.server_remove_user(str(member.guild.id), str(member.id))
     # Kick any displaced users
     await uita.server.verify_active_servers()
 
@@ -77,7 +84,16 @@ async def on_member_remove(member):
 @uita.bot.event
 @bot_ready
 async def on_member_update(before, after):
-    return
+    if (
+        not _verify_member(before) and
+        _verify_member(after)
+    ):
+        await on_member_join(after)
+    elif (
+        _verify_member(before) and
+        not _verify_member(after)
+    ):
+        await on_member_remove(after)
 
 
 @uita.bot.event
@@ -100,8 +116,18 @@ async def on_guild_join(guild):
         )
         for channel in guild.channels
     }
-    users = {str(user.id): user.name for user in guild.members}
-    discord_server = uita.types.DiscordServer(guild.id, guild.name, channels, users, guild.icon)
+    users = {
+        str(user.id): user.name
+        for user in guild.members
+        if _verify_member(user)
+    }
+    discord_server = uita.types.DiscordServer(
+        guild.id,
+        guild.name,
+        channels,
+        users,
+        guild.icon
+    )
     uita.state.server_add(discord_server, uita.bot)
 
 
@@ -122,8 +148,18 @@ async def on_guild_update(before, after):
         )
         for channel in after.channels
     }
-    users = {str(user.id): user.name for user in after.members}
-    discord_server = uita.types.DiscordServer(after.id, after.name, channels, users, after.icon)
+    users = {
+        str(user.id): user.name
+        for user in after.members
+        if _verify_member(user)
+    }
+    discord_server = uita.types.DiscordServer(
+        after.id,
+        after.name,
+        channels,
+        users,
+        after.icon
+    )
     uita.state.server_add(discord_server, uita.bot.loop)
     # Kick any displaced users
     await uita.server.verify_active_servers()

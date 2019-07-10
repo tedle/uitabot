@@ -1,6 +1,7 @@
 """Utility functions."""
 import asyncio
 import contextlib
+import discord.utils
 import os
 import sys
 
@@ -152,4 +153,28 @@ def build_websocket_url(config):
         "s" if config.ssl.cert_file is not None else "",
         config.bot.domain,
         (":" + str(config.bot.port)) if config.bot.port not in (80, 443) else ""
+    )
+
+
+def verify_user_permissions(user, role):
+    """Checks whether a user has sufficient role permissions.
+
+    Parameters
+    ----------
+    user : discord.Member
+        discord.py server member.
+    role : str
+        ID of role to verify against.
+
+    Returns
+    -------
+    bool
+        `True` if the user has the specified role, if the specified role is `None` or if the user
+        is a server administrator.
+
+    """
+    return (
+        role is None or
+        user.guild_permissions.administrator or
+        discord.utils.get(user.roles, id=int(role))
     )

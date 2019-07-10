@@ -2,7 +2,9 @@
 import asyncio
 import discord
 
+import uita.bot_events
 import uita.types
+import uita.utils
 import uita.youtube_api
 import uita
 
@@ -53,6 +55,14 @@ def command(*args, **kwargs):
                     "{} This command requires administrator privileges".format(_EMOJI["error"])
                 )
                 return
+
+            role = uita.state.server_get_role(str(message.author.guild.id))
+            if not uita.utils.verify_user_permissions(message.author, role):
+                await message.channel.send(
+                    "{} Insufficient privileges for bot commands".format(_EMOJI["error"])
+                )
+                return
+
             return await function(message, params)
         for arg in args:
             _COMMANDS[arg] = wrapper
@@ -341,3 +351,28 @@ async def join(message, params):
 async def leave(message, params):
     voice = uita.state.voice_connections[str(message.guild.id)]
     await voice.disconnect()
+
+
+@command(
+    "set-role",
+    help="Set a `<ROLE>` needed to use bot commands. Leave empty for free access",
+    require_administrator=True
+)
+async def set_role(message, params):
+    role = None
+    if len(message.role_mentions) > 0:
+        role = str(message.role_mentions[0].id)
+    elif len(params) > 0:
+        role_search = discord.utils.get(message.guild.roles, name=params)
+        if role_search is None:
+            await message.channel.send(
+                "{} This role does not exist".format(_EMOJI["error"])
+            )
+            return
+        role = str(role_search.id)
+
+    uita.state.server_set_role(str(message.guild.id), role)
+    await uita.bot_events.on_guild_update(message.guild, message.guild)
+    await message.channel.send(
+        "{} Updated role required for using bot commands".format(_EMOJI["ok"])
+    )
