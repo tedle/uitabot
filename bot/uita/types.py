@@ -1,5 +1,6 @@
 """Defines various container and running state types for the Discord API."""
 import asyncio
+import discord
 
 import uita.audio
 import uita.utils
@@ -375,6 +376,13 @@ class DiscordVoiceClient():
 
         """
         channel = uita.bot.get_guild(int(self.server_id)).get_channel(int(channel_id))
+        if (
+            channel is None or
+            channel.type is not discord.ChannelType.voice or
+            not uita.utils.verify_channel_visibility(channel, channel.guild.me)
+        ):
+            raise uita.exceptions.MalformedMessage("Tried to join invalid channel")
+
         with await self._voice_lock:
             if self._voice is None:
                 self._voice = await channel.connect()
