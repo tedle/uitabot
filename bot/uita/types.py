@@ -49,6 +49,7 @@ class DiscordState():
                     channel.id, channel.name, channel.type, channel.position
                 )
                 for channel in server.channels
+                if uita.utils.verify_channel_visibility(channel, server.me)
             }
             role = uita.server.database.get_server_role(str(server.id))
             discord_users = {

@@ -51,6 +51,8 @@ def _verify_member(member):
 @uita.bot.event
 @bot_ready
 async def on_guild_channel_create(channel):
+    if not uita.utils.verify_channel_visibility(channel, channel.guild.me):
+        return
     discord_channel = uita.types.DiscordChannel(
         channel.id, channel.name, channel.type, channel.position
     )
@@ -68,11 +70,12 @@ async def on_guild_channel_delete(channel):
 @uita.bot.event
 @bot_ready
 async def on_guild_channel_update(before, after):
-    discord_channel = uita.types.DiscordChannel(
-        after.id, after.name, after.type, after.position
-    )
-    uita.state.channel_add(discord_channel, str(after.guild.id))
-    _sync_channels(after.guild)
+    verify_before = uita.utils.verify_channel_visibility(before, before.guild.me)
+    verify_after = uita.utils.verify_channel_visibility(after, after.guild.me)
+    if not verify_before and verify_after:
+        await on_guild_channel_create(after)
+    elif verify_before and not verify_after:
+        await on_guild_channel_delete(after)
 
 
 @uita.bot.event
@@ -124,6 +127,7 @@ async def on_guild_join(guild):
             channel.id, channel.name, channel.type, channel.position
         )
         for channel in guild.channels
+        if uita.utils.verify_channel_visibility(channel, guild.me)
     }
     users = {
         str(user.id): user.name
@@ -176,6 +180,7 @@ async def on_guild_update(before, after):
             channel.id, channel.name, channel.type, channel.position
         )
         for channel in after.channels
+        if uita.utils.verify_channel_visibility(channel, after.me)
     }
     users = {
         str(user.id): user.name

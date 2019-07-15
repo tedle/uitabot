@@ -156,6 +156,33 @@ def build_websocket_url(config):
     )
 
 
+def verify_channel_visibility(channel, user):
+    """Checks whether a user can see a channel.
+
+    The Discord API provides a full list of channels including ones normally invisible to the
+    client. This helps hide channels that a bot or user shouldn't see.
+
+    Parameters
+    ----------
+    channel : discord.Channel
+        discord.py channel.
+    user : discord.Member
+        discord.py server member.
+
+    Returns
+    -------
+    bool
+        `True` if the user can view and use the given channel.
+
+    """
+    permissions = channel.permissions_for(user)
+    if channel.type is discord.ChannelType.voice:
+        # read_messages is actually view_channel in the official API
+        # discord.py mislabeled this, maybe not realizing voice channels use it too
+        return (permissions.connect and permissions.read_messages)
+    return permissions.read_messages
+
+
 def verify_user_permissions(user, role):
     """Checks whether a user has sufficient role permissions.
 
