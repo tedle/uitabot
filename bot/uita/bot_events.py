@@ -96,15 +96,11 @@ async def on_member_remove(member):
 @uita.bot.event
 @bot_ready
 async def on_member_update(before, after):
-    if (
-        not _verify_member(before) and
-        _verify_member(after)
-    ):
+    verify_before = _verify_member(before)
+    verify_after = _verify_member(after)
+    if not verify_before and verify_after:
         await on_member_join(after)
-    elif (
-        _verify_member(before) and
-        not _verify_member(after)
-    ):
+    elif verify_before and not verify_after:
         await on_member_remove(after)
 
 
