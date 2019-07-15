@@ -7,7 +7,7 @@ import React from "react";
 import * as Config from "config";
 import * as Message from "utils/Message";
 import * as Session from "utils/Session";
-import * as DiscordOauth from "utils/DiscordOauth";
+import * as DiscordOauth from "utils/DiscordApi";
 import RandomString from "utils/RandomString";
 import Authenticate from "./Authenticate/Authenticate";
 import Dashboard from "./Dashboard/Dashboard";

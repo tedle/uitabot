@@ -4,14 +4,16 @@
 import "./VoiceChannelSelect.scss";
 
 import React from "react";
+import * as DiscordApi from "utils/DiscordApi";
 import * as Message from "utils/Message";
 
 export default class VoiceChannelSelect extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            channels: Array(),
-            activeChannelId: null
+            channels: new Array(),
+            activeChannelId: null,
+            hiddenCategoryIds: new Set()
         };
     }
 
@@ -48,28 +50,74 @@ export default class VoiceChannelSelect extends React.Component {
         this.props.socket.send(new Message.ChannelActiveGetMessage().str());
     }
 
+    toggleCategoryHidden(id) {
+        let categories = new Set(this.state.hiddenCategoryIds);
+        if (categories.has(id)) {
+            categories.delete(id);
+        }
+        else {
+            categories.add(id);
+        }
+        this.setState({hiddenCategoryIds: categories});
+    }
+
+    isCategoryHidden(id) {
+        return this.state.hiddenCategoryIds.has(id);
+    }
+
     render() {
-        // Sort the channels by position, even though discord.py doesn't generate them properly
-        // At least it's consistent
-        const channelList = this.state.channels
+        const categoryList = this.state.channels
+            .filter(channel => {
+                return channel.type == DiscordApi.ChannelType.GUILD_CATEGORY;
+            })
+            .map(category => {
+                return Object.assign({
+                    channels: this.state.channels
+                        .filter(channel => {
+                            return (
+                                channel.category == category.id &&
+                                channel.type == DiscordApi.ChannelType.GUILD_VOICE
+                            );
+                        })
+                        .sort((a, b) => {
+                            return a.position - b.position;
+                        })
+                }, category);
+            })
+            .filter(category => {
+                return category.channels.length > 0;
+            })
             .sort((a, b) => {
                 return a.position - b.position;
             })
-            .map((channel) => {
-                const activeClass = this.state.activeChannelId == channel.id ? "Active" : "";
+            .map(category => {
+                const channelList = category.channels.map(channel => {
+                    const activeClass = this.state.activeChannelId == channel.id ? "Active" : "";
+                    return (
+                        <li key={channel.id} className={activeClass}>
+                            <button onClick={() => this.joinChannel(channel.id)}>
+                                <i className="fas fa-volume-up"></i>
+                                {channel.name}
+                            </button>
+                        </li>
+                    );
+                });
+                const categoryClass = this.isCategoryHidden(category.id) ? "Hidden" : "";
                 return (
-                    <li key={channel.id} className={activeClass}>
-                        <button onClick={() => this.joinChannel(channel.id)}>
-                            <i className="fas fa-volume-up"></i>
-                            {channel.name}
-                        </button>
-                    </li>
+                    <div className={categoryClass} key={category.id}>
+                        <h2>
+                            <button onClick={() => this.toggleCategoryHidden(category.id)}>
+                                <i className="fas fa-angle-right"></i>
+                                {category.name}
+                            </button>
+                        </h2>
+                        <ul>{channelList}</ul>
+                    </div>
                 );
             });
         return (
             <div className="VoiceChannelSelect">
-                <h2 className="hidden-xs">Voice Channels</h2>
-                <ul>{channelList}</ul>
+                {categoryList}
                 {this.state.activeChannelId !== null &&
                     <div className="Disconnect">
                         <button onClick={() => this.leaveChannel()}>

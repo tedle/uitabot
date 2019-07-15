@@ -4,7 +4,7 @@
 import "./ServerSelect.scss";
 
 import React from "react";
-import * as DiscordOauth from "utils/DiscordOauth";
+import * as DiscordOauth from "utils/DiscordApi";
 import * as Message from "utils/Message";
 import * as Session from "utils/Session";
 

@@ -47,7 +47,7 @@ class DiscordState():
         for server in bot.guilds:
             discord_channels = {
                 str(channel.id): DiscordChannel(
-                    channel.id, channel.name, channel.type, channel.position
+                    channel.id, channel.name, channel.type, channel.category_id, channel.position
                 )
                 for channel in server.channels
                 if uita.utils.verify_channel_visibility(channel, server.me)
@@ -192,7 +192,6 @@ class DiscordState():
             pass
 
 
-# TODO: Add category support if discord.py rewrite ever goes live
 class DiscordChannel():
     """Container for Discord channel data.
 
@@ -215,14 +214,17 @@ class DiscordChannel():
         Channel name.
     type : discord.ChannelType
         Channel type.
+    category : str
+        Unique category channel ID. `None` if not a categorized subchannel.
     position : int
         Ordered position in channel list.
 
     """
-    def __init__(self, id, name, type, position):
+    def __init__(self, id, name, type, category, position):
         self.id = str(id)
         self.name = name
         self.type = type
+        self.category = str(category) if category else None
         self.position = position
 
 
@@ -363,7 +365,13 @@ class DiscordVoiceClient():
     def active_channel(self):
         if self._voice is not None and self._voice.is_connected():
             channel = self._voice.channel
-            return DiscordChannel(channel.id, channel.name, channel.type, channel.position)
+            return DiscordChannel(
+                channel.id,
+                channel.name,
+                channel.type,
+                channel.category_id,
+                channel.position
+            )
         return None
 
     async def connect(self, channel_id):

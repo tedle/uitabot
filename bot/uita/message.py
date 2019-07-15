@@ -214,6 +214,8 @@ class ChannelListSendMessage(AbstractMessage):
         self.channels = [{
             "id": channel.id,
             "name": channel.name,
+            "type": channel.type.value,
+            "category": channel.category,
             "position": channel.position
         } for channel in channels]
 

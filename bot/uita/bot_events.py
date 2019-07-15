@@ -38,7 +38,6 @@ async def on_ready():
 def _sync_channels(guild):
     voice_channels = [
         channel for channel in uita.state.servers[str(guild.id)].channels.values()
-        if channel.type is discord.ChannelType.voice
     ]
     uita.server.send_all(uita.message.ChannelListSendMessage(voice_channels), str(guild.id))
 
@@ -54,7 +53,7 @@ async def on_guild_channel_create(channel):
     if not uita.utils.verify_channel_visibility(channel, channel.guild.me):
         return
     discord_channel = uita.types.DiscordChannel(
-        channel.id, channel.name, channel.type, channel.position
+        channel.id, channel.name, channel.type, channel.category_id, channel.position
     )
     uita.state.channel_add(discord_channel, str(channel.guild.id))
     _sync_channels(channel.guild)
@@ -120,7 +119,7 @@ async def on_message(message):
 async def on_guild_join(guild):
     channels = {
         str(channel.id): uita.types.DiscordChannel(
-            channel.id, channel.name, channel.type, channel.position
+            channel.id, channel.name, channel.type, channel.category_id, channel.position
         )
         for channel in guild.channels
         if uita.utils.verify_channel_visibility(channel, guild.me)
@@ -173,7 +172,7 @@ async def on_guild_remove(guild):
 async def on_guild_update(before, after):
     channels = {
         str(channel.id): uita.types.DiscordChannel(
-            channel.id, channel.name, channel.type, channel.position
+            channel.id, channel.name, channel.type, channel.category_id, channel.position
         )
         for channel in after.channels
         if uita.utils.verify_channel_visibility(channel, after.me)
@@ -203,6 +202,7 @@ async def on_voice_state_update(member, before, after):
             after.channel.id,
             after.channel.name,
             after.channel.type,
+            after.channel.category_id,
             after.channel.position
         ) if after.channel is not None else None
         message = uita.message.ChannelActiveSendMessage(channel)

@@ -15,22 +15,47 @@
 
     h2 {
         margin: 0;
-        padding: 20px;
+        padding: 0;
+        padding-top: 20px;
 
-        font-family: $header-font;
-        font-size: 1.0em;
-        color: $font-faded-color;
+        button {
+            padding: 10px 15px;
+
+            font-family: $header-font;
+            font-size: 0.7em;
+            font-weight: bold;
+            color: $font-faded-color;
+
+            &:hover {
+                color: $font-color;
+            }
+
+            i {
+                width: 10px;
+                margin-right: 10px;
+
+                visibility: visible;
+
+                transform: rotate(90deg);
+            }
+        }
     }
 
     ul {
         margin: 0;
         padding: 0;
 
-        @include phone {
-            padding-top: 30px;
+        list-style-type: none;
+    }
+
+    div.Hidden {
+        h2 button i {
+            transform: rotate(0deg);
         }
 
-        list-style-type: none;
+        ul {
+            display: none;
+        }
     }
 
     button {
@@ -51,7 +76,7 @@
 
         i {
             width: 30px;
-            padding-right: 5px;
+            margin-right: 5px;
 
             text-align: center;
             font-size: 0.8em;
@@ -61,6 +86,8 @@
     }
 
     div.Disconnect {
+        margin-top: 15px;
+
         i {
             font-size: 0.9em;
 

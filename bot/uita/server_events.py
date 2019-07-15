@@ -1,6 +1,5 @@
 """Event triggers for web client to."""
 import asyncio
-import discord
 import os
 import uuid
 
@@ -43,7 +42,6 @@ async def channel_list_get(event):
     log.debug("channel list get")
     discord_channels = [
         channel for channel in event.active_server.channels.values()
-        if channel.type is discord.ChannelType.voice
     ]
     await event.socket.send(str(uita.message.ChannelListSendMessage(discord_channels)))
 

@@ -1,8 +1,19 @@
-// --- DiscordOauth.js ---------------------------------------------------------
-// Utility functions for interfacing with Discord OAuth API
+// --- DiscordApi.js -----------------------------------------------------------
+// Utility functions for interfacing with Discord API
 
 import Cookie from "js-cookie";
 import RandomString from "utils/RandomString";
+
+export var ChannelType = {
+    GUILD_TEXT: 0,
+    DM: 1,
+    GUILD_VOICE: 2,
+    GROUP_DM: 3,
+    GUILD_CATEGORY: 4,
+    GUILD_NEWS: 5,
+    GUILD_STORE: 6
+};
+Object.freeze(ChannelType);
 
 // Generates a "login" URL based on config.json and Discord requirements
 export function createOauthUrl(clientId, redirectUrl) {
