@@ -4,14 +4,14 @@
 import * as Config from "config";
 import TimestampFormat from "utils/TimestampFormat";
 
-var ResultType = {
+export var ResultType = {
     VIDEO: 1,
     LIVE: 2,
     PLAYLIST: 3
 };
 Object.freeze(ResultType);
 
-class Result {
+export class Result {
     constructor(id, thumbnail, title, type, duration) {
         this.id = id;
         this.thumbnail = thumbnail;
