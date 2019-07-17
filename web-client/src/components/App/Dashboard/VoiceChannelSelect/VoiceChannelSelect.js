@@ -68,9 +68,11 @@ export default class VoiceChannelSelect extends React.Component {
     render() {
         const categoryList = this.state.channels
             .filter(channel => {
+                // Make a list of category channels
                 return channel.type == DiscordApi.ChannelType.GUILD_CATEGORY;
             })
             .map(category => {
+                // Add accessible voice channels of each category into a sorted array
                 return Object.assign({
                     channels: this.state.channels
                         .filter(channel => {
@@ -85,12 +87,15 @@ export default class VoiceChannelSelect extends React.Component {
                 }, category);
             })
             .filter(category => {
+                // Hide categories that have no accessible voice channels
                 return category.channels.length > 0;
             })
             .sort((a, b) => {
+                // Sort to match Discord UI order
                 return a.position - b.position;
             })
             .map(category => {
+                // Generate JSX elements
                 const channelList = category.channels.map(channel => {
                     const activeClass = this.state.activeChannelId == channel.id ? "Active" : "";
                     return (
@@ -102,6 +107,7 @@ export default class VoiceChannelSelect extends React.Component {
                         </li>
                     );
                 });
+
                 const categoryClass = this.isCategoryHidden(category.id) ? "Hidden" : "";
                 return (
                     <div className={categoryClass} key={category.id}>
@@ -115,6 +121,7 @@ export default class VoiceChannelSelect extends React.Component {
                     </div>
                 );
             });
+
         return (
             <div className="VoiceChannelSelect">
                 {categoryList}
