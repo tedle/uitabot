@@ -195,7 +195,9 @@ class DropZone extends React.Component {
         }
         const status = (
             <div className="Status">
-                {statusIcon} {statusText} {this.state.progressIndex + 1}/{this.state.progress.length}
+                {statusIcon}{" "}
+                {statusText}{" "}
+                {this.state.progressIndex + 1}/{this.state.progress.length}
             </div>
         );
         const progress = Math.floor(file.progress * 100);
@@ -238,7 +240,7 @@ class DropZone extends React.Component {
             eventDispatcher.setMessageHandler("auth.succeed", async (m) => {
                 await this._uploadTask(socket, eventDispatcher);
             });
-            // There is a very rare chance that the server side credentials have expired and failed to renew
+            // In case server side credentials have expired and failed to renew
             eventDispatcher.setMessageHandler("auth.fail", m => {
                 this._isUploading = false;
                 this.props.onError("File upload authentication failed. Try refreshing.");
@@ -256,8 +258,11 @@ class DropZone extends React.Component {
             // Select the server to upload files to
             socket.send(new Message.ServerJoinMessage(this.props.discordServer.id).str());
             let index = -1;
+            const findNextQueuedIndex = () => {
+                return this.uploadQueue.findIndex(f => f.status == UploadStatus.QUEUED);
+            };
             // Recheck the queue after each upload in case new files are added
-            while ((index = this.uploadQueue.findIndex(f => f.status == UploadStatus.QUEUED)) != -1) {
+            while ((index = findNextQueuedIndex()) != -1) {
                 try {
                     if (socket.readyState != WebSocket.OPEN) {
                         throw new Error("Server disconnected");

@@ -21,6 +21,13 @@ export default class Dashboard extends React.Component {
     }
 
     render() {
+        const playlistClass =
+            "Dashboard-Playlist " +
+            this.state.activeTab=="playlist" ? "" : "hidden-xs";
+        const voiceChannelClass =
+            "Dashboard-VoiceChannel " +
+            this.state.activeTab=="voice" ? "" : "hidden-xs";
+
         return (
             <div className="Dashboard">
                 {/* Files dropped here are uploaded and queued */}
@@ -29,7 +36,7 @@ export default class Dashboard extends React.Component {
                     discordServer={this.props.discordServer}
                 >
                     <div className="Dashboard-Inner">
-                        <div className={`Dashboard-Playlist ${this.state.activeTab=="playlist" ? "" : "hidden-xs"}`}>
+                        <div className={playlistClass}>
                             {/* Searches for and queues audio */}
                             <SearchBox
                                 socket={this.props.socket}
@@ -41,7 +48,7 @@ export default class Dashboard extends React.Component {
                                 eventDispatcher={this.props.eventDispatcher}
                             />
                         </div>
-                        <div className={`Dashboard-VoiceChannel ${this.state.activeTab=="voice" ? "" : "hidden-xs"}`}>
+                        <div className={voiceChannelClass}>
                             {/* Controls which channel the bot plays music in */}
                             <VoiceChannelSelect
                                 socket={this.props.socket}
