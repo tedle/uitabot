@@ -7,7 +7,7 @@ import React from "react";
 import * as Config from "config";
 import * as Message from "utils/Message";
 import * as Session from "utils/Session";
-import * as DiscordOauth from "utils/DiscordApi";
+import * as DiscordApi from "utils/DiscordApi";
 import RandomString from "utils/RandomString";
 import Authenticate from "./Authenticate/Authenticate";
 import Dashboard from "./Dashboard/Dashboard";
@@ -115,7 +115,7 @@ export default class App extends React.Component {
     renderView() {
         // Display the login page if authentication has failed
         if (this.state.needLogin) {
-            const oauthUrl = DiscordOauth.createOauthUrl(Config.client_id, Config.client_url);
+            const oauthUrl = DiscordApi.createOauthUrl(Config.client_id, Config.client_url);
             return <Login url={oauthUrl}/>;
         }
 

@@ -5,7 +5,7 @@ import React from "react";
 import * as QueryString from "query-string";
 import * as Message from "utils/Message";
 import * as Session from "utils/Session";
-import * as DiscordOauth from "utils/DiscordApi";
+import * as DiscordApi from "utils/DiscordApi";
 import Loading from "components/App/Loading/Loading";
 
 export default class Authenticate extends React.Component {
@@ -25,7 +25,7 @@ export default class Authenticate extends React.Component {
             if ("code" in query && "state" in query) {
                 // When using OAuth we pass a state parameter along with the request to prevent CSRF
                 // and stuff. This is the part where we make sure Discord sent back what we sent it
-                if (!DiscordOauth.verifyState(query.state)) {
+                if (!DiscordApi.verifyState(query.state)) {
                     throw new Error("No state parameter with auth code");
                 }
 
