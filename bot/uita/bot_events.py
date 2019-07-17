@@ -71,7 +71,7 @@ async def on_guild_channel_delete(channel):
 async def on_guild_channel_update(before, after):
     verify_before = uita.utils.verify_channel_visibility(before, before.guild.me)
     verify_after = uita.utils.verify_channel_visibility(after, after.guild.me)
-    if not verify_before and verify_after:
+    if verify_after:
         await on_guild_channel_create(after)
     elif verify_before and not verify_after:
         await on_guild_channel_delete(after)
@@ -97,7 +97,7 @@ async def on_member_remove(member):
 async def on_member_update(before, after):
     verify_before = _verify_member(before)
     verify_after = _verify_member(after)
-    if not verify_before and verify_after:
+    if verify_after:
         await on_member_join(after)
     elif verify_before and not verify_after:
         await on_member_remove(after)
