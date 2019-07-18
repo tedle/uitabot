@@ -326,6 +326,13 @@ class Server():
         If an event raises an exception it is logged and the connection is closed.
 
         """
+        log.debug("[{}:{}] {} {} -> {}".format(
+            event.user.name,
+            event.user.id,
+            event.message.header,
+            event.message.__dict__,
+            "No server" if not event.active_server else event.active_server.name
+        ))
         if event.message.header in self._event_callbacks:
             async def wrapper():
                 try:
@@ -361,7 +368,11 @@ class Server():
             conn.user = user
             # Notify client that they authenticated successfully
             await websocket.send(str(uita.message.AuthSucceedMessage(user)))
-            log.info("{}({}) connected".format(user.name, websocket.remote_address[0]))
+            log.info("[{}:{}] connected ({})".format(
+                user.name,
+                user.id,
+                websocket.remote_address[0]
+            ))
             # Main loop, runs for the life of each connection
             while True:
                 # 90 second timeout to cull zombie connections, expects client heartbeats
@@ -400,7 +411,7 @@ class Server():
         finally:
             # Close and cleanup connection
             if conn.user is not None:
-                log.info("{} disconnected".format(conn.user.name))
+                log.info("[{}:{}] disconnected".format(conn.user.name, conn.user.id))
             del self.connections[websocket]
             await websocket.close()
             log.debug("Websocket closed")

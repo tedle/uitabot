@@ -8,14 +8,10 @@ import uita.message
 import uita.types
 import uita.utils
 
-import logging
-log = logging.getLogger(__name__)
-
 
 @uita.server.on_message("channel.active.get")
 async def channel_active_get(event):
     """Get the actively connected voice channel for a current server."""
-    log.debug("channel active get")
     voice = uita.state.voice_connections[event.active_server.id]
     await event.socket.send(str(uita.message.ChannelActiveSendMessage(voice.active_channel)))
 
@@ -23,7 +19,6 @@ async def channel_active_get(event):
 @uita.server.on_message("channel.join")
 async def channel_join(event):
     """Connect the bot to a given channel of the active server."""
-    log.debug("channel join {}".format(event.message.channel_id))
     voice = uita.state.voice_connections[event.active_server.id]
     await voice.connect(event.message.channel_id)
 
@@ -31,7 +26,6 @@ async def channel_join(event):
 @uita.server.on_message("channel.leave")
 async def channel_leave(event):
     """Disconnect the bot from the voice channel of the active server."""
-    log.debug("channel leave")
     voice = uita.state.voice_connections[event.active_server.id]
     await voice.disconnect()
 
@@ -39,7 +33,6 @@ async def channel_leave(event):
 @uita.server.on_message("channel.list.get")
 async def channel_list_get(event):
     """Provide a list of available voice channels to client."""
-    log.debug("channel list get")
     discord_channels = [
         channel for channel in event.active_server.channels.values()
     ]
@@ -49,7 +42,6 @@ async def channel_list_get(event):
 @uita.server.on_message("file.upload.start", block=True)
 async def file_upload_start(event):
     """Uploads a file to be queued."""
-    log.debug("file upload start {}B".format(event.message.size))
     # Check for queue space
     voice = uita.state.voice_connections[event.active_server.id]
     if voice.queue_full():
@@ -102,7 +94,6 @@ async def file_upload_start(event):
 @uita.server.on_message("server.join", require_active_server=False)
 async def server_join(event):
     """Connect a user to the web client interface for a given Discord server."""
-    log.debug("server join {}".format(event.message.server_id))
     # Check that user has access to this server
     if (
         event.message.server_id in uita.state.servers and
@@ -117,7 +108,6 @@ async def server_join(event):
 @uita.server.on_message("server.list.get", require_active_server=False)
 async def server_list_get(event):
     """Provide a list of all servers that the user and uitabot share membership in."""
-    log.debug("server list get")
     discord_servers = [
         uita.types.DiscordServer(
             discord_server.id, discord_server.name, {}, {}, discord_server.icon
@@ -131,7 +121,6 @@ async def server_list_get(event):
 @uita.server.on_message("play.queue.get")
 async def play_queue_get(event):
     """Requests the queued playlist for the active server."""
-    log.debug("play.queue.get")
     voice = uita.state.voice_connections[event.active_server.id]
     await event.socket.send(str(uita.message.PlayQueueSendMessage(voice.queue())))
 
@@ -139,7 +128,6 @@ async def play_queue_get(event):
 @uita.server.on_message("play.queue.move")
 async def play_queue_move(event):
     """Moves the supplied track to a new position in the play queue."""
-    log.debug("play.queue.move {}->{}".format(event.message.id, event.message.position))
     voice = uita.state.voice_connections[event.active_server.id]
     await voice.move(event.message.id, event.message.position)
 
@@ -147,7 +135,6 @@ async def play_queue_move(event):
 @uita.server.on_message("play.queue.remove")
 async def play_queue_remove(event):
     """Removes the supplied track from the play queue."""
-    log.debug("play.queue.remove {}".format(event.message.id))
     voice = uita.state.voice_connections[event.active_server.id]
     await voice.remove(event.message.id)
 
@@ -155,7 +142,6 @@ async def play_queue_remove(event):
 @uita.server.on_message("play.status.get")
 async def play_status_get(event):
     """Requests the current playback status from the active server."""
-    log.debug("play.status.get")
     voice = uita.state.voice_connections[event.active_server.id]
     await event.socket.send(str(uita.message.PlayStatusSendMessage(voice.status())))
 
@@ -163,6 +149,5 @@ async def play_status_get(event):
 @uita.server.on_message("play.url")
 async def play_url(event):
     """Queues the audio from a given URL."""
-    log.debug("play.url {}".format(event.message.url))
     voice = uita.state.voice_connections[event.active_server.id]
     await voice.enqueue_url(event.message.url, event.user)

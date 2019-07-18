@@ -231,8 +231,9 @@ class Queue():
                 tags.get("artist", "Unknown artist"),
                 tags.get("title", "Unknown title")
             )
-        log.info("[{}]Enqueue [Local]{}, {}s".format(
+        log.info("[{}:{}] Enqueue [Local]{}, {}s".format(
             user.name,
+            user.id,
             title,
             probe["format"]["duration"]
         ))
@@ -270,8 +271,9 @@ class Queue():
         if self.queue_full():
             raise uita.exceptions.ClientError(uita.message.ErrorQueueFullMessage())
         if info["extractor"] == "Youtube":
-            log.info("[{}]Enqueue [YouTube]{}({}) {}@{}abr, {}s".format(
+            log.info("[{}:{}] Enqueue [YouTube]{}({}) {}@{}abr, {}s".format(
                 user.name,
+                user.id,
                 info["title"],
                 info["id"],
                 info["acodec"],
@@ -383,8 +385,9 @@ class Queue():
                 with await self._queue_lock:
                     if self._voice is None and len(self._queue) > 0:
                         self._now_playing = self._queue.popleft()
-                        log.info("[{}]Now playing {}".format(
+                        log.info("[{}:{}] Now playing {}".format(
                             self._now_playing.user.name,
+                            self._now_playing.user.id,
                             self._now_playing.title
                         ))
                         # Launch ffmpeg process

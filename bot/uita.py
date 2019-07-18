@@ -15,9 +15,10 @@ def initialize_logging(level=logging.DEBUG):
 
     log = logging.getLogger("uita")
     log_handler = logging.StreamHandler(stream=sys.stdout)
-    log_handler.setFormatter(logging.Formatter("[%(asctime)s](%(name)s)%(message)s"))
+    log_handler.setFormatter(logging.Formatter("[%(asctime)s] %(message)s"))
     log.setLevel(level)
     log.addHandler(log_handler)
+    log.info("uitabot@{}".format(uita.__version__))
 
 
 if __name__ == "__main__":
