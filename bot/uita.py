@@ -1,11 +1,15 @@
-import asyncio
+try:
+    import asyncio
 
-import uita
-import uita.config
-import uita.utils
+    import uita
+    import uita.config
+    import uita.utils
 
-import logging
-import sys
+    import logging
+    import sys
+except KeyboardInterrupt:
+    import sys
+    sys.exit(0)
 
 
 def initialize_logging(level=logging.DEBUG):
