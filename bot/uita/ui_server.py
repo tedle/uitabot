@@ -177,16 +177,9 @@ class Server():
         log.info("Server listening on {}".format(uita.utils.build_websocket_url(self.config)))
 
     async def stop(self):
-        """Closes all active connections and destroys listen server.
-
-        Raises
-        ------
-        uita.exceptions.ServerError
-            If called while the server is not running.
-
-        """
+        """Closes all active connections and destroys listen server."""
         if self._server is None:
-            raise uita.exceptions.ServerError("Server.stop() called while not running")
+            return
         # Cancel active events first so they can access server internals before they are reset
         await self._cancel_active_events()
         self._server.close()
