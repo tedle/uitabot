@@ -319,13 +319,16 @@ class Server():
         If an event raises an exception it is logged and the connection is closed.
 
         """
-        log.debug("[{}:{}] {} {} -> {}".format(
-            event.user.name,
-            event.user.id,
-            event.message.header,
-            event.message.__dict__,
-            "No server" if not event.active_server else event.active_server.name
-        ))
+        # Log all events except heartbeats since they happen so often and aren't very useful
+        if event.message.header != "heartbeat":
+            log.debug("[{}:{}] {} {} -> {}".format(
+                event.user.name,
+                event.user.id,
+                event.message.header,
+                event.message.__dict__,
+                "No server" if not event.active_server else event.active_server.name
+            ))
+        # Process the event
         if event.message.header in self._event_callbacks:
             async def wrapper():
                 try:
