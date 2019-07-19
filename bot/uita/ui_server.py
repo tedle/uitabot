@@ -403,7 +403,7 @@ class Server():
         except uita.exceptions.MalformedMessage as error:
             log.debug("Websocket sent malformed message: {}".format(error))
         except Exception:
-            log.warning("Uncaught exception", exc_info=True)
+            log.error("Uncaught exception", exc_info=True)
         finally:
             # Close and cleanup connection
             if conn.user is not None:

@@ -507,7 +507,7 @@ class FfmpegStream(discord.AudioSource):
         try:
             return self._buffer.get(timeout=10)
         except queue.Empty:
-            log.warn("Audio process queue is not being produced")
+            log.warning("Audio process queue is not being produced")
             self.stop()
             # Empty read indicates completion
             return b""

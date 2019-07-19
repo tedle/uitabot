@@ -169,7 +169,7 @@ async def play(message, params):
             await response.edit(
                 content="{} Not feeling up to it, sorry!".format(_EMOJI["error"])
             )
-            log.warn("Uncaught exception in play {}".format(error.message.header))
+            log.error("Uncaught exception in play {}".format(error.message.header))
     except Exception:
         await response.edit(
             content="{} Not feeling up to it, sorry!".format(_EMOJI["error"])
@@ -309,7 +309,7 @@ async def search(message, params):
             await response.edit(
                 content="{} Not feeling up to it, sorry!".format(_EMOJI["error"])
             )
-            log.warn("Uncaught exception in play {}".format(error.message.header))
+            log.error("Uncaught exception in play {}".format(error.message.header))
     except Exception:
         await response.edit(
             content="{} Not feeling up to it, sorry!".format(_EMOJI["error"])
