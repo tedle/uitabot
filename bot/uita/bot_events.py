@@ -79,6 +79,25 @@ async def on_guild_channel_update(before, after):
 
 @uita.bot.event
 @bot_ready
+async def on_guild_role_create(role):
+    await on_guild_role_update(role, role)
+
+
+@uita.bot.event
+@bot_ready
+async def on_guild_role_delete(role):
+    await on_guild_role_update(role, role)
+
+
+@uita.bot.event
+@bot_ready
+async def on_guild_role_update(before, after):
+    # Potentially different channel permissions with changed roles
+    await on_guild_update(after.guild, after.guild)
+
+
+@uita.bot.event
+@bot_ready
 async def on_member_join(member):
     if _verify_member(member):
         uita.state.server_add_user(str(member.guild.id), str(member.id), member.name)
@@ -95,6 +114,10 @@ async def on_member_remove(member):
 @uita.bot.event
 @bot_ready
 async def on_member_update(before, after):
+    # Potentially different channel permissions with different roles
+    if after == after.guild.me:
+        await on_guild_update(after.guild, after.guild)
+
     verify_before = _verify_member(before)
     verify_after = _verify_member(after)
     if verify_after:
@@ -170,6 +193,8 @@ async def on_guild_remove(guild):
 @uita.bot.event
 @bot_ready
 async def on_guild_update(before, after):
+    # This is also called by other events that might affect channel visibility or user access
+    # Not efficient, kind of a scorched earth update, but have no large servers to test perf with
     channels = {
         str(channel.id): uita.types.DiscordChannel(
             channel.id, channel.name, channel.type, channel.category_id, channel.position
@@ -190,6 +215,8 @@ async def on_guild_update(before, after):
         after.icon
     )
     uita.state.server_add(discord_server, uita.bot.loop)
+    # In case any channel visibilities changed
+    _sync_channels(after)
     # Kick any displaced users
     await uita.server.verify_active_servers()
 
