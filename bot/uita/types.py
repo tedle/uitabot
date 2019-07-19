@@ -393,7 +393,11 @@ class DiscordVoiceClient():
 
         with await self._voice_lock:
             if self._voice is None:
-                self._voice = await channel.connect()
+                try:
+                    self._voice = await channel.connect()
+                except asyncio.CancelledError:
+                    log.warning("Failed to join channel {}({})".format(channel.name, channel.id))
+                    return
                 await self._playlist.play(self._voice)
             else:
                 await self._voice.move_to(channel)
@@ -403,7 +407,10 @@ class DiscordVoiceClient():
         with await self._voice_lock:
             if self._voice is not None:
                 await self._playlist.stop()
-                await self._voice.disconnect()
+                try:
+                    await self._voice.disconnect()
+                except asyncio.CancelledError:
+                    log.warning("Failed to disconnect from channel")
                 self._voice = None
 
     async def enqueue_file(self, path, user):
