@@ -92,12 +92,21 @@ async def parse(message):
         return
     # Separate message command and parameters by the first space and strip the prefix
     command, _, params = message.content[len(_COMMAND_PREFIX):].partition(" ")
-    if command in _COMMANDS:
-        await _COMMANDS[command](message, params)
-    else:
-        await message.channel.send((
-            "{} Unknown command. Try `{}help` for a list of commands."
-            ).format(_EMOJI["error"], _COMMAND_PREFIX)
+    try:
+        if command in _COMMANDS:
+            await _COMMANDS[command](message, params)
+        else:
+            await message.channel.send((
+                "{} Unknown command. Try `{}help` for a list of commands."
+                ).format(_EMOJI["error"], _COMMAND_PREFIX)
+            )
+    except discord.errors.Forbidden as e:
+        log.warn(
+            "Failure using Discord API in {}({}): {}".format(
+                message.guild.name,
+                message.guild.id,
+                e.text
+            )
         )
 
 
