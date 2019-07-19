@@ -31,7 +31,7 @@ if __name__ == "__main__":
         config = uita.config.load(uita.utils.config_file())
         initialize_logging(level=logging.INFO if not config.bot.verbose_logging else logging.DEBUG)
         uita.loop.create_task(uita.server.start(
-            ":memory:",
+            config.bot.database,
             config,
             origins=uita.utils.build_client_url(config),
             loop=uita.loop

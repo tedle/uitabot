@@ -12,6 +12,7 @@
     "bot": {
         "domain": "localhost",
         "port": 3189,
+        "database": "uita.db",
         "verbose_logging": false,
         "trial_mode": {
             "enabled": false,
