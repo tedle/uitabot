@@ -182,7 +182,7 @@ class DiscordState():
         server_id : str
             Server that can no longer be accessed.
         role_id : str
-            Role requirement.
+            ID of required role. Can be `None` for no requirement.
 
         """
         uita.server.database.set_server_role(server_id, role_id)

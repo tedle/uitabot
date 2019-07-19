@@ -86,6 +86,8 @@ async def on_guild_role_create(role):
 @uita.bot.event
 @bot_ready
 async def on_guild_role_delete(role):
+    if str(role.id) == uita.state.server_get_role(str(role.guild.id)):
+        uita.state.server_set_role(str(role.guild.id), None)
     await on_guild_role_update(role, role)
 
 
