@@ -416,7 +416,7 @@ class Queue():
         except asyncio.CancelledError:
             pass
         except Exception as e:
-            log.error("Unhandled exception: {}", e)
+            log.error("Unhandled exception: {}".format(e))
 
     async def _notify_queue_change(self, user=None):
         self._queue_update_flag.set()
