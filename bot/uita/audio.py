@@ -393,7 +393,7 @@ class Queue():
                         # Launch ffmpeg process
                         self._stream = FfmpegStream(
                             self._now_playing,
-                            discord.opus.Encoder
+                            voice.encoder
                         )
                         self._voice = voice
                         # Waits until ffmpeg has buffered audio before playing
