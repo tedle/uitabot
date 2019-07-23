@@ -370,13 +370,13 @@ class Queue():
     async def _after_song(self):
         with await self._queue_lock:
             self._now_playing = None
-            await self._change_status(Status.PAUSED)
+            self._change_status(Status.PAUSED)
             await self._notify_queue_change()
             self._end_stream()
 
-    async def _change_status(self, status):
+    def _change_status(self, status):
         self.status = status
-        await self._on_status_change(self.status)
+        self._on_status_change(self.status)
 
     async def _play_loop(self, voice):
         try:
@@ -411,7 +411,7 @@ class Queue():
                                 loop=self.loop
                             )
                         )
-                        await self._change_status(Status.PLAYING)
+                        self._change_status(Status.PLAYING)
                 await self._queue_update_flag.wait()
         except asyncio.CancelledError:
             pass

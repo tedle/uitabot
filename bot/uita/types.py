@@ -347,7 +347,7 @@ class DiscordVoiceClient():
             message = uita.message.PlayQueueSendMessage(queue)
             uita.server.send_all(message, self.server_id)
 
-        async def on_status_change(status):
+        def on_status_change(status):
             message = uita.message.PlayStatusSendMessage(status)
             uita.server.send_all(message, self.server_id)
 
