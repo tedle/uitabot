@@ -23,10 +23,10 @@ export default class Dashboard extends React.Component {
     render() {
         const playlistClass =
             "Dashboard-Playlist " +
-            this.state.activeTab=="playlist" ? "" : "hidden-xs";
+            (this.state.activeTab=="playlist" ? "" : "hidden-xs");
         const voiceChannelClass =
             "Dashboard-VoiceChannel " +
-            this.state.activeTab=="voice" ? "" : "hidden-xs";
+            (this.state.activeTab=="voice" ? "" : "hidden-xs");
 
         return (
             <div className="Dashboard">
