@@ -2,4 +2,5 @@ discord.py[voice]==1.2.2
 websockets==6.0
 youtube-dl==2019.7.30
 flake8==3.7.7
+mypy==0.720
 Sphinx==2.1.2

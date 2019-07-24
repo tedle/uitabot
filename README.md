@@ -4,7 +4,7 @@
 ## Requirements
 * [Discord API key](https://discordapp.com/developers)
 * [YouTube API key](https://developers.google.com/youtube/v3/)
-* Python 3.5
+* Python 3.6
 * npm
 * ffmpeg & ffprobe (version 4 or newer needed for some live streams)
 

@@ -6,6 +6,7 @@ cache/
 # python
 env/
 _build/
+.mypy_cache/
 *.pyc
 # npm
 node_modules/
