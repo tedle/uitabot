@@ -94,6 +94,12 @@ async def parse(message):
     command, _, params = message.content[len(_COMMAND_PREFIX):].partition(" ")
     try:
         if command in _COMMANDS:
+            log.debug("[{}:{}] {} -> {}".format(
+                message.author.name,
+                message.author.id,
+                message.content,
+                message.guild.name
+            ))
             await _COMMANDS[command](message, params)
         else:
             await message.channel.send((
