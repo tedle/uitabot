@@ -101,11 +101,6 @@ async def parse(message):
                 message.guild.name
             ))
             await _COMMANDS[command](message, params)
-        else:
-            await message.channel.send((
-                "{} Unknown command. Try `{}help` for a list of commands."
-                ).format(_EMOJI["error"], _COMMAND_PREFIX)
-            )
     except discord.errors.Forbidden as e:
         log.warn(
             "Failure using Discord API in {}({}): {}".format(
