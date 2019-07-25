@@ -30,7 +30,7 @@ Edit the new `config.json` file and fill in all the variables as needed. The SSL
 #### Backend
 ```
 cd bot
-python uita.py
+python uitabot.py
 ```
 #### Frontend (development)
 ```
