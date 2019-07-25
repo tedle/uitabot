@@ -12,10 +12,10 @@ from uita.types import DiscordState
 import asyncio
 
 # Use a bunch of globals because of decorator class methods
-loop = asyncio.get_event_loop()
-bot = Client(loop=loop)
-server = Server()
-state = DiscordState()
+loop: asyncio.AbstractEventLoop = asyncio.get_event_loop()
+bot: Client = Client(loop=loop)
+server: Server = Server()
+state: DiscordState = DiscordState()
 
 # Initialize bot and server decorators
 import uita.bot_events, uita.server_events  # noqa: E401,E402,F401

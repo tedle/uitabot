@@ -59,7 +59,7 @@ class AbstractMessage():
         Header defining message type
 
     """
-    header = None
+    header: str = ""
 
     def __str__(self):
         """Serializes self to JSON encoded message object for network transfer"""

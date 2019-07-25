@@ -37,7 +37,7 @@ async def dir_size(path, loop=None):
         return size
     with await dir_size.lock:
         return await loop.run_in_executor(None, lambda: walk(path))
-dir_size.lock = asyncio.Lock()
+dir_size.lock = asyncio.Lock()  # type: ignore
 
 
 def install_dir():
@@ -104,7 +104,7 @@ async def prune_cache_dir(whitelist=None, loop=None):
                     continue
                 os.remove(path)
     await loop.run_in_executor(None, lambda: prune(whitelist))
-prune_cache_dir.whitelist = set()  # noqa: E305
+prune_cache_dir.whitelist = set()  # type: ignore
 
 
 @contextlib.contextmanager
