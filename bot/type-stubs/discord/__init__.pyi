@@ -3,7 +3,9 @@ from typing import Awaitable, Callable, Optional
 import asyncio
 
 
-class AudioSource: ...
+class AudioSource:
+    ...
+
 
 class Client:
     def __init__(self, *, loop: Optional[asyncio.AbstractEventLoop] = ...): ...

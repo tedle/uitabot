@@ -4,7 +4,7 @@ exec 1>&2
 
 cd `git rev-parse --show-toplevel`
 
-(cd bot; python -m flake8 uitabot.py uita)
+(cd bot; python -m flake8 uitabot.py uita type-stubs)
 PYLINT_EXIT_CODE=$?
 (cd web-client; npm run --silent lint -- -f unix)
 JSLINT_EXIT_CODE=$?
