@@ -127,7 +127,7 @@ class Server():
             URI to database containing user authentication data.
         config : uita.config.Config
             Configuration options containing API keys.
-        origins : str, optional
+        origins : list(str), optional
             Refuses connections from clients with origin HTTP headers that do not match given
             value.
         loop : asyncio.AbstractEventLoop, optional

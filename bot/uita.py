@@ -33,7 +33,7 @@ if __name__ == "__main__":
         uita.loop.create_task(uita.server.start(
             config.bot.database,
             config,
-            origins=uita.utils.build_client_url(config),
+            origins=[uita.utils.build_client_url(config)],
             loop=uita.loop
         ))
         uita.loop.create_task(uita.bot.start(config.discord.token))
