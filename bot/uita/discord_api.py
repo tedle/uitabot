@@ -2,24 +2,30 @@
 import asyncio
 import re
 import requests
+from typing import cast, Any, Dict, Optional
+from typing_extensions import Final
 
 import uita
 import uita.exceptions
 
 
 # API config definitions
-BASE_HEADERS = {
+BASE_HEADERS: Final = {
     "Content-Type": "application/x-www-form-urlencoded",
     "User-Agent": "uitabot ({}, {})".format(uita.__url__, uita.__version__)
 }
-BASE_URL = "https://discordapp.com/api"
-AUTH_URL = BASE_URL + "/oauth2/token"
-API_URL = BASE_URL + "/v6"
-CDN_URL = "https://cdn.discordapp.com"
-VALID_CODE_REGEX = re.compile("^([a-zA-Z0-9]+)$")
+BASE_URL: Final = "https://discordapp.com/api"
+AUTH_URL: Final = BASE_URL + "/oauth2/token"
+API_URL: Final = BASE_URL + "/v6"
+CDN_URL: Final = "https://cdn.discordapp.com"
+VALID_CODE_REGEX: Final = re.compile("^([a-zA-Z0-9]+)$")
 
 
-async def auth(code, config, loop=None):
+async def auth(
+    code: str,
+    config: uita.config.Config,
+    loop: Optional[asyncio.AbstractEventLoop] = None
+) -> Dict[str, Any]:
     """Retrieves an access token from the Discord API with an authourization code.
 
     Parameters
@@ -70,10 +76,14 @@ async def auth(code, config, loop=None):
     )
     if response.status_code != 200:
         raise uita.exceptions.AuthenticationError("Passed an incorrect auth code")
-    return response.json()
+    return cast(Dict[str, Any], response.json())
 
 
-async def get(end_point, token, loop=None):
+async def get(
+    end_point: str,
+    token: str,
+    loop: Optional[asyncio.AbstractEventLoop] = None
+) -> Dict[str, Any]:
     """Retrieves an object from the Discord API with an authorization token.
 
     Parameters
@@ -109,10 +119,10 @@ async def get(end_point, token, loop=None):
     )
     if response.status_code != 200:
         raise uita.exceptions.AuthenticationError("Made an invalid Discord API request")
-    return response.json()
+    return cast(Dict[str, Any], response.json())
 
 
-def avatar_url(user):
+def avatar_url(user: Dict[str, Any]) -> str:
     """Generates an avatar CDN URL from a supplied API User GET response.
 
     Parameters

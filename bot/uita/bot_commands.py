@@ -1,6 +1,8 @@
 """Bot commands issued by Discord chat."""
 import asyncio
 import discord
+from typing import Any, Awaitable, Callable, Dict
+from typing_extensions import Final
 
 import uita.bot_events
 import uita.types
@@ -16,8 +18,8 @@ log = logging.getLogger(__name__)
 _COMMAND_PREFIX = "."
 _COMMANDS = {}
 _COMMAND_HELP = []
-_EMBED_COLOUR = 14721770
-_EMOJI = {
+_EMBED_COLOUR: Final = 14721770
+_EMOJI: Final[Dict[str, Any]] = {
     "ok": "\u2B55",
     "error": "\u274C",
     "loading": "\U0001F504",
@@ -32,7 +34,14 @@ _EMOJI = {
 }
 
 
-def command(*args, **kwargs):
+CommandCallbackType = Callable[[discord.Message, str], Awaitable[None]]
+
+
+def command(
+    *args: str,
+    help: str = "No description",
+    require_administrator: bool = False
+) -> Callable[[CommandCallbackType], CommandCallbackType]:
     """Decorator to bind bot commands to a given function.
 
     Callback function should accept a `discord.Message` and `str` as its parameters.
@@ -43,13 +52,15 @@ def command(*args, **kwargs):
         List of commands to be bound to this function.
     help : str, optional
         Descriptive message provided when help command is called.
+    require_administrator : bool, optional
+        Require administrator privileges to use command.
 
     """
-    def decorator(function):
-        async def wrapper(message, params):
+    def decorator(function: CommandCallbackType) -> CommandCallbackType:
+        async def wrapper(message: discord.Message, params: str) -> None:
             # Check if command requires admin privileges
             if (
-                kwargs.get("require_administrator", False) and
+                require_administrator and
                 not message.author.guild_permissions.administrator
             ):
                 await message.channel.send(
@@ -68,12 +79,12 @@ def command(*args, **kwargs):
 
         for arg in args:
             _COMMANDS[arg] = wrapper
-        _COMMAND_HELP.append((args, kwargs.get("help", "No description")))
+        _COMMAND_HELP.append((args, help))
         return wrapper
     return decorator
 
 
-async def parse(message):
+async def parse(message: discord.Message) -> None:
     """Parses a message for commands and dispatches to a matching callback.
 
     Sends an error message to the corresponding Discord channel if command does not exist.
@@ -111,7 +122,7 @@ async def parse(message):
         )
 
 
-async def set_prefix(prefix):
+async def set_prefix(prefix: str) -> None:
     """Sets the prefix used to trigger bot commands. Updates client presence to show help command.
 
     Parameters
@@ -131,7 +142,7 @@ async def set_prefix(prefix):
 
 
 @command("help", "?", help="Shows this potentially useful message")
-async def help(message, params):
+async def help(message: discord.Message, params: str) -> None:
     help_message = discord.Embed(
         title="Help info",
         description=(
@@ -151,13 +162,13 @@ async def help(message, params):
 
 
 @command("play", "p", help="Enqueues a provided `<URL>`")
-async def play(message, params):
+async def play(message: discord.Message, params: str) -> None:
     voice = uita.state.voice_connections[str(message.guild.id)]
     user = uita.types.DiscordUser(
-        message.author.id,
+        str(message.author.id),
         message.author.name,
         str(message.author.avatar_url),
-        message.guild.id
+        str(message.guild.id)
     )
     response = await message.channel.send("{} Processing...".format(_EMOJI["loading"]))
     try:
@@ -187,7 +198,7 @@ async def play(message, params):
 
 
 @command("search", "s", help="Searches YouTube for a provided `<QUERY>`")
-async def search(message, params):
+async def search(message: discord.Message, params: str) -> None:
     response = await message.channel.send("{} Searching...".format(_EMOJI["loading"]))
     try:
         # Scrape YouTube for search result
@@ -229,7 +240,7 @@ async def search(message, params):
         )
 
         # Build a responsive UI out of emoji reactions
-        async def add_reactions():
+        async def add_reactions() -> None:
             for i in range(results_found):
                 emoji = _EMOJI["numbers"][i+1]
                 await response.add_reaction(emoji)
@@ -238,7 +249,7 @@ async def search(message, params):
         uita.bot.loop.create_task(add_reactions())
 
         # Wait for the user to make a choice
-        def reaction_predicate(reaction, user):
+        def reaction_predicate(reaction: discord.Reaction, user: discord.Member) -> bool:
             valid_emoji = [_EMOJI["numbers"][i+1] for i in range(results_found)]
             return (
                 reaction.message.id == response.id
@@ -248,7 +259,7 @@ async def search(message, params):
         try:
             reaction, _ = await uita.bot.wait_for(
                 "reaction_add",
-                timeout=30,
+                timeout=30.0,
                 check=reaction_predicate
             )
         except asyncio.TimeoutError:
@@ -270,10 +281,10 @@ async def search(message, params):
         # Load it up...
         voice = uita.state.voice_connections[str(message.guild.id)]
         user = uita.types.DiscordUser(
-            message.author.id,
+            str(message.author.id),
             message.author.name,
             str(message.author.avatar_url),
-            message.guild.id
+            str(message.guild.id)
         )
         await voice.enqueue_url(song["url"], user)
         # Build an embedded (nice looking) message that describes the song
@@ -326,7 +337,7 @@ async def search(message, params):
 
 
 @command("skip", help="Skips the currently playing song")
-async def skip(message, params):
+async def skip(message: discord.Message, params: str) -> None:
     voice = uita.state.voice_connections[str(message.guild.id)]
     queue = voice.queue()
     if len(queue) > 0:
@@ -337,7 +348,7 @@ async def skip(message, params):
 
 
 @command("clear", help="Empties the playback queue")
-async def clear(message, params):
+async def clear(message: discord.Message, params: str) -> None:
     voice = uita.state.voice_connections[str(message.guild.id)]
     # Start from the back so we don't have to await currently playing songs
     for track in reversed(voice.queue()):
@@ -346,11 +357,11 @@ async def clear(message, params):
 
 
 @command("join", "j", help="Joins your voice channel")
-async def join(message, params):
+async def join(message: discord.Message, params: str) -> None:
     message_voice = message.author.voice
     if message_voice is not None:
         bot_voice = uita.state.voice_connections[str(message.guild.id)]
-        await bot_voice.connect(message_voice.channel.id)
+        await bot_voice.connect(str(message_voice.channel.id))
     else:
         await message.channel.send(
             "{} You aren't in a voice channel (that I can see)".format(_EMOJI["error"])
@@ -358,7 +369,7 @@ async def join(message, params):
 
 
 @command("leave", "l", help="Leaves the voice channel")
-async def leave(message, params):
+async def leave(message: discord.Message, params: str) -> None:
     voice = uita.state.voice_connections[str(message.guild.id)]
     await voice.disconnect()
 
@@ -368,7 +379,7 @@ async def leave(message, params):
     help="Set a `<ROLE>` needed to use bot commands. Leave empty for free access",
     require_administrator=True
 )
-async def set_role(message, params):
+async def set_role(message: discord.Message, params: str) -> None:
     role = None
     if len(message.role_mentions) > 0:
         role = str(message.role_mentions[0].id)

@@ -24,7 +24,7 @@ class ClientError(Exception):
         If initialized with a type other than uita.message.AbstractMessage
 
     """
-    def __init__(self, message):
+    def __init__(self, message: uita.message.AbstractMessage) -> None:
         if not isinstance(message, uita.message.AbstractMessage):
             raise TypeError(
                 "uita.exceptions.ClientError must be initialized with uita.message.AbstractMessage"
@@ -35,6 +35,11 @@ class ClientError(Exception):
 
 class AuthenticationError(Exception):
     """Occurs when a `uita.types.DiscordUser` resource is accessed without proper credentials."""
+    pass
+
+
+class MalformedConfig(Exception):
+    """Occurs when a config file is malformed."""
     pass
 
 

@@ -4,6 +4,8 @@ import re
 import requests
 import urllib.parse
 import youtube_dl
+from typing import Any, Dict, List, Optional
+from typing_extensions import Final
 
 import uita.exceptions
 
@@ -12,14 +14,14 @@ log = logging.getLogger(__name__)
 
 
 # API config definitions
-BASE_HEADERS = {
+BASE_HEADERS: Final = {
     "Content-Type": "application/x-www-form-urlencoded",
     "User-Agent": "uitabot ({}, {})".format(uita.__url__, uita.__version__)
 }
-API_URL = "https://www.googleapis.com/youtube/v3"
+API_URL: Final = "https://www.googleapis.com/youtube/v3"
 
 
-async def scrape(url, loop=None):
+async def scrape(url: str, loop: Optional[asyncio.AbstractEventLoop] = None) -> Dict[str, Any]:
     """Queries YouTube for URL metadata.
 
     Parameters
@@ -71,7 +73,13 @@ async def scrape(url, loop=None):
     raise uita.exceptions.ClientError(uita.message.ErrorUrlInvalidMessage())
 
 
-async def search(query, api_key=None, referrer=None, results=5, loop=None):
+async def search(
+    query: str,
+    api_key: Optional[str] = None,
+    referrer: Optional[str] = None,
+    results: int = 5,
+    loop: Optional[asyncio.AbstractEventLoop] = None
+) -> List[Dict[str, Any]]:
     """Queries YouTube for search results.
 
     Parameters
@@ -150,7 +158,7 @@ async def search(query, api_key=None, referrer=None, results=5, loop=None):
     } for r in search_results]
 
 
-def parse_time(time):
+def parse_time(time: str) -> int:
     """Converts a YouTube timestamp into seconds.
 
     Parameters
@@ -178,7 +186,7 @@ def parse_time(time):
     return duration
 
 
-def build_url(video_id):
+def build_url(video_id: str) -> str:
     """Converts a YouTube video ID into a valid URL.
 
     Parameters
@@ -195,7 +203,11 @@ def build_url(video_id):
     return "https://youtube.com/watch?v={}".format(video_id)
 
 
-async def _search_slow(query, results, loop):
+async def _search_slow(
+    query: str,
+    results: int,
+    loop: asyncio.AbstractEventLoop
+) -> List[Dict[str, Any]]:
     null_log = logging.Logger("dummy")
     null_log.addHandler(logging.NullHandler())
 

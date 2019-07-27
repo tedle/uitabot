@@ -1,12 +1,18 @@
 """Utility functions."""
 import asyncio
 import contextlib
-import discord.utils
+import discord
 import os
 import sys
+from typing import Iterator, List, Optional
+
+import uita.config
 
 
-async def dir_size(path, loop=None):
+async def dir_size(
+    path: str,
+    loop: Optional[asyncio.AbstractEventLoop] = None
+) -> int:
     """Gets the total size of a directory.
 
     Runs in a separate thread and uses a blocking mutex to ensure only one instance of this
@@ -16,7 +22,7 @@ async def dir_size(path, loop=None):
 
     Parameters
     ----------
-    path : os.PathLike
+    path : str
         Path to directory to be sized up.
     loop : asyncio.AbstractEventLoop, optional
         Event loop to attach listen server to, defaults to ``asyncio.get_event_loop()``.
@@ -29,35 +35,35 @@ async def dir_size(path, loop=None):
     """
     loop = loop or asyncio.get_event_loop()
 
-    def walk(path):
+    def walk(path: str) -> int:
         size = 0
         for directory, _, files in os.walk(path):
             for f in files:
                 size += os.path.getsize(os.path.join(directory, f))
         return size
-    with await dir_size.lock:
+    with await dir_size.lock:  # type: ignore
         return await loop.run_in_executor(None, lambda: walk(path))
 dir_size.lock = asyncio.Lock()  # type: ignore
 
 
-def install_dir():
+def install_dir() -> str:
     """Gets the absolute path to the script being run.
 
     Returns
     -------
-    os.PathLike
+    str
         Path to running script.
 
     """
     return os.path.abspath(os.path.dirname(sys.argv[0]))
 
 
-def cache_dir():
+def cache_dir() -> str:
     """Gets the absolute path to the file cache directory.
 
     Returns
     -------
-    os.PathLike
+    str
         Path to cache directory.
 
     """
@@ -69,12 +75,12 @@ def cache_dir():
     return cache
 
 
-def config_file():
+def config_file() -> str:
     """Gets the absolute path to the config file.
 
     Returns
     -------
-    os.PathLike
+    str
         Path to config file.
 
     """
@@ -82,55 +88,64 @@ def config_file():
     return config
 
 
-async def prune_cache_dir(whitelist=None, loop=None):
+async def prune_cache_dir(
+    whitelist: Optional[List[str]] = None,
+    loop: Optional[asyncio.AbstractEventLoop] = None
+) -> None:
     """Prunes the cache directory of unused files.
 
     Parameters
     ----------
-    whitelist : list(os.PathLike), optional
+    whitelist : list(str), optional
         List of absolute paths to exempt from pruning.
     loop : asyncio.AbstractEventLoop, optional
         Event loop to attach listen server to, defaults to ``asyncio.get_event_loop()``.
 
     """
-    whitelist = (whitelist or list()) + list(prune_cache_dir.whitelist)
+    safe_whitelist: List[str] = (whitelist or list())
+    safe_whitelist += list(prune_cache_dir.whitelist)  # type: ignore
     loop = loop or asyncio.get_event_loop()
 
-    def prune(exemptions):
+    def prune() -> None:
         for directory, _, files in os.walk(cache_dir()):
             for f in files:
                 path = os.path.join(directory, f)
-                if path in exemptions:
+                if path in safe_whitelist:
                     continue
                 os.remove(path)
-    await loop.run_in_executor(None, lambda: prune(whitelist))
+    await loop.run_in_executor(None, prune)
 prune_cache_dir.whitelist = set()  # type: ignore
 
 
 @contextlib.contextmanager
-def prune_cache_guard(path):
+def prune_cache_guard(path: str) -> Iterator[None]:
     """Scoped `with` context function for protecting a path from `uita.utils.prune_cache_dir`
 
     Parameters
     ----------
-    path : os.PathLike
+    path : str
         Absolute path to be exempted from pruning.
 
     """
     try:
-        prune_cache_dir.whitelist.add(path)
+        prune_cache_dir.whitelist.add(path)  # type: ignore
         yield
     finally:
-        prune_cache_dir.whitelist.discard(path)
+        prune_cache_dir.whitelist.discard(path)  # type: ignore
 
 
-def build_client_url(config):
+def build_client_url(config: uita.config.Config) -> str:
     """Generates the web client URL from the config file settings.
 
     Parameters
     ----------
     config : uita.config.Config
         Configuration settings.
+
+    Returns
+    -------
+    str
+        Web client URL.
 
     """
     return "http{}://{}{}".format(
@@ -140,13 +155,18 @@ def build_client_url(config):
     )
 
 
-def build_websocket_url(config):
+def build_websocket_url(config: uita.config.Config) -> str:
     """Generates the websocket URL from the config file settings.
 
     Parameters
     ----------
     config : uita.config.Config
         Configuration settings.
+
+    Returns
+    -------
+    str
+        Websocket URL that client is expected to connect to.
 
     """
     return "ws{}://{}{}".format(
@@ -156,7 +176,7 @@ def build_websocket_url(config):
     )
 
 
-def verify_channel_visibility(channel, user):
+def verify_channel_visibility(channel: discord.abc.GuildChannel, user: discord.Member) -> bool:
     """Checks whether a user can see a channel.
 
     The Discord API provides a full list of channels including ones normally invisible to the
@@ -164,7 +184,7 @@ def verify_channel_visibility(channel, user):
 
     Parameters
     ----------
-    channel : discord.Channel
+    channel : discord.abc.GuildChannel
         discord.py channel.
     user : discord.Member
         discord.py server member.
@@ -183,7 +203,7 @@ def verify_channel_visibility(channel, user):
     return permissions.read_messages
 
 
-def verify_user_permissions(user, role):
+def verify_user_permissions(user: discord.Member, role: Optional[str]) -> bool:
     """Checks whether a user has sufficient role permissions.
 
     Parameters
@@ -191,7 +211,7 @@ def verify_user_permissions(user, role):
     user : discord.Member
         discord.py server member.
     role : str
-        ID of role to verify against.
+        ID of role to verify against. `None` to allow any role.
 
     Returns
     -------

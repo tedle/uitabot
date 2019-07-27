@@ -1,6 +1,7 @@
 """Defines various container and running state types for the Discord API."""
 import asyncio
 import discord
+from typing import Dict, List, Optional
 
 import uita.audio
 import uita.utils
@@ -20,11 +21,11 @@ class DiscordState():
         Dict of voice channels bot is connected to indexed by server ID.
 
     """
-    def __init__(self):
-        self.servers = {}
-        self.voice_connections = {}
+    def __init__(self) -> None:
+        self.servers: Dict[str, DiscordServer] = {}
+        self.voice_connections: Dict[str, DiscordVoiceClient] = {}
 
-    def __str__(self):
+    def __str__(self) -> str:
         dump_str = "DiscordState() {}:\n".format(hash(self))
         for key, server in self.servers.items():
             dump_str += "server {}: {}\n".format(server.id, server.name)
@@ -34,7 +35,7 @@ class DiscordState():
                 dump_str += "\tuser {}: {}\n".format(user_id, user_name)
         return dump_str
 
-    def initialize_from_bot(self, bot):
+    def initialize_from_bot(self, bot: discord.Client) -> None:
         """Initialize Discord state from a `discord.Client`
 
         Parameters
@@ -47,7 +48,11 @@ class DiscordState():
         for server in bot.guilds:
             discord_channels = {
                 str(channel.id): DiscordChannel(
-                    channel.id, channel.name, channel.type, channel.category_id, channel.position
+                    str(channel.id),
+                    channel.name,
+                    channel.type,
+                    str(channel.category_id) if channel.category_id else None,
+                    channel.position
                 )
                 for channel in server.channels
                 if uita.utils.verify_channel_visibility(channel, server.me)
@@ -59,15 +64,15 @@ class DiscordState():
                 if uita.utils.verify_user_permissions(user, role)
             }
             self.servers[str(server.id)] = DiscordServer(
-                server.id,
+                str(server.id),
                 server.name,
                 discord_channels,
                 discord_users,
                 server.icon
             )
-            self.voice_connections[str(server.id)] = DiscordVoiceClient(server.id, bot.loop)
+            self.voice_connections[str(server.id)] = DiscordVoiceClient(str(server.id), bot.loop)
 
-    def channel_add(self, channel, server_id):
+    def channel_add(self, channel: "DiscordChannel", server_id: str) -> None:
         """Add a server channel to Discord state.
 
         Parameters
@@ -81,7 +86,7 @@ class DiscordState():
         log.debug("channel_add {}".format(channel.id))
         self.servers[server_id].channels[channel.id] = channel
 
-    def channel_remove(self, channel_id, server_id):
+    def channel_remove(self, channel_id: str, server_id: str) -> None:
         """Remove a server channel from Discord state.
 
         Parameters
@@ -95,7 +100,7 @@ class DiscordState():
         log.debug("channel_remove {}".format(channel_id))
         del self.servers[server_id].channels[channel_id]
 
-    def server_add(self, server, bot):
+    def server_add(self, server: "DiscordServer", bot: discord.Client) -> None:
         """Add an accessible server to Discord state.
 
         Parameters
@@ -112,7 +117,7 @@ class DiscordState():
         if server.id not in self.voice_connections:
             self.voice_connections[server.id] = DiscordVoiceClient(server.id, bot.loop)
 
-    def server_remove(self, server_id):
+    def server_remove(self, server_id: str) -> None:
         """Remove an accessible server from Discord state.
 
         Parameters
@@ -125,7 +130,7 @@ class DiscordState():
         del self.servers[server_id]
         del self.voice_connections[server_id]
 
-    def server_add_user(self, server_id, user_id, user_name):
+    def server_add_user(self, server_id: str, user_id: str, user_name: str) -> None:
         """Add an accessible server for a user.
 
         Parameters
@@ -140,7 +145,7 @@ class DiscordState():
         """
         self.servers[server_id].users[user_id] = user_name
 
-    def server_remove_user(self, server_id, user_id):
+    def server_remove_user(self, server_id: str, user_id: str) -> None:
         """Remove an inaccessible server for a user.
 
         Parameters
@@ -153,7 +158,7 @@ class DiscordState():
         """
         del self.servers[server_id].users[user_id]
 
-    def server_get_role(self, server_id):
+    def server_get_role(self, server_id: str) -> Optional[str]:
         """Get the role required to use bot commands.
 
         Parameters
@@ -174,7 +179,7 @@ class DiscordState():
         # Get database value if server is not stored in state yet (like in on_guild_join)
         return uita.server.database.get_server_role(server_id)
 
-    def server_set_role(self, server_id, role_id):
+    def server_set_role(self, server_id: str, role_id: Optional[str]) -> None:
         """Set a role required to use bot commands. `None` for free access.
 
         Parameters
@@ -220,11 +225,18 @@ class DiscordChannel():
         Ordered position in channel list.
 
     """
-    def __init__(self, id, name, type, category, position):
-        self.id = str(id)
+    def __init__(
+        self,
+        id: str,
+        name: str,
+        type: discord.ChannelType,
+        category: Optional[str],
+        position: int
+    ) -> None:
+        self.id = id
         self.name = name
         self.type = type
-        self.category = str(category) if category else None
+        self.category = category
         self.position = position
 
 
@@ -255,18 +267,24 @@ class DiscordServer():
     users : dict(user_id: user_name)
         Dictionary of users in server with access to bot commands.
     icon : str
-        Server icon hash.
+        Server icon hash. `None` if no custom icon exists.
     role : str
         Role ID needed to use bot commands. Set to `None` for unrestricted access.
 
     """
-    def __init__(self, id, name, channels, users, icon):
-        self.id = str(id)
+    def __init__(
+        self, id: str,
+        name: str,
+        channels: Dict[str, DiscordChannel],
+        users: Dict[str, str],
+        icon: Optional[str]
+    ) -> None:
+        self.id = id
         self.name = name
-        self.channels = {str(c.id): c for _, c in channels.items()}
-        self.users = {str(uid): uname for uid, uname in users.items()}
+        self.channels = channels
+        self.users = users
         self.icon = icon
-        self.role = uita.server.database.get_server_role(self.id)
+        self.role: Optional[str] = uita.server.database.get_server_role(self.id)
 
 
 class DiscordUser():
@@ -292,16 +310,22 @@ class DiscordUser():
     avatar : str
         URL to user avatar.
     active_server_id : str
-        Discord server that user has joined. None if user has not joined a server yet.
+        Discord server that user has joined. `None` if user has not joined a server yet.
 
     """
-    def __init__(self, id, name, avatar, active_server_id):
-        self.id = str(id)
+    def __init__(
+        self,
+        id: str,
+        name: str,
+        avatar: str,
+        active_server_id: Optional[str]
+    ) -> None:
+        self.id = id
         self.name = name
         # Hack for discord.py forcing WebP extensions even though it has terrible browser support
         # This also replaces animated GIFs with static PNGs, but thats for the best
         self.avatar = avatar.rpartition(".")[0] + ".png"
-        self.active_server_id = str(active_server_id) if active_server_id else None
+        self.active_server_id = active_server_id
 
 
 class DiscordVoiceClient():
@@ -322,17 +346,21 @@ class DiscordVoiceClient():
         Event loop for audio tasks to run in.
 
     """
-    def __init__(self, server_id, loop=None):
-        self.server_id = str(server_id)
+    def __init__(self, server_id: str, loop: Optional[asyncio.AbstractEventLoop] = None) -> None:
+        self.server_id = server_id
         self.loop = loop or asyncio.get_event_loop()
 
-        async def on_queue_change(queue, user=None):
+        async def on_queue_change(
+            queue: List[uita.audio.Track],
+            user: Optional[DiscordUser] = None
+        ) -> None:
             # If the queue is changed and the bot is not connected to a voice channel, find the
             # voice channel of the user who most recently changed the queue and join it.
             # User is None for queue change callbacks that should not cause the bot to join a
             # channel, such as queue re-ordering and removal
             if self._voice is None and user is not None and len(queue) > 0:
-                discord_user = uita.bot.get_guild(int(self.server_id)).get_member(int(user.id))
+                discord_server = uita.bot.get_guild(int(self.server_id))
+                discord_user = discord_server.get_member(int(user.id)) if discord_server else None
                 if discord_user is not None and discord_user.voice is not None:
                     channel = discord_user.voice.channel
                     if channel is not None:
@@ -342,7 +370,7 @@ class DiscordVoiceClient():
             message = uita.message.PlayQueueSendMessage(queue)
             uita.server.send_all(message, self.server_id)
 
-        def on_status_change(status):
+        def on_status_change(status: uita.audio.Status) -> None:
             message = uita.message.PlayStatusSendMessage(status)
             uita.server.send_all(message, self.server_id)
 
@@ -353,23 +381,23 @@ class DiscordVoiceClient():
             loop=self.loop
         )
 
-        self._voice = None
+        self._voice: Optional[discord.VoiceClient] = None
         self._voice_lock = asyncio.Lock(loop=self.loop)
 
     @property
-    def active_channel(self):
+    def active_channel(self) -> Optional[DiscordChannel]:
         if self._voice is not None and self._voice.is_connected():
             channel = self._voice.channel
             return DiscordChannel(
-                channel.id,
+                str(channel.id),
                 channel.name,
                 channel.type,
-                channel.category_id,
+                str(channel.category_id),
                 channel.position
             )
         return None
 
-    async def connect(self, channel_id):
+    async def connect(self, channel_id: str) -> None:
         """Connect bot to a voice a voice channel in this server.
 
         Parameters
@@ -378,10 +406,11 @@ class DiscordVoiceClient():
             ID of channel to connect to.
 
         """
-        channel = uita.bot.get_guild(int(self.server_id)).get_channel(int(channel_id))
+        server = uita.bot.get_guild(int(self.server_id))
+        channel = server.get_channel(int(channel_id)) if server else None
         if (
             channel is None or
-            channel.type is not discord.ChannelType.voice or
+            not isinstance(channel, discord.VoiceChannel) or
             not uita.utils.verify_channel_visibility(channel, channel.guild.me)
         ):
             raise uita.exceptions.MalformedMessage("Tried to join invalid channel")
@@ -397,7 +426,7 @@ class DiscordVoiceClient():
             else:
                 await self._voice.move_to(channel)
 
-    async def disconnect(self):
+    async def disconnect(self) -> None:
         """Disconnect bot from the voice channels in this server."""
         with await self._voice_lock:
             if self._voice is not None:
@@ -408,12 +437,12 @@ class DiscordVoiceClient():
                     log.warning("Failed to disconnect from channel")
                 self._voice = None
 
-    async def enqueue_file(self, path, user):
+    async def enqueue_file(self, path: str, user: DiscordUser) -> None:
         """Queues a file to be played by the running playlist task.
 
         Parameters
         ----------
-        path : os.PathLike
+        path : str
             Path to audio resource to be played.
         user : uita.types.DiscordUser
             User that requested track.
@@ -426,7 +455,7 @@ class DiscordVoiceClient():
         """
         await self._playlist.enqueue_file(path, user)
 
-    async def enqueue_url(self, url, user):
+    async def enqueue_url(self, url: str, user: DiscordUser) -> None:
         """Queues a URL to be played by the running playlist task.
 
         Parameters
@@ -444,7 +473,7 @@ class DiscordVoiceClient():
         """
         await self._playlist.enqueue_url(url, user)
 
-    def queue(self):
+    def queue(self) -> List[uita.audio.Track]:
         """Retrieves a list of currently queued audio resources for this connection.
 
         Returns
@@ -455,7 +484,7 @@ class DiscordVoiceClient():
         """
         return self._playlist.queue()
 
-    def queue_full(self):
+    def queue_full(self) -> bool:
         """Tests if the queue is at capacity.
 
         Returns
@@ -466,7 +495,7 @@ class DiscordVoiceClient():
         """
         return self._playlist.queue_full()
 
-    def status(self):
+    def status(self) -> uita.audio.Status:
         """Returns the current playback status.
 
         Returns
@@ -477,7 +506,7 @@ class DiscordVoiceClient():
         """
         return self._playlist.status
 
-    async def move(self, track_id, position):
+    async def move(self, track_id: str, position: int) -> None:
         """Moves a track to a new position in the playback queue.
 
         Parameters
@@ -490,7 +519,7 @@ class DiscordVoiceClient():
         """
         await self._playlist.move(track_id, position)
 
-    async def remove(self, track_id):
+    async def remove(self, track_id: str) -> None:
         """Removes a track from the playback queue.
 
         Parameters

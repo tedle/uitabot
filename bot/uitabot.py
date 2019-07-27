@@ -1,23 +1,24 @@
 try:
     import asyncio
+    import sys
+    import websockets
 
     import uita
     import uita.config
     import uita.utils
 
     import logging
-    import sys
+    log = logging.getLogger("uita")
 except KeyboardInterrupt:
     import sys
     sys.exit(0)
 
 
-def initialize_logging(level=logging.DEBUG):
+def initialize_logging(level: int = logging.DEBUG) -> None:
     # Websockets uses the logging.lastResort handler which by default prints
     # all of its uncatchable and unpreventable exception warnings to stderr
     logging.getLogger("websockets").addHandler(logging.NullHandler())
 
-    log = logging.getLogger("uita")
     log_handler = logging.StreamHandler(stream=sys.stdout)
     log_handler.setFormatter(logging.Formatter("[%(asctime)s] %(message)s"))
     log.setLevel(level)
@@ -33,7 +34,7 @@ if __name__ == "__main__":
         uita.loop.create_task(uita.server.start(
             config.bot.database,
             config,
-            origins=[uita.utils.build_client_url(config)],
+            origins=[websockets.Origin(uita.utils.build_client_url(config))],
             loop=uita.loop
         ))
         uita.loop.create_task(uita.bot.start(config.discord.token))
@@ -41,6 +42,8 @@ if __name__ == "__main__":
         uita.loop.run_forever()
     except KeyboardInterrupt:
         pass
+    except uita.exceptions.MalformedConfig:
+        log.fatal("Expected config structure did not match {}".format(uita.utils.config_file()))
     finally:
         # Stop running services
         uita.loop.run_until_complete(uita.server.stop())

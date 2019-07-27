@@ -3,8 +3,12 @@
 import asyncio
 import ssl
 import websockets
+from typing import (
+    Any, Awaitable, Callable, Coroutine, Dict, Generic, List, Optional, Set, Tuple, Type, TypeVar
+)
 
 import uita.auth
+import uita.config
 import uita.database
 import uita.exceptions
 import uita.message
@@ -21,24 +25,31 @@ class Connection():
     Parameters
     ----------
     user : uita.types.DiscordUser
-        User connected to server.
-    socket : websockets.WebSocketCommonProtocol
+        User connected to server. Can be `None` while connection is unauthenticated.
+    socket : websockets.WebSocketServerProtocol
         Websocket connected to user.
 
     Attributes
     ----------
     user : uita.types.DiscordUser
-        User connected to server.
-    socket : websockets.WebSocketCommonProtocol
+        User connected to server. Can be `None` while connection is unauthenticated.
+    socket : websockets.WebSocketServerProtocol
         Websocket connected to user.
 
     """
-    def __init__(self, user, socket):
+    def __init__(
+        self,
+        user: Optional[uita.types.DiscordUser],
+        socket: websockets.WebSocketServerProtocol
+    ) -> None:
         self.user = user
         self.socket = socket
 
 
-class Event():
+_AbstractMessageType = TypeVar("_AbstractMessageType", bound=uita.message.AbstractMessage)
+
+
+class Event(Generic[_AbstractMessageType]):
     """Container for Server event callbacks.
 
     Can be set to block the main connection loop from running until this event is processed. Is
@@ -57,7 +68,7 @@ class Event():
     loop : asyncio.AbstractEventLoop
         Event loop that task is running in.
     active_server : uita.types.DiscordServer
-        Server that user is active in. None if not yet selected.
+        Server that user is active in. `None` if not yet selected.
 
     Attributes
     ----------
@@ -72,10 +83,20 @@ class Event():
     loop : asyncio.AbstractEventLoop
         Event loop that task is running in.
     active_server : uita.types.DiscordServer
-        Server that user is active in. None if not yet selected.
+        Server that user is active in. `None` if not yet selected.
 
     """
-    def __init__(self, message, user, socket, config, loop, active_server):
+    CallbackType = Callable[["Event[Any]"], Awaitable[None]]
+
+    def __init__(
+        self,
+        message: _AbstractMessageType,
+        user: uita.types.DiscordUser,
+        socket: websockets.WebSocketServerProtocol,
+        config: uita.config.Config,
+        loop: asyncio.AbstractEventLoop,
+        active_server: Optional[uita.types.DiscordServer]
+    ) -> None:
         self.message = message
         self.user = user
         self.socket = socket
@@ -84,15 +105,15 @@ class Event():
         self.active_server = active_server
         self._block_flag = asyncio.Event()
 
-    def block(self):
+    def block(self) -> None:
         """Blocks the main connection loop from further socket reads."""
         self._block_flag.clear()
 
-    def finish(self):
+    def finish(self) -> None:
         """Unblocks the main connection loop, allowing for further socket reads."""
         self._block_flag.set()
 
-    async def wait(self):
+    async def wait(self) -> None:
         """Waits until the event is not blocked."""
         await self._block_flag.wait()
 
@@ -110,13 +131,19 @@ class Server():
         Event loop that listen server will attach to.
 
     """
-    def __init__(self):
-        self._server = None
-        self._event_callbacks = {}
-        self._active_events = set()
-        self.connections = {}
+    def __init__(self) -> None:
+        self._server: Optional[websockets.server.WebSocketServer] = None
+        self._event_callbacks: Dict[str, Event.CallbackType] = {}
+        self._active_events: Set[asyncio.Task[None]] = set()
+        self.connections: Dict[websockets.WebSocketServerProtocol, Connection] = {}
 
-    async def start(self, database_uri, config, origins=None, loop=None):
+    async def start(
+        self,
+        database_uri: str,
+        config: uita.config.Config,
+        origins: Optional[List[websockets.Origin]] = None,
+        loop: Optional[asyncio.AbstractEventLoop] = None
+    ) -> None:
         """Creates a new listen server.
 
         Accepts connections from UI frontend.
@@ -127,7 +154,7 @@ class Server():
             URI to database containing user authentication data.
         config : uita.config.Config
             Configuration options containing API keys.
-        origins : list(str), optional
+        origins : list(websockets.Origin), optional
             Refuses connections from clients with origin HTTP headers that do not match given
             value.
         loop : asyncio.AbstractEventLoop, optional
@@ -146,14 +173,14 @@ class Server():
         self.loop = loop or asyncio.get_event_loop()
 
         # Setup an endless database maintenance task to run every 10 minutes
-        async def database_maintenance():
+        async def database_maintenance() -> None:
             while True:
                 self.database.maintenance()
                 await asyncio.sleep(600, loop=self.loop)
         self._create_task(database_maintenance())
 
         # Setup an endless cache pruning task to run every minute
-        async def cache_prune():
+        async def cache_prune() -> None:
             while True:
                 whitelist = []
                 for _, v in uita.state.voice_connections.items():
@@ -176,7 +203,7 @@ class Server():
         )
         log.info("Server listening on {}".format(uita.utils.build_websocket_url(self.config)))
 
-    async def stop(self):
+    async def stop(self) -> None:
         """Closes all active connections and destroys listen server."""
         if self._server is None:
             return
@@ -188,22 +215,27 @@ class Server():
         for conn in self.connections:
             await conn.close()
         self._server = None
-        self.database = None
-        self.loop = None
         self.connections.clear()
         log.info("Server closed")
 
-    def on_message(self, header, require_active_server=True, block=False):
+    def on_message(
+        self,
+        message_type: Type[_AbstractMessageType],
+        require_active_server: bool = True,
+        block: bool = False
+    ) -> Callable[[Event.CallbackType], Event.CallbackType]:
         """Decorator to bind event callbacks.
 
         Callback function should accept a `uita.ui_server.Event` as its only parameter
 
         Parameters
         ----------
-        header : str
-            `uita.message.AbstractMessage` header to wait for.
+        message_type : uita.message.AbstractMessage
+            Message type to wait for.
         require_active_server : bool, optional
             Verify that `event.active_server` is valid, default `True`
+        block : bool, optional
+            Block connection await loop until event callback is completed, default `False`.
 
         Raises
         ------
@@ -212,18 +244,18 @@ class Server():
             sent an `event.active_server` of `None`.
 
         """
-        def decorator(function):
-            async def wrapper(event):
+        def decorator(function: Event.CallbackType) -> Event.CallbackType:
+            async def wrapper(event: Event[Any]) -> None:
                 if require_active_server is True and event.active_server is None:
                     raise uita.exceptions.NoActiveServer
                 if block is False:
                     event.finish()
-                return await function(event)
-            self._event_callbacks[header] = wrapper
+                await function(event)
+            self._event_callbacks[message_type.header] = wrapper
             return wrapper
         return decorator
 
-    def send_all(self, message, server_id):
+    def send_all(self, message: uita.message.AbstractMessage, server_id: str) -> None:
         """Sends a `uita.message.AbstractMessage` to all `uita.types.DiscordUser` in a server.
 
         Parameters
@@ -236,7 +268,7 @@ class Server():
         """
         for socket, conn in self.connections.items():
             if conn.user is not None and conn.user.active_server_id == server_id:
-                async def try_send(s, m):
+                async def try_send(s: websockets.WebSocketServerProtocol, m: str) -> None:
                     try:
                         await s.send(m)
                     except websockets.exceptions.ConnectionClosed:
@@ -245,7 +277,7 @@ class Server():
                         pass
                 self._create_task(try_send(socket, str(message)))
 
-    async def verify_active_servers(self):
+    async def verify_active_servers(self) -> None:
         """Checks if any user is connected to an active server that is no longer accessible.
 
         If so, will force them back to the server select screen.
@@ -269,7 +301,10 @@ class Server():
                     socket.send(str(uita.message.ServerKickMessage()))
                 )
 
-    async def _authenticate(self, websocket):
+    async def _authenticate(
+        self,
+        websocket: websockets.WebSocketServerProtocol
+    ) -> Tuple[uita.types.DiscordUser, uita.auth.Session]:
         """Hardcoded authentication handshake with web client."""
         # Start by waiting for a data with either session info or an auth code for the Discord API
         try:
@@ -301,7 +336,7 @@ class Server():
         else:
             raise uita.exceptions.AuthenticationError("Expected authentication message")
 
-    async def _cancel_active_events(self):
+    async def _cancel_active_events(self) -> None:
         """Cancels all events spawned by the UI server."""
         tasks = asyncio.gather(*self._active_events, loop=self.loop, return_exceptions=True)
         try:
@@ -310,13 +345,13 @@ class Server():
         except asyncio.CancelledError:
             pass
 
-    def _create_task(self, coroutine):
+    def _create_task(self, coroutine: Coroutine[Any, Any, None]) -> None:
         """Creates a managed task that will be tracked and cancelled on server shutdown."""
         task = self.loop.create_task(coroutine)
         task.add_done_callback(lambda f: self._active_events.remove(f))
         self._active_events.add(task)
 
-    def _dispatch_event(self, event):
+    def _dispatch_event(self, event: Event[Any]) -> None:
         """Finds and calls aproppriate callback for given event message.
 
         If an event raises an exception it is logged and the connection is closed.
@@ -333,7 +368,7 @@ class Server():
             ))
         # Process the event
         if event.message.header in self._event_callbacks:
-            async def wrapper():
+            async def wrapper() -> None:
                 try:
                     await self._event_callbacks[event.message.header](event)
                 except (asyncio.CancelledError, websockets.exceptions.ConnectionClosed):
@@ -355,7 +390,7 @@ class Server():
         else:
             event.finish()
 
-    async def _on_connect(self, websocket, path):
+    async def _on_connect(self, websocket: websockets.WebSocketServerProtocol, path: str) -> None:
         """Main loop for each connected client."""
         log.debug("Websocket connected {} {}".format(websocket.remote_address[0], path))
         try:
@@ -380,7 +415,11 @@ class Server():
                     raise uita.exceptions.MalformedMessage("Websocket sent bytes unexpectedly")
                 # Parse data into message and dispatch to aproppriate event callback
                 message = uita.message.parse(data)
-                active_server = uita.state.servers.get(user.active_server_id)
+                # mypy gets confused passing None to .get(), so here's a redundant ternary check
+                active_server = (
+                    uita.state.servers.get(user.active_server_id)
+                    if user.active_server_id is not None else None
+                )
                 event = Event(message, user, websocket, self.config, self.loop, active_server)
                 self._dispatch_event(event)
                 await event.wait()

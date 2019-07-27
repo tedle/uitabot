@@ -1,34 +1,41 @@
 """Authenticates Discord users."""
 
 import asyncio
-from collections import namedtuple
+from typing import NamedTuple, Optional
 
 import uita.discord_api
 import uita.exceptions
 import uita.types
 
 
-Session = namedtuple("Session", ["handle", "secret"])
-"""Contains session authentication data.
+class Session(NamedTuple):
+    """Contains session authentication data.
 
-Parameters
-----------
-handle : str
-    Session handle.
-secret : str
-    Session secret.
+    Parameters
+    ----------
+    handle : str
+        Session handle.
+    secret : str
+        Session secret.
 
-Attributes
-----------
-handle : str
-    Session handle.
-secret : str
-    Session secret.
+    Attributes
+    ----------
+    handle : str
+        Session handle.
+    secret : str
+        Session secret.
 
-"""
+    """
+    handle: str
+    secret: str
 
 
-async def verify_session(session, database, config, loop=None):
+async def verify_session(
+    session: Session,
+    database: "uita.database.Database",
+    config: uita.config.Config,
+    loop: Optional[asyncio.AbstractEventLoop] = None
+) -> uita.types.DiscordUser:
     """Authenticates a user session against sessions database and Discord API.
 
     Parameters
@@ -69,7 +76,12 @@ async def verify_session(session, database, config, loop=None):
     raise uita.exceptions.AuthenticationError("Session authentication failed")
 
 
-async def verify_code(code, database, config, loop=None):
+async def verify_code(
+    code: str,
+    database: "uita.database.Database",
+    config: uita.config.Config,
+    loop: Optional[asyncio.AbstractEventLoop] = None
+) -> Session:
     """Authenticates a user by passing an access code to the Discord API in exchange for a token.
 
     On success, creates and stores a session in the local database.

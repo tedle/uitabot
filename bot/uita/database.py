@@ -4,6 +4,8 @@ import sqlite3
 import os
 import binascii
 import hmac
+from typing import cast, Optional
+from typing_extensions import Final
 
 import uita.auth
 
@@ -17,13 +19,13 @@ class Database():
         URI pointing to database resource. Can either be a filename or ``:memory:``.
 
     """
-    def __init__(self, uri):
+    def __init__(self, uri: str) -> None:
         self._connection = sqlite3.connect(uri)
         c = self._connection.cursor()
         c.executescript(_INIT_DATABASE_QUERY)
         self._connection.commit()
 
-    def maintenance(self):
+    def maintenance(self) -> None:
         """Performs database maintenance.
 
         Currently only deletes expired sessions.
@@ -33,7 +35,7 @@ class Database():
         c.execute(_PRUNE_OLD_SESSIONS_QUERY)
         self._connection.commit()
 
-    def add_session(self, token, expiry):
+    def add_session(self, token: str, expiry: int) -> uita.auth.Session:
         """Creates and inserts a new user session into database.
 
         Parameters
@@ -56,7 +58,7 @@ class Database():
         self._connection.commit()
         return uita.auth.Session(handle=c.lastrowid, secret=secret)
 
-    def delete_session(self, session):
+    def delete_session(self, session: uita.auth.Session) -> None:
         """Deletes a given session from the database.
 
         Useful for session expiry, user logout, etc.
@@ -71,7 +73,7 @@ class Database():
         c.execute(_DELETE_SESSION_QUERY, (session.handle,))
         self._connection.commit()
 
-    def get_access_token(self, session):
+    def get_access_token(self, session: uita.auth.Session) -> Optional[str]:
         """Verifies whether a given session is valid and returns an access token if so.
 
         Parameters
@@ -91,10 +93,10 @@ class Database():
         if db_session is None:
             return None
         if hmac.compare_digest(db_session[0], session.secret):
-            return db_session[1]
+            return cast(str, db_session[1])
         return None
 
-    def set_server_role(self, server_id, role_id):
+    def set_server_role(self, server_id: str, role_id: Optional[str]) -> None:
         """Configures the required role setting for a server.
 
         Parameters
@@ -109,7 +111,7 @@ class Database():
         c.execute(_SET_SERVER_ROLE_QUERY, (server_id, role_id))
         self._connection.commit()
 
-    def get_server_role(self, server_id):
+    def get_server_role(self, server_id: str) -> Optional[str]:
         """Retrieves the required role setting for a server.
 
         Parameters
@@ -128,10 +130,10 @@ class Database():
         role = c.fetchone()
         if role is None:
             return None
-        return role[0]
+        return cast(str, role[0])
 
 
-_INIT_DATABASE_QUERY = """
+_INIT_DATABASE_QUERY: Final = """
 CREATE TABLE IF NOT EXISTS sessions (
     handle INTEGER PRIMARY KEY,
     secret TEXT UNIQUE,
@@ -144,7 +146,7 @@ CREATE TABLE IF NOT EXISTS server_roles (
     role_id TEXT
 );"""
 
-_ADD_SESSION_QUERY = """
+_ADD_SESSION_QUERY: Final = """
 INSERT OR REPLACE INTO sessions(
     secret,
     token,
@@ -152,21 +154,21 @@ INSERT OR REPLACE INTO sessions(
 )
 VALUES(?, ?, ?)"""
 
-_DELETE_SESSION_QUERY = """
+_DELETE_SESSION_QUERY: Final = """
 DELETE FROM sessions WHERE handle=?"""
 
-_PRUNE_OLD_SESSIONS_QUERY = """
+_PRUNE_OLD_SESSIONS_QUERY: Final = """
 DELETE FROM sessions WHERE ((strftime('%s', created) + expiry) - strftime('%s', 'now'))<=0"""
 
-_GET_SESSION_QUERY = """
+_GET_SESSION_QUERY: Final = """
 SELECT secret, token FROM sessions WHERE handle=?"""
 
-_SET_SERVER_ROLE_QUERY = """
+_SET_SERVER_ROLE_QUERY: Final = """
 INSERT OR REPLACE INTO server_roles(
     server_id,
     role_id
 )
 VALUES(?, ?)"""
 
-_GET_SERVER_ROLE_QUERY = """
+_GET_SERVER_ROLE_QUERY: Final = """
 SELECT role_id FROM server_roles WHERE server_id=?"""

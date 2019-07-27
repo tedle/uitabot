@@ -12,6 +12,7 @@ import subprocess
 import threading
 import time
 import uuid
+from typing import cast, Any, Awaitable, Callable, Deque, List, Optional
 
 import uita.exceptions
 import uita.youtube_api
@@ -37,6 +38,8 @@ class Track():
         Determines if the track is a remote livestream.
     local : bool
         Determines if the track is a local file or not.
+    url : str, optional
+        The public URL of the track if it exists, `None` otherwise.
 
     Attributes
     ----------
@@ -58,7 +61,16 @@ class Track():
         Offset in seconds to start track from.
 
     """
-    def __init__(self, path, user, title, duration, live, local, url=None):
+    def __init__(
+        self,
+        path: str,
+        user: "uita.types.DiscordUser",
+        title: str,
+        duration: int,
+        live: bool,
+        local: bool,
+        url: Optional[str] = None
+    ):
         self.id = uuid.uuid4().hex
         self.path = path
         self.user = user
@@ -100,27 +112,38 @@ class Queue():
         Current playback status (playing, paused, etc).
 
     """
-    def __init__(self, maxlen=None, on_queue_change=None, on_status_change=None, loop=None):
+    QueueCallbackType = Callable[
+        [List[Track], Optional["uita.types.DiscordUser"]], Awaitable[None]
+    ]
+    StatusCallbackType = Callable[[Status], None]
+
+    def __init__(
+        self,
+        maxlen: Optional[int] = None,
+        on_queue_change: Optional[QueueCallbackType] = None,
+        on_status_change: Optional[StatusCallbackType] = None,
+        loop: Optional[asyncio.AbstractEventLoop] = None
+    ) -> None:
         # async lambdas don't exist
-        async def dummy_queue_change(q): pass
+        async def dummy_queue_change(q: Any, u: Any) -> None: pass
         self._on_queue_change = on_queue_change or dummy_queue_change
 
-        async def dummy_status_change(s): pass
+        async def dummy_status_change(s: Any) -> None: pass
         self._on_status_change = on_status_change or dummy_status_change
 
         self.loop = loop or asyncio.get_event_loop()
         self.status = Status.PAUSED
-        self._now_playing = None
-        self._queue = collections.deque()
+        self._now_playing: Optional[Track] = None
+        self._queue: Deque[Track] = collections.deque()
         self._queue_lock = asyncio.Lock(loop=self.loop)
         self._queue_update_flag = asyncio.Event(loop=self.loop)
         self._queue_maxlen = maxlen
-        self._play_task = None
-        self._play_start_time = None
-        self._stream = None
-        self._voice = None
+        self._play_task: Optional[asyncio.Task[Any]] = None
+        self._play_start_time: Optional[float] = None
+        self._stream: Optional[FfmpegStream] = None
+        self._voice: Optional[discord.VoiceClient] = None
 
-    def queue(self):
+    def queue(self) -> List[Track]:
         """Retrieves a list of currently queued audio resources.
 
         Returns
@@ -141,7 +164,7 @@ class Queue():
             return [now_playing] + list(self._queue)
         return list(self._queue)
 
-    def queue_full(self):
+    def queue_full(self) -> bool:
         """Tests if the queue is at capacity.
 
         Returns
@@ -152,7 +175,7 @@ class Queue():
         """
         return self._queue_maxlen is not None and len(self.queue()) >= self._queue_maxlen
 
-    async def play(self, voice):
+    async def play(self, voice: discord.VoiceClient) -> None:
         """Starts a new playlist task that awaits and plays new queue inputs.
 
         First stops current playlist task if it exists.
@@ -167,7 +190,7 @@ class Queue():
         await self.stop()
         self._play_task = self.loop.create_task(self._play_loop(voice))
 
-    async def stop(self):
+    async def stop(self) -> None:
         """Stops and currently playing audio and cancels the running play task."""
         if self._play_task is not None:
             # If we stop during a song, add it to the front of the queue to be resumed later
@@ -186,12 +209,12 @@ class Queue():
             await self._play_task
         self._end_stream()
 
-    async def enqueue_file(self, path, user):
+    async def enqueue_file(self, path: str, user: "uita.types.DiscordUser") -> None:
         """Queues a file to be played by the running playlist task.
 
         Parameters
         ----------
-        path : os.PathLike
+        path : str
             Path for audio resource to be played.
         user : uita.types.DiscordUser
             User that requested track.
@@ -204,8 +227,8 @@ class Queue():
         """
         # Some quick sanitization to make sure bad input won't escape the cache directory
         # However user input should never reach this function
-        path = os.path.join(uita.utils.cache_dir(), os.path.basename(path))
-        if not os.path.isfile(path):
+        filename = os.path.join(uita.utils.cache_dir(), os.path.basename(path))
+        if not os.path.isfile(filename):
             raise uita.exceptions.ClientError(
                 uita.message.ErrorFileInvalidMessage("Invalid audio format")
             )
@@ -213,7 +236,7 @@ class Queue():
             None,
             lambda: subprocess.run([
                 "ffprobe",
-                path,
+                filename,
                 "-of", "json",
                 "-show_format",
                 "-show_error",
@@ -243,7 +266,7 @@ class Queue():
         if self.queue_full():
             raise uita.exceptions.ClientError(uita.message.ErrorQueueFullMessage())
         self._queue.append(Track(
-            path,
+            filename,
             user,
             title,
             probe["format"]["duration"],
@@ -252,7 +275,7 @@ class Queue():
         ))
         await self._notify_queue_change(user)
 
-    async def enqueue_url(self, url, user):
+    async def enqueue_url(self, url: str, user: "uita.types.DiscordUser") -> None:
         """Queues a URL to be played by the running playlist task.
 
         Parameters
@@ -300,7 +323,7 @@ class Queue():
         else:
             raise uita.exceptions.ClientError(uita.message.ErrorUrlInvalidMessage())
 
-    async def move(self, track_id, position):
+    async def move(self, track_id: str, position: int) -> None:
         """Moves a track to a new position in the playback queue.
 
         Parameters
@@ -335,7 +358,7 @@ class Queue():
                     await self._notify_queue_change()
                     return
 
-    async def remove(self, track_id):
+    async def remove(self, track_id: str) -> None:
         """Removes a track from the playback queue.
 
         Parameters
@@ -355,7 +378,7 @@ class Queue():
                     await self._notify_queue_change()
                     return
 
-    async def track_from_url(self, url):
+    async def track_from_url(self, url: str) -> Track:
         """Probes the audio resource at a given URL for audio metadata.
 
         Parameters
@@ -369,18 +392,18 @@ class Queue():
             Container for track metadata.
 
         """
-    async def _after_song(self):
+    async def _after_song(self) -> None:
         with await self._queue_lock:
             self._now_playing = None
             self._change_status(Status.PAUSED)
             await self._notify_queue_change()
             self._end_stream()
 
-    def _change_status(self, status):
+    def _change_status(self, status: Status) -> None:
         self.status = status
         self._on_status_change(self.status)
 
-    async def _play_loop(self, voice):
+    async def _play_loop(self, voice: discord.VoiceClient) -> None:
         try:
             while voice.is_connected():
                 self._queue_update_flag.clear()
@@ -420,11 +443,11 @@ class Queue():
         except Exception as e:
             log.error("Unhandled exception: {}".format(e))
 
-    async def _notify_queue_change(self, user=None):
+    async def _notify_queue_change(self, user: Optional["uita.types.DiscordUser"] = None) -> None:
         self._queue_update_flag.set()
         await self._on_queue_change(self.queue(), user)
 
-    def _end_stream(self):
+    def _end_stream(self) -> None:
         if self._stream is not None:
             self._stream.stop()
             self._stream = None
@@ -451,7 +474,7 @@ class FfmpegStream(discord.AudioSource):
 
     """
 
-    def __init__(self, track, encoder):
+    def __init__(self, track: Track, encoder: discord.opus.Encoder) -> None:
         self._track = track
         self._encoder = encoder
         process_options = [
@@ -481,7 +504,7 @@ class FfmpegStream(discord.AudioSource):
         atexit.register(self.stop)
 
         # Expecting a frame size of 3840 currently, queue should max out at 3.5MB~ of memory
-        self._buffer = queue.Queue(maxsize=1000)
+        self._buffer: queue.Queue[bytes] = queue.Queue(maxsize=1000)
         # Run audio production and consumption in separate threads, buffering as much as possible
         # This cuts down on audio dropping out during playback (especially for livestreams)
         self._buffer_thread = threading.Thread(target=self._buffer_audio_packets)
@@ -495,7 +518,7 @@ class FfmpegStream(discord.AudioSource):
         # Set once queue has buffered audio data available
         self._is_ready = threading.Event()
 
-    def read(self):
+    def read(self) -> bytes:
         """Returns a `bytes` array of raw audio data.
 
         Returns
@@ -514,15 +537,15 @@ class FfmpegStream(discord.AudioSource):
             # Empty read indicates completion
             return b""
 
-    def is_opus(self):
+    def is_opus(self) -> bool:
         """Produces raw PCM audio data."""
         return False
 
-    def cleanup(self):
+    def cleanup(self) -> None:
         """Cleanup is handled outside the discord.py API."""
         pass
 
-    def stop(self):
+    def stop(self) -> None:
         """Stops any currently running processes."""
         try:
             # We don't need to kill the thread here since it auto terminates after 10 seconds
@@ -536,7 +559,7 @@ class FfmpegStream(discord.AudioSource):
             self._is_ready.set()
             atexit.unregister(self.stop)
 
-    async def wait_ready(self, loop=None):
+    async def wait_ready(self, loop: Optional[asyncio.AbstractEventLoop] = None) -> None:
         """Waits until the first packet of buffered audio data is available to be read.
 
         Parameters
@@ -548,10 +571,13 @@ class FfmpegStream(discord.AudioSource):
         async_loop = loop or asyncio.get_event_loop()
         await async_loop.run_in_executor(None, lambda: self._is_ready.wait())
 
-    def _buffer_audio_packets(self):
+    def _buffer_audio_packets(self) -> None:
         need_set_ready = True
+
         # Read from process stdout until an empty byte string is returned
-        for data in iter(lambda: self._process.stdout.read(self._encoder.FRAME_SIZE), b""):
+        def read() -> bytes:
+            return cast(bytes, self._process.stdout.read(self._encoder.FRAME_SIZE))
+        for data in iter(read, b""):
             try:
                 # If the buffer fills and times out it means the queue is no longer being
                 # consumed, this likely means we're running in a zombie thread and should
