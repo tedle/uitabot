@@ -1,4 +1,5 @@
 """Async HTTP requests to the Discord API"""
+import asyncio
 import re
 import requests
 
@@ -18,7 +19,7 @@ CDN_URL = "https://cdn.discordapp.com"
 VALID_CODE_REGEX = re.compile("^([a-zA-Z0-9]+)$")
 
 
-async def auth(code, config, loop):
+async def auth(code, config, loop=None):
     """Retrieves an access token from the Discord API with an authourization code.
 
     Parameters
@@ -41,6 +42,7 @@ async def auth(code, config, loop):
         If code is invalid.
 
     """
+    loop = loop or asyncio.get_event_loop()
     # Since these are passed by the client, sanitize to expected format
     if VALID_CODE_REGEX.match(code) is None:
         raise uita.exceptions.AuthenticationError("Passed an invalidly formatted auth code")
@@ -71,7 +73,7 @@ async def auth(code, config, loop):
     return response.json()
 
 
-async def get(end_point, token, loop):
+async def get(end_point, token, loop=None):
     """Retrieves an object from the Discord API with an authorization token.
 
     Parameters
@@ -94,6 +96,7 @@ async def get(end_point, token, loop):
         If request is invalid.
 
     """
+    loop = loop or asyncio.get_event_loop()
     headers = BASE_HEADERS.copy()
     headers["Authorization"] = "Bearer {}".format(token)
     # requests is not asynchronous, so run in another thread and await it

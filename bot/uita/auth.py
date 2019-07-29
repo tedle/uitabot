@@ -1,5 +1,6 @@
 """Authenticates Discord users."""
 
+import asyncio
 from collections import namedtuple
 
 import uita.discord_api
@@ -27,7 +28,7 @@ secret : str
 """
 
 
-async def verify_session(session, database, config, loop):
+async def verify_session(session, database, config, loop=None):
     """Authenticates a user session against sessions database and Discord API.
 
     Parameters
@@ -52,6 +53,7 @@ async def verify_session(session, database, config, loop):
         If authentication fails.
 
     """
+    loop = loop or asyncio.get_event_loop()
     token = database.get_access_token(session)
     if token is not None:
         try:
@@ -68,7 +70,7 @@ async def verify_session(session, database, config, loop):
     raise uita.exceptions.AuthenticationError("Session authentication failed")
 
 
-async def verify_code(code, database, config, loop):
+async def verify_code(code, database, config, loop=None):
     """Authenticates a user by passing an access code to the Discord API in exchange for a token.
 
     On success, creates and stores a session in the local database.
@@ -95,6 +97,7 @@ async def verify_code(code, database, config, loop):
         If authentication fails.
 
     """
+    loop = loop or asyncio.get_event_loop()
     api_data = await uita.discord_api.auth(code, config, loop)
     return database.add_session(
         api_data["access_token"],
