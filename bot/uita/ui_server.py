@@ -274,6 +274,8 @@ class Server():
         # Start by waiting for a data with either session info or an auth code for the Discord API
         try:
             data = await asyncio.wait_for(websocket.recv(), timeout=5, loop=self.loop)
+            if isinstance(data, bytes):
+                raise uita.exceptions.MalformedMessage("Websocket sent bytes unexpectedly")
         # If it takes more than 5 seconds, kick them out
         except asyncio.TimeoutError:
             raise uita.exceptions.AuthenticationError("Authentication timed out")
@@ -373,6 +375,8 @@ class Server():
             while True:
                 # 90 second timeout to cull zombie connections, expects client heartbeats
                 data = await asyncio.wait_for(websocket.recv(), 90, loop=self.loop)
+                if isinstance(data, bytes):
+                    raise uita.exceptions.MalformedMessage("Websocket sent bytes unexpectedly")
                 # Parse data into message and dispatch to aproppriate event callback
                 message = uita.message.parse(data)
                 active_server = uita.state.servers.get(user.active_server_id)
