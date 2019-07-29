@@ -203,5 +203,5 @@ def verify_user_permissions(user, role):
     return (
         role is None or
         user.guild_permissions.administrator or
-        discord.utils.get(user.roles, id=int(role))
+        discord.utils.get(user.roles, id=int(role)) is not None
     )
