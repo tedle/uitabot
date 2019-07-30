@@ -117,26 +117,30 @@ class AuthSucceedMessage(AbstractMessage):
     Parameters
     ----------
     user : uita.types.DiscordUser
-        User object to encode.
+        Object representing authenticated user.
+    session : uita.auth.Session
+        Session object for authentication.
 
     Attributes
     ----------
     user : uita.types.DiscordUser
         Object representing authenticated user.
+    session : uita.auth.Session
+        Session object for authentication.
 
     """
     header = "auth.succeed"
     """"""
 
-    def __init__(self, user):
+    def __init__(self, user, session):
         self.user = {
             "id": int(user.id),
             "name": str(user.name),
-            "avatar": str(user.avatar),
-            "session": {
-                "handle": str(user.session.handle),
-                "secret": str(user.session.secret)
-            }
+            "avatar": str(user.avatar)
+        }
+        self.session = {
+            "handle": str(session.handle),
+            "secret": str(session.secret)
         }
 
 
@@ -444,7 +448,7 @@ VALID_MESSAGES = {
     AuthCodeMessage.header: (AuthCodeMessage, ["code"]),
     AuthFailMessage.header: (AuthFailMessage, []),
     AuthSessionMessage.header: (AuthSessionMessage, ["handle", "secret"]),
-    AuthSucceedMessage.header: (AuthSucceedMessage, ["user"]),
+    AuthSucceedMessage.header: (AuthSucceedMessage, ["user", "session"]),
     ChannelActiveGetMessage.header: (ChannelActiveGetMessage, []),
     ChannelActiveSendMessage.header: (ChannelActiveSendMessage, ["channel"]),
     ChannelJoinMessage.header: (ChannelJoinMessage, ["channel_id"]),

@@ -53,9 +53,10 @@ export class AuthSucceedMessage extends AbstractMessage {
         return "auth.succeed";
     }
 
-    constructor(user) {
+    constructor(user, session) {
         super();
         this.user = user;
+        this.session = session;
     }
 }
 
@@ -272,7 +273,7 @@ const VALID_MESSAGES = {
     "auth.code": [AuthCodeMessage, ["code"]],
     "auth.fail": [AuthFailMessage, []],
     "auth.session": [AuthSessionMessage, ["handle", "secret"]],
-    "auth.succeed": [AuthSucceedMessage, ["user"]],
+    "auth.succeed": [AuthSucceedMessage, ["user", "session"]],
     "channel.active.get": [ChannelActiveGetMessage, []],
     "channel.active.send": [ChannelActiveSendMessage, ["channel"]],
     "channel.join": [ChannelJoinMessage, ["channel_id"]],

@@ -282,12 +282,13 @@ class Server():
         message = uita.message.parse(data)
         # Authenticating by session data
         if isinstance(message, uita.message.AuthSessionMessage):
+            session = uita.auth.Session(handle=message.handle, secret=message.secret)
             return await uita.auth.verify_session(
-                uita.auth.Session(handle=message.handle, secret=message.secret),
+                session,
                 self.database,
                 self.config,
                 self.loop
-            )
+            ), session
         # Authenticating by authorization code
         elif isinstance(message, uita.message.AuthCodeMessage):
             session = await uita.auth.verify_code(
@@ -295,7 +296,7 @@ class Server():
             )
             return await uita.auth.verify_session(
                 session, self.database, self.config, self.loop
-            )
+            ), session
         # Unexpected data (port scanners, etc)
         else:
             raise uita.exceptions.AuthenticationError("Expected authentication message")
@@ -362,10 +363,10 @@ class Server():
             conn = Connection(None, websocket)
             self.connections[websocket] = conn
             # Initialize user and connection data
-            user = await self._authenticate(websocket)
+            user, session = await self._authenticate(websocket)
             conn.user = user
             # Notify client that they authenticated successfully
-            await websocket.send(str(uita.message.AuthSucceedMessage(user)))
+            await websocket.send(str(uita.message.AuthSucceedMessage(user, session)))
             log.info("[{}:{}] connected ({})".format(
                 user.name,
                 user.id,

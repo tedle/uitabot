@@ -157,7 +157,6 @@ async def play(message, params):
         message.author.id,
         message.author.name,
         str(message.author.avatar_url),
-        None,
         message.guild.id
     )
     response = await message.channel.send("{} Processing...".format(_EMOJI["loading"]))
@@ -274,7 +273,6 @@ async def search(message, params):
             message.author.id,
             message.author.name,
             str(message.author.avatar_url),
-            None,
             message.guild.id
         )
         await voice.enqueue_url(song["url"], user)

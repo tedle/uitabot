@@ -62,7 +62,6 @@ async def verify_session(session, database, config, loop=None):
                 id=user["id"],
                 name=user["username"],
                 avatar=uita.discord_api.avatar_url(user),
-                session=session,
                 active_server_id=None
             )
         except uita.exceptions.AuthenticationError:

@@ -280,8 +280,6 @@ class DiscordUser():
         User name.
     avatar : str
         URL to user avatar.
-    session : uita.auth.Session
-        Session authentication data.
     active_server_id : str
         Discord server that user has joined. None if user has not joined a server yet.
 
@@ -293,19 +291,16 @@ class DiscordUser():
         User name.
     avatar : str
         URL to user avatar.
-    session : uita.auth.Session
-        Session authentication data.
     active_server_id : str
         Discord server that user has joined. None if user has not joined a server yet.
 
     """
-    def __init__(self, id, name, avatar, session, active_server_id):
+    def __init__(self, id, name, avatar, active_server_id):
         self.id = str(id)
         self.name = name
         # Hack for discord.py forcing WebP extensions even though it has terrible browser support
         # This also replaces animated GIFs with static PNGs, but thats for the best
         self.avatar = avatar.rpartition(".")[0] + ".png"
-        self.session = session
         self.active_server_id = str(active_server_id) if active_server_id else None
 
 

@@ -44,9 +44,7 @@ export default class App extends React.Component {
 
         // Handler for authentication success
         this.eventDispatcher.setMessageHandler("auth.succeed", m => {
-            Session.store({handle: m.user.session.handle, secret: m.user.session.secret});
-            // Just incase we have some kind of injectable XSS nastiness
-            delete m.user.session;
+            Session.store({handle: m.session.handle, secret: m.session.secret});
             this.setState({discordUser: m.user});
             // Server will close connection if it doesn't receive a packet after 90 seconds
             this.heartbeatInterval = setInterval(
