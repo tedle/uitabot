@@ -394,8 +394,8 @@ class DiscordVoiceClient():
         with await self._voice_lock:
             if self._voice is None:
                 try:
-                    self._voice = await channel.connect()
-                except asyncio.CancelledError:
+                    self._voice = await channel.connect(timeout=5)
+                except (asyncio.CancelledError, asyncio.TimeoutError):
                     log.warning("Failed to join channel {}({})".format(channel.name, channel.id))
                     return
                 await self._playlist.play(self._voice)
