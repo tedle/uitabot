@@ -206,7 +206,9 @@ class Queue():
         # However user input should never reach this function
         path = os.path.join(uita.utils.cache_dir(), os.path.basename(path))
         if not os.path.isfile(path):
-            raise uita.message.ErrorFileInvalidMessage("Invalid audio format")
+            raise uita.exceptions.ClientError(
+                uita.message.ErrorFileInvalidMessage("Invalid audio format")
+            )
         completed_probe_process = await self.loop.run_in_executor(
             None,
             lambda: subprocess.run([
