@@ -216,7 +216,7 @@ async def on_guild_update(before, after):
         users,
         after.icon
     )
-    uita.state.server_add(discord_server, uita.bot.loop)
+    uita.state.server_add(discord_server, uita.bot)
     # In case any channel visibilities changed
     _sync_channels(after)
     # Kick any displaced users
