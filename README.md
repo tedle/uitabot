@@ -24,7 +24,7 @@ Make a copy of the `config.example.json` in the root folder.
 ```
 cp config.example.json config.json
 ```
-Edit the new `config.json` file and fill in all the variables as needed. The SSL cert files are optional and can be left empty if serving unencrypted content is acceptable. The Discord and YouTube API keys are required and can be generated for free with a valid Discord and Google account.
+Edit the new `config.json` file and fill in all the variables as needed. Documentation for every option can be found in [CONFIG.md](CONFIG.md).
 
 ### Building
 #### Backend

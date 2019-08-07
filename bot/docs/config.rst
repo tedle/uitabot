@@ -1,0 +1,1 @@
+.. mdinclude:: ../../CONFIG.md

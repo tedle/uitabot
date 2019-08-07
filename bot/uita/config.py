@@ -51,6 +51,7 @@ class ConfigFile(NamedTuple):
 
 
 class Config(NamedTuple):
+    """Named tuple carrying configuration options. See :doc:`config` for documentation."""
     discord: ConfigDiscord
     youtube: ConfigYoutube
     bot: ConfigBot

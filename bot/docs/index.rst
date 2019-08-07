@@ -5,3 +5,4 @@ uitabot Documentation
 
    api
    bot_commands
+   config
