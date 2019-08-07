@@ -22,19 +22,14 @@ log = logging.getLogger(__name__)
 class Connection():
     """Container for Server connections.
 
-    Parameters
-    ----------
-    user : uita.types.DiscordUser
-        User connected to server. Can be `None` while connection is unauthenticated.
-    socket : websockets.WebSocketServerProtocol
-        Websocket connected to user.
+    Args:
+        user: User connected to server. Can be `None` while connection is unauthenticated.
+        socket: Websocket connected to user.
 
-    Attributes
-    ----------
-    user : uita.types.DiscordUser
-        User connected to server. Can be `None` while connection is unauthenticated.
-    socket : websockets.WebSocketServerProtocol
-        Websocket connected to user.
+    Attributes:
+        user (Optional[uita.types.DiscordUser]): User connected to server. Can be `None` while
+            connection is unauthenticated.
+        socket (websockets.WebSocketServerProtocol): Websocket connected to user.
 
     """
     def __init__(
@@ -55,35 +50,22 @@ class Event(Generic[_AbstractMessageType]):
     Can be set to block the main connection loop from running until this event is processed. Is
     unblocking by default.
 
-    Parameters
-    ----------
-    message : uita.message.AbstractMessage
-        Message that triggered event.
-    user : uita.types.DiscordUser
-        User that triggered event.
-    socket : websockets.WebSocketProtocol
-        Connection that triggered event.
-    config : uita.config.Config
-        Configuration options.
-    loop : asyncio.AbstractEventLoop
-        Event loop that task is running in.
-    active_server : uita.types.DiscordServer
-        Server that user is active in. `None` if not yet selected.
+    Args:
+        message (uita.message.AbstractMessage): Message that triggered event.
+        user: User that triggered event.
+        socket: Connection that triggered event.
+        config: Configuration options.
+        loop: Event loop that task is running in.
+        active_server: Server that user is active in. `None` if not yet selected.
 
-    Attributes
-    ----------
-    message : uita.message.AbstractMessage
-        Message that triggered event.
-    user : uita.types.DiscordUser
-        User that triggered event.
-    socket : websockets.WebSocketProtocol
-        Connection that triggered event.
-    config : uita.config.Config
-        Configuration options.
-    loop : asyncio.AbstractEventLoop
-        Event loop that task is running in.
-    active_server : uita.types.DiscordServer
-        Server that user is active in. `None` if not yet selected.
+    Attributes:
+        message (uita.message.AbstractMessage): Message that triggered event.
+        user (uita.types.DiscordUser): User that triggered event.
+        socket (websockets.WebSocketProtocol): Connection that triggered event.
+        config (uita.config.Config): Configuration options.
+        loop (asyncio.AbstractEventLoop): Event loop that task is running in.
+        active_server (Optional[uita.types.DiscordServer]): Server that user is active in. `None`
+            if not yet selected.
 
     """
     CallbackType = Callable[["Event[Any]"], Awaitable[None]]
@@ -123,12 +105,11 @@ class Server():
 
     Requires asynchronous programming, loop management expected from user.
 
-    Attributes
-    ----------
-    database : uita.database.Database
-        Database containing user authentication data.
-    loop : asyncio.AbstractEventLoop
-        Event loop that listen server will attach to.
+    Attributes:
+        database (Optional[uita.database.Database]): Database containing user authentication data.
+            `None` if the server has not yet started.
+        loop (Optional[asyncio.AbstractEventLoop]): Event loop that listen server will attach to.
+            `None` if the server has not yet started.
 
     """
     def __init__(self) -> None:
@@ -148,22 +129,15 @@ class Server():
 
         Accepts connections from UI frontend.
 
-        Parameters
-        ----------
-        database_uri : str
-            URI to database containing user authentication data.
-        config : uita.config.Config
-            Configuration options containing API keys.
-        origins : list(websockets.Origin), optional
-            Refuses connections from clients with origin HTTP headers that do not match given
-            value.
-        loop : asyncio.AbstractEventLoop, optional
-            Event loop to attach listen server to, defaults to ``asyncio.get_event_loop()``.
+        Args:
+            database_uri: URI to database containing user authentication data.
+            config: Configuration options containing API keys.
+            origins: Refuses connections from clients with origin HTTP headers that do not match
+                given value.
+            loop: Event loop to attach listen server to, defaults to ``asyncio.get_event_loop()``.
 
-        Raises
-        ------
-        uita.exceptions.ServerError
-            If called while the server is already running.
+        Raises:
+            uita.exceptions.ServerError: If called while the server is already running.
 
         """
         if self._server is not None:
@@ -228,20 +202,14 @@ class Server():
 
         Callback function should accept a `uita.ui_server.Event` as its only parameter
 
-        Parameters
-        ----------
-        message_type : uita.message.AbstractMessage
-            Message type to wait for.
-        require_active_server : bool, optional
-            Verify that `event.active_server` is valid, default `True`
-        block : bool, optional
-            Block connection await loop until event callback is completed, default `False`.
+        Args:
+            message_type: Message type to wait for.
+            require_active_server: Verify that `event.active_server` is valid, default `True`.
+            block: Block connection await loop until event callback is completed, default `False`.
 
-        Raises
-        ------
-        uita.exceptions.NoActiveServer
-            If `require_active_server` was set to `True` and callback is
-            sent an `event.active_server` of `None`.
+        Raises:
+            uita.exceptions.NoActiveServer: If `require_active_server` was set to `True` and
+                callback is sent an `event.active_server` of `None`.
 
         """
         def decorator(function: Event.CallbackType) -> Event.CallbackType:
@@ -258,12 +226,9 @@ class Server():
     def send_all(self, message: uita.message.AbstractMessage, server_id: str) -> None:
         """Sends a `uita.message.AbstractMessage` to all `uita.types.DiscordUser` in a server.
 
-        Parameters
-        ----------
-        message : uita.message.AbstractMessage
-            Message to send to user.
-        server_id : str
-            Discord server ID to broadcast to.
+        Args:
+            message: Message to send to user.
+            server_id: Discord server ID to broadcast to.
 
         """
         for socket, conn in self.connections.items():

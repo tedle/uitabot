@@ -28,24 +28,16 @@ async def auth(
 ) -> Dict[str, Any]:
     """Retrieves an access token from the Discord API with an authourization code.
 
-    Parameters
-    ----------
-    code : str
-        Access code presented by redirect URI. Must be alphanumeric.
-    config : uita.config.Config
-        Configuration options containing API keys.
-    loop : asyncio.AbstractEventLoop, optional
-        Event loop to attach blocking request threads to.
+    Args:
+        code: Access code presented by redirect URI. Must be alphanumeric.
+        config: Configuration options containing API keys.
+        loop: Event loop to attach blocking request threads to.
 
-    Returns
-    -------
-    dict
+    Returns:
         JSON decoded token data of authenticated user.
 
-    Raises
-    ------
-    uita.exceptions.AuthenticationError
-        If code is invalid.
+    Raises:
+        uita.exceptions.AuthenticationError: If code is invalid.
 
     """
     loop = loop or asyncio.get_event_loop()
@@ -86,24 +78,16 @@ async def get(
 ) -> Dict[str, Any]:
     """Retrieves an object from the Discord API with an authorization token.
 
-    Parameters
-    ----------
-    end_point : str
-        Discord API end point to access.
-    token : str
-        User authorization token for the Discord API.
-    loop : asyncio.AbstractEventLoop, optional
-        Event loop to attach blocking request threads to.
+    Args:
+        end_point: Discord API end point to access.
+        token: User authorization token for the Discord API.
+        loop: Event loop to attach blocking request threads to.
 
-    Returns
-    -------
-    dict
+    Returns:
         JSON decoded data of the requested object.
 
-    Raises
-    ------
-    uita.exceptions.AuthenticationError
-        If request is invalid.
+    Raises:
+        uita.exceptions.AuthenticationError: If request is invalid.
 
     """
     loop = loop or asyncio.get_event_loop()
@@ -125,20 +109,14 @@ async def get(
 def avatar_url(user: Dict[str, Any]) -> str:
     """Generates an avatar CDN URL from a supplied API User GET response.
 
-    Parameters
-    ----------
-    user : dict
-        JSON decoded data of a Discord API User object.
+    Args:
+        user: JSON decoded data of a Discord API User object.
 
-    Returns
-    -------
-    str
+    Returns:
         URL to user avatar.
 
-    Raises
-    ------
-    KeyError
-        If supplied object is missing expected values.
+    Raises:
+        KeyError: If supplied object is missing expected values.
 
     """
     if user["avatar"]:

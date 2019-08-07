@@ -13,10 +13,8 @@ import uita.auth
 class Database():
     """Holds a single database connection and generates queries.
 
-    Parameters
-    ----------
-    uri : str
-        URI pointing to database resource. Can either be a filename or ``:memory:``.
+    Args:
+        uri: URI pointing to database resource. Can either be a filename or ``:memory:``.
 
     """
     def __init__(self, uri: str) -> None:
@@ -38,16 +36,11 @@ class Database():
     def add_session(self, token: str, expiry: int) -> uita.auth.Session:
         """Creates and inserts a new user session into database.
 
-        Parameters
-        ----------
-        token : str
-            User authentication token to associate new session with.
-        expiry : int
-            Time from creation of token that it is valid for in seconds.
+        Args:
+            token: User authentication token to associate new session with.
+            expiry: Time from creation of token that it is valid for in seconds.
 
-        Returns
-        -------
-        uita.auth.Session
+        Returns:
             Session object for authenticating user.
 
         """
@@ -63,10 +56,8 @@ class Database():
 
         Useful for session expiry, user logout, etc.
 
-        Parameters
-        ----------
-        session : uita.auth.Session
-            Session object to be deleted.
+        Args:
+            session: Session object to be deleted.
 
         """
         c = self._connection.cursor()
@@ -76,14 +67,10 @@ class Database():
     def get_access_token(self, session: uita.auth.Session) -> Optional[str]:
         """Verifies whether a given session is valid and returns an access token if so.
 
-        Parameters
-        ----------
-        session : uita.auth.Session
-            Session to compare against database.
+        Args:
+            session: Session to compare against database.
 
-        Returns
-        -------
-        str
+        Returns:
             Access token if session is valid, `None` otherwise.
 
         """
@@ -99,12 +86,9 @@ class Database():
     def set_server_role(self, server_id: str, role_id: Optional[str]) -> None:
         """Configures the required role setting for a server.
 
-        Parameters
-        ----------
-        server_id : str
-            Server ID to change setting for.
-        role_id : str
-            Role ID for required role to use bot commands. `None` for free access.
+        Args:
+            server_id: Server ID to change setting for.
+            role_id: Role ID for required role to use bot commands. `None` for free access.
 
         """
         c = self._connection.cursor()
@@ -114,14 +98,10 @@ class Database():
     def get_server_role(self, server_id: str) -> Optional[str]:
         """Retrieves the required role setting for a server.
 
-        Parameters
-        ----------
-        server_id : str
-            Server ID to change setting for.
+        Args:
+            server_id: Server ID to change setting for.
 
-        Returns
-        -------
-        str
+        Returns:
             Role ID if server has configured this setting, `None` otherwise.
 
         """

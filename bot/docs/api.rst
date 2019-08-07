@@ -8,6 +8,9 @@ Audio
 -----
 .. automodule:: uita.audio
 .. autoclass:: Track
+.. autoclass:: Status
+    :members:
+    :undoc-members:
 .. autoclass:: Queue
     :members:
 .. autoclass:: FfmpegStream
@@ -29,6 +32,7 @@ Bot Commands
 Config
 ------
 .. automodule:: uita.config
+.. autoclass:: Config
 .. autofunction:: load
 
 Database
@@ -70,4 +74,9 @@ UI Server
 Utils
 -----
 .. automodule:: uita.utils
+    :members:
+
+Youtube API
+-----------
+.. automodule:: uita.youtube_api
     :members:

@@ -20,16 +20,11 @@ async def dir_size(
     awaiting a result. The performance impact should be minimal since this cuts down on
     asynchronous random disk reads.
 
-    Parameters
-    ----------
-    path : str
-        Path to directory to be sized up.
-    loop : asyncio.AbstractEventLoop, optional
-        Event loop to attach listen server to, defaults to ``asyncio.get_event_loop()``.
+    Args:
+        path: Path to directory to be sized up.
+        loop: Event loop to attach listen server to, defaults to ``asyncio.get_event_loop()``.
 
-    Returns
-    -------
-    int
+    Returns:
         Directory size in bytes.
 
     """
@@ -49,9 +44,7 @@ dir_size.lock = asyncio.Lock()  # type: ignore
 def install_dir() -> str:
     """Gets the absolute path to the script being run.
 
-    Returns
-    -------
-    str
+    Returns:
         Path to running script.
 
     """
@@ -61,9 +54,7 @@ def install_dir() -> str:
 def cache_dir() -> str:
     """Gets the absolute path to the file cache directory.
 
-    Returns
-    -------
-    str
+    Returns:
         Path to cache directory.
 
     """
@@ -78,9 +69,7 @@ def cache_dir() -> str:
 def config_file() -> str:
     """Gets the absolute path to the config file.
 
-    Returns
-    -------
-    str
+    Returns:
         Path to config file.
 
     """
@@ -94,12 +83,9 @@ async def prune_cache_dir(
 ) -> None:
     """Prunes the cache directory of unused files.
 
-    Parameters
-    ----------
-    whitelist : list(str), optional
-        List of absolute paths to exempt from pruning.
-    loop : asyncio.AbstractEventLoop, optional
-        Event loop to attach listen server to, defaults to ``asyncio.get_event_loop()``.
+    Args:
+        whitelist: List of absolute paths to exempt from pruning.
+        loop: Event loop to attach listen server to, defaults to ``asyncio.get_event_loop()``.
 
     """
     safe_whitelist: List[str] = (whitelist or list())
@@ -121,10 +107,8 @@ prune_cache_dir.whitelist = set()  # type: ignore
 def prune_cache_guard(path: str) -> Iterator[None]:
     """Scoped `with` context function for protecting a path from `uita.utils.prune_cache_dir`
 
-    Parameters
-    ----------
-    path : str
-        Absolute path to be exempted from pruning.
+    Args:
+        path: Absolute path to be exempted from pruning.
 
     """
     try:
@@ -137,14 +121,10 @@ def prune_cache_guard(path: str) -> Iterator[None]:
 def build_client_url(config: uita.config.Config) -> str:
     """Generates the web client URL from the config file settings.
 
-    Parameters
-    ----------
-    config : uita.config.Config
-        Configuration settings.
+    Args:
+        config: Configuration settings.
 
-    Returns
-    -------
-    str
+    Returns:
         Web client URL.
 
     """
@@ -158,14 +138,10 @@ def build_client_url(config: uita.config.Config) -> str:
 def build_websocket_url(config: uita.config.Config) -> str:
     """Generates the websocket URL from the config file settings.
 
-    Parameters
-    ----------
-    config : uita.config.Config
-        Configuration settings.
+    Args:
+        config: Configuration settings.
 
-    Returns
-    -------
-    str
+    Returns:
         Websocket URL that client is expected to connect to.
 
     """
@@ -182,16 +158,11 @@ def verify_channel_visibility(channel: discord.abc.GuildChannel, user: discord.M
     The Discord API provides a full list of channels including ones normally invisible to the
     client. This helps hide channels that a bot or user shouldn't see.
 
-    Parameters
-    ----------
-    channel : discord.abc.GuildChannel
-        discord.py channel.
-    user : discord.Member
-        discord.py server member.
+    Args:
+        channel: discord.py channel.
+        user: discord.py server member.
 
-    Returns
-    -------
-    bool
+    Returns:
         `True` if the user can view and use the given channel.
 
     """
@@ -206,16 +177,11 @@ def verify_channel_visibility(channel: discord.abc.GuildChannel, user: discord.M
 def verify_user_permissions(user: discord.Member, role: Optional[str]) -> bool:
     """Checks whether a user has sufficient role permissions.
 
-    Parameters
-    ----------
-    user : discord.Member
-        discord.py server member.
-    role : str
-        ID of role to verify against. `None` to allow any role.
+    Args:
+        user: discord.py server member.
+        role: ID of role to verify against. `None` to allow any role.
 
-    Returns
-    -------
-    bool
+    Returns:
         `True` if the user has the specified role, if the specified role is `None` or if the user
         is a server administrator.
 

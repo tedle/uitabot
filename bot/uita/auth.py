@@ -11,19 +11,13 @@ import uita.types
 class Session(NamedTuple):
     """Contains session authentication data.
 
-    Parameters
-    ----------
-    handle : str
-        Session handle.
-    secret : str
-        Session secret.
+    Args:
+        handle (str): Session handle.
+        secret (str): Session secret.
 
-    Attributes
-    ----------
-    handle : str
-        Session handle.
-    secret : str
-        Session secret.
+    Attributes:
+        handle (str): Session handle.
+        secret (str): Session secret.
 
     """
     handle: str
@@ -38,26 +32,17 @@ async def verify_session(
 ) -> uita.types.DiscordUser:
     """Authenticates a user session against sessions database and Discord API.
 
-    Parameters
-    ----------
-    session : uita.auth.Session
-        Session to compare against database.
-    database : uita.database.Database
-        Database containing valid sessions.
-    config : uita.config.Config
-        Configuration options containing API keys.
-    loop : asyncio.AbstractEventLoop, optional
-        Event loop to attach blocking request threads to.
+    Args:
+        session: Session to compare against database.
+        database: Database containing valid sessions.
+        config: Configuration options containing API keys.
+        loop: Event loop to attach blocking request threads to.
 
-    Returns
-    -------
-    uita.types.DiscordUser
+    Returns:
         User object of authenticated user.
 
-    Raises
-    ------
-    uita.exceptions.AuthenticationError
-        If authentication fails.
+    Raises:
+        uita.exceptions.AuthenticationError: If authentication fails.
 
     """
     loop = loop or asyncio.get_event_loop()
@@ -86,26 +71,17 @@ async def verify_code(
 
     On success, creates and stores a session in the local database.
 
-    Parameters
-    ----------
-    code : str
-        Access code to authenticate.
-    database : uita.database.Database
-        Database containing valid sessions.
-    config : uita.config.Config
-        Configuration options containing API keys.
-    loop : asyncio.AbstractEventLoop, optional
-        Event loop to attach blocking request threads to.
+    Args:
+        code: Access code to authenticate.
+        database: Database containing valid sessions.
+        config: Configuration options containing API keys.
+        loop: Event loop to attach blocking request threads to.
 
-    Returns
-    -------
-    uita.auth.Session
+    Returns:
         Session object for authenticated user.
 
-    Raises
-    ------
-    uita.exceptions.AuthenticationError
-        If authentication fails.
+    Raises:
+        uita.exceptions.AuthenticationError: If authentication fails.
 
     """
     loop = loop or asyncio.get_event_loop()

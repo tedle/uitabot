@@ -46,14 +46,10 @@ def command(
 
     Callback function should accept a `discord.Message` and `str` as its parameters.
 
-    Parameters
-    ----------
-    *args : str
-        List of commands to be bound to this function.
-    help : str, optional
-        Descriptive message provided when help command is called.
-    require_administrator : bool, optional
-        Require administrator privileges to use command.
+    Args:
+        *args: Commands to be bound to this function.
+        help: Descriptive message provided when help command is called.
+        require_administrator: Require administrator privileges to use command.
 
     """
     def decorator(function: CommandCallbackType) -> CommandCallbackType:
@@ -89,10 +85,8 @@ async def parse(message: discord.Message) -> None:
 
     Sends an error message to the corresponding Discord channel if command does not exist.
 
-    Parameters
-    ----------
-    message : discord.Message
-        Message to be run.
+    Args:
+        message: Message to be run.
 
     """
     # Check that message is using command syntax
@@ -125,10 +119,8 @@ async def parse(message: discord.Message) -> None:
 async def set_prefix(prefix: str) -> None:
     """Sets the prefix used to trigger bot commands. Updates client presence to show help command.
 
-    Parameters
-    ----------
-    prefix : str
-        Command prefix.
+    Args:
+        prefix: Command prefix.
 
     """
     global _COMMAND_PREFIX

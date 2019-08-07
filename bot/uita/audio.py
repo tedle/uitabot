@@ -24,41 +24,25 @@ log = logging.getLogger(__name__)
 class Track():
     """Container for audio resource metadata.
 
-    Parameters
-    ----------
-    path : str
-        Path to audio resource for ffmpeg to load.
-    user : uita.types.DiscordUser
-        User that requested track.
-    title : str
-        Title of track.
-    duration : int
-        Track duration in seconds.
-    live : bool
-        Determines if the track is a remote livestream.
-    local : bool
-        Determines if the track is a local file or not.
-    url : str, optional
-        The public URL of the track if it exists, `None` otherwise.
+    Args:
+        path: Path to audio resource for ffmpeg to load.
+        user: User that requested track.
+        title: Title of track.
+        duration: Track duration in seconds.
+        live: Determines if the track is a remote livestream.
+        local: Determines if the track is a local file or not.
+        url: The public URL of the track if it exists, `None` otherwise.
 
-    Attributes
-    ----------
-    id : str
-        Unique 32 character long ID.
-    path : str
-        Path to audio resource for ffmpeg to load.
-    user : uita.types.DiscordUser
-        User that requested track.
-    title : str
-        Title of track.
-    duration : int
-        Track duration in seconds.
-    live : bool
-        Determines if the track is a remote livestream.
-    local : bool
-        Determines if the track is a local file or not.
-    offset : float
-        Offset in seconds to start track from.
+    Attributes:
+        id (str): Unique 32 character long ID.
+        path (str): Path to audio resource for ffmpeg to load.
+        user (uita.types.DiscordUser): User that requested track.
+        title (str): Title of track.
+        duration (int): Track duration in seconds.
+        live (bool): Determines if the track is a remote livestream.
+        local (bool): Determines if the track is a local file or not.
+        url (typing.Optional[str]): The public URL of the track if it exists, `None` otherwise.
+        offset (float): Offset in seconds to start track from.
 
     """
     def __init__(
@@ -84,6 +68,7 @@ class Track():
 
 # NOTE: These values must be synced with the enum used in utils/Message.js:PlayStatusSendMessage
 class Status(enum.IntEnum):
+    """Play status for audio."""
     PLAYING = 1
     PAUSED = 2
 
@@ -91,25 +76,17 @@ class Status(enum.IntEnum):
 class Queue():
     """Queues audio resources to be played by a looping task.
 
-    Parameters
-    ----------
-    maxlen : int, optional
-        Maximum queue size. Default is `None`, which is unlimited.
-    on_queue_change : callback(list), optional
-        Callback that is triggered everytime the state of the playback queue changes. Function
-        accepts a list of `uita.audio.Track` as its only argument.
-    on_status_change : callback(uita.audio.Status), optional
-        Callback that is triggered everytime the playback status changes. Function accepts a
-        `uita.audio.Status` as its only argument.
-    loop : asyncio.AbstractEventLoop, optional
-        Event loop for audio tasks to run in.
+    Args:
+        maxlen: Maximum queue size. Default is `None`, which is unlimited.
+        on_queue_change: Callback that is triggered everytime the state of the playback queue
+            changes. Function accepts a list of `uita.audio.Track` as its only argument.
+        on_status_change: Callback that is triggered everytime the playback status changes.
+            Function accepts a `uita.audio.Status` as its only argument.
+        loop: Event loop for audio tasks to run in.
 
-    Attributes
-    ----------
-    loop : asyncio.AbstractEventLoop
-        Event loop for audio tasks to run in.
-    status : uita.audio.Status
-        Current playback status (playing, paused, etc).
+    Attributes:
+        loop (asyncio.AbstractEventLoop): Event loop for audio tasks to run in.
+        status (uita.audio.Status): Current playback status (playing, paused, etc).
 
     """
     QueueCallbackType = Callable[
@@ -146,9 +123,7 @@ class Queue():
     def queue(self) -> List[Track]:
         """Retrieves a list of currently queued audio resources.
 
-        Returns
-        -------
-        list
+        Returns:
             Ordered list of audio resources queued for playback.
 
         """
@@ -167,9 +142,7 @@ class Queue():
     def queue_full(self) -> bool:
         """Tests if the queue is at capacity.
 
-        Returns
-        -------
-        bool
+        Returns:
             True if the queue is full.
 
         """
@@ -180,10 +153,8 @@ class Queue():
 
         First stops current playlist task if it exists.
 
-        Parameters
-        ----------
-        voice : discord.VoiceClient
-            Voice connection to spawn audio players for.
+        Args:
+            voice: Voice connection to spawn audio players for.
 
         """
         # Cancels currently running play task
@@ -212,17 +183,12 @@ class Queue():
     async def enqueue_file(self, path: str, user: "uita.types.DiscordUser") -> None:
         """Queues a file to be played by the running playlist task.
 
-        Parameters
-        ----------
-        path : str
-            Path for audio resource to be played.
-        user : uita.types.DiscordUser
-            User that requested track.
+        Args:
+            path: Path for audio resource to be played.
+            user: User that requested track.
 
-        Raises
-        ------
-        uita.exceptions.ClientError
-            If called with an unusable audio path.
+        Raises:
+            uita.exceptions.ClientError: If called with an unusable audio path.
 
         """
         # Some quick sanitization to make sure bad input won't escape the cache directory
@@ -278,17 +244,12 @@ class Queue():
     async def enqueue_url(self, url: str, user: "uita.types.DiscordUser") -> None:
         """Queues a URL to be played by the running playlist task.
 
-        Parameters
-        ----------
-        url : str
-            URL for audio resource to be played.
-        user : uita.types.DiscordUser
-            User that requested track.
+        Args:
+            url: URL for audio resource to be played.
+            user: User that requested track.
 
-        Raises
-        ------
-        uita.exceptions.ClientError
-            If called with an unusable audio path.
+        Raises:
+            uita.exceptions.ClientError: If called with an unusable audio path.
 
         """
         info = await uita.youtube_api.scrape(url, loop=self.loop)
@@ -326,12 +287,9 @@ class Queue():
     async def move(self, track_id: str, position: int) -> None:
         """Moves a track to a new position in the playback queue.
 
-        Parameters
-        ----------
-        track_id : str
-            Track ID of audio resource to be moved.
-        position : int
-            Index position for the track to be moved to.
+        Args:
+            track_id: Track ID of audio resource to be moved.
+            position: Index position for the track to be moved to.
 
         """
         with await self._queue_lock:
@@ -361,10 +319,8 @@ class Queue():
     async def remove(self, track_id: str) -> None:
         """Removes a track from the playback queue.
 
-        Parameters
-        ----------
-        track_id : str
-            Track ID of audio resource to be removed.
+        Args:
+            track_id: Track ID of audio resource to be removed.
 
         """
         with await self._queue_lock:
@@ -381,14 +337,10 @@ class Queue():
     async def track_from_url(self, url: str) -> Track:
         """Probes the audio resource at a given URL for audio metadata.
 
-        Parameters
-        ----------
-        url : str
-            URL to audio resource.
+        Args:
+            url: URL to audio resource.
 
-        Returns
-        -------
-        uita.audio.Track
+        Returns:
             Container for track metadata.
 
         """
@@ -465,12 +417,9 @@ class FfmpegStream(discord.AudioSource):
     the consumer thread. This noticably cuts down on stuttering during playback, especially for
     live streams.
 
-    Parameters
-    ----------
-    track : uita.audio.Track
-        Track to be played.
-    encoder : discord.opus.Encoder
-        discord.py opus encoder is needed to configure sampling rate for FFmpeg.
+    Args:
+        track: Track to be played.
+        encoder: discord.py opus encoder is needed to configure sampling rate for FFmpeg.
 
     """
 
@@ -521,9 +470,7 @@ class FfmpegStream(discord.AudioSource):
     def read(self) -> bytes:
         """Returns a `bytes` array of raw audio data.
 
-        Returns
-        -------
-        bytes
+        Returns:
             Array of raw audio data. Size of array is equal to (or less than if EOF has been
             reached) the `FRAME_SIZE` of the opus Encoder parameter passed into the object
             constructor.
@@ -562,10 +509,8 @@ class FfmpegStream(discord.AudioSource):
     async def wait_ready(self, loop: Optional[asyncio.AbstractEventLoop] = None) -> None:
         """Waits until the first packet of buffered audio data is available to be read.
 
-        Parameters
-        ----------
-        loop : asyncio.AbstractEventLoop, optional
-            Event loop to launch threaded blocking wait task from.
+        Args:
+            loop: Event loop to launch threaded blocking wait task from.
 
         """
         async_loop = loop or asyncio.get_event_loop()

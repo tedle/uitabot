@@ -8,20 +8,15 @@ class ClientError(Exception):
     Unlike other uncaught errors caused by a server event, `uita.exceptions.ClientError` will not
     cause a connection closure.
 
-    Parameters
-    ----------
-    message : uita.message.AbstractMessage
-        Message to be sent by the connection handler to the client.
+    Args:
+        message: Message to be sent by the connection handler to the client.
 
-    Attributes
-    ----------
-    message : uita.message.AbstractMessage
-        Message to be sent by the connection handler to the client.
+    Attributes:
+        message (uita.message.AbstractMessage): Message to be sent by the connection handler to the
+            client.
 
-    Raises
-    ------
-    TypeError
-        If initialized with a type other than uita.message.AbstractMessage
+    Raises:
+        TypeError: If initialized with a type other than uita.message.AbstractMessage
 
     """
     def __init__(self, message: uita.message.AbstractMessage) -> None:

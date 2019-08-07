@@ -11,10 +11,8 @@ import uita.types
 class AbstractMessage():
     """Abstract base class for websocket messaging API.
 
-    Attributes
-    ----------
-    header : str
-        Header defining message type
+    Attributes:
+        header (str): Header defining message type
 
     """
     header: str = ""
@@ -28,10 +26,11 @@ class AbstractMessage():
 class AuthCodeMessage(AbstractMessage):
     """Sent by client when authenticating by token request code.
 
-    Attributes
-    ----------
-    code : str
-        Token request code to be sent to Discord API.
+    Args:
+        code: Token request code to be sent to Discord API.
+
+    Attributes:
+        code (str): Token request code to be sent to Discord API.
     """
     header = "auth.code"
     """"""
@@ -49,12 +48,13 @@ class AuthFailMessage(AbstractMessage):
 class AuthSessionMessage(AbstractMessage):
     """Sent by client when authenticating by session.
 
-    Attributes
-    ----------
-    handle : str
-        Session handle as stored in database.
-    secret : str
-        Session secret as stored in database.
+    Args:
+        handle: Session handle as stored in database.
+        secret: Session secret as stored in database.
+
+    Attributes:
+        handle (str): Session handle as stored in database.
+        secret (str): Session secret as stored in database.
 
     """
     header = "auth.session"
@@ -72,19 +72,13 @@ class AuthSessionMessage(AbstractMessage):
 class AuthSucceedMessage(AbstractMessage):
     """Sent by server when authentication succeeds.
 
-    Parameters
-    ----------
-    user : uita.types.DiscordUser
-        Object representing authenticated user.
-    session : uita.auth.Session
-        Session object for authentication.
+    Args:
+        user: Object representing authenticated user.
+        session: Session object for authentication.
 
-    Attributes
-    ----------
-    user : uita.types.DiscordUser
-        Object representing authenticated user.
-    session : uita.auth.Session
-        Session object for authentication.
+    Attributes:
+        user (uita.types.DiscordUser): Object representing authenticated user.
+        session (uita.auth.Session): Session object for authentication.
 
     """
     header = "auth.succeed"
@@ -111,10 +105,12 @@ class ChannelActiveGetMessage(AbstractMessage):
 class ChannelActiveSendMessage(AbstractMessage):
     """Sent by server containing the currently connected voice channel.
 
-    Attributes
-    ----------
-    channel : uita.types.DiscordChannel
-        Voice channel currently connected to. `None` if not connected.
+    Args:
+        channel: Voice channel currently connected to. `None` if not connected.
+
+    Attributes:
+        channel (Optional[uita.types.DiscordChannel]): Voice channel currently connected to. `None`
+            if not connected.
 
     """
     header = "channel.active.send"
@@ -131,10 +127,11 @@ class ChannelActiveSendMessage(AbstractMessage):
 class ChannelJoinMessage(AbstractMessage):
     """Sent by client containing a channel ID to join.
 
-    Attributes
-    ----------
-    channel_id : str
-        Channel ID to join.
+    Args:
+        channel_id: Channel ID to join.
+
+    Attributes:
+        channel_id (str): Channel ID to join.
 
     """
     header = "channel.join"
@@ -163,10 +160,11 @@ class ChannelListGetMessage(AbstractMessage):
 class ChannelListSendMessage(AbstractMessage):
     """Sent by server containing a list of every channel the bot can connect to.
 
-    Attributes
-    ----------
-    channels : list(uita.types.DiscordChannel)
-        List of channels to connect to.
+    Args:
+        channels: List of channels to connect to.
+
+    Attributes:
+        channels (List[uita.types.DiscordChannel]): List of channels to connect to.
 
     """
     header = "channel.list.send"
@@ -185,10 +183,11 @@ class ChannelListSendMessage(AbstractMessage):
 class ErrorFileInvalidMessage(AbstractMessage):
     """Sent when an uploaded file has invalid audio data.
 
-    Attributes
-    ----------
-    error : str
-        Description of file error.
+    Args:
+        error: Description of file error.
+
+    Attributes:
+        error (str): Description of file error.
 
     """
     header = "error.file.invalid"
@@ -213,10 +212,11 @@ class ErrorUrlInvalidMessage(AbstractMessage):
 class FileUploadStartMessage(AbstractMessage):
     """Sent by client initiating a file upload procedure.
 
-    Attributes
-    ----------
-    size : int
-        File size in bytes.
+    Args:
+        size: File size in bytes.
+
+    Attributes:
+        size (int): File size in bytes.
 
     """
     header = "file.upload.start"
@@ -247,12 +247,13 @@ class PlayQueueGetMessage(AbstractMessage):
 class PlayQueueMoveMessage(AbstractMessage):
     """Sent by client to move a track to a new position in the queue..
 
-    Attributes
-    ----------
-    id : str
-        ID of track to be removed.
-    position : int
-        Queue index to be moved to.
+    Args:
+        id: ID of track to be removed.
+        position: Queue index to be moved to.
+
+    Attributes:
+        id (str): ID of track to be removed.
+        position (int): Queue index to be moved to.
 
     """
     header = "play.queue.move"
@@ -270,10 +271,11 @@ class PlayQueueMoveMessage(AbstractMessage):
 class PlayQueueRemoveMessage(AbstractMessage):
     """Sent by client containing track ID to be removed.
 
-    Attributes
-    ----------
-    id : str
-        ID of track to be removed.
+    Args:
+        id: ID of track to be removed.
+
+    Attributes:
+        id (str): ID of track to be removed.
 
     """
     header = "play.queue.remove"
@@ -288,10 +290,11 @@ class PlayQueueRemoveMessage(AbstractMessage):
 class PlayQueueSendMessage(AbstractMessage):
     """Sent by server containing playback queue state.
 
-    Attributes
-    ----------
-    queue : list(uita.audio.Track)
-        List of tracks that are currently queued.
+    Args:
+        queue: List of tracks that are currently queued.
+
+    Attributes:
+        queue (List[uita.audio.Track]): List of tracks that are currently queued.
 
     """
     header = "play.queue.send"
@@ -318,10 +321,11 @@ class PlayStatusGetMessage(AbstractMessage):
 class PlayStatusSendMessage(AbstractMessage):
     """Sent by server containing current playback status.
 
-    Attributes
-    ----------
-    status : uita.audio.Status
-        Enum of current playback status.
+    Args:
+        status: Enum of current playback status.
+
+    Attributes:
+        status (uita.audio.Status): Enum of current playback status.
 
     """
     header = "play.status.send"
@@ -334,10 +338,11 @@ class PlayStatusSendMessage(AbstractMessage):
 class PlayURLMessage(AbstractMessage):
     """Sent by client requesting a remote song be played.
 
-    Attributes
-    ----------
-    url : str
-        URL to audio resource.
+    Args:
+        url: URL to audio resource.
+
+    Attributes:
+        url (str): URL to audio resource.
 
     """
     header = "play.url"
@@ -352,10 +357,11 @@ class PlayURLMessage(AbstractMessage):
 class ServerJoinMessage(AbstractMessage):
     """Sent by client containing a server ID to join.
 
-    Attributes
-    ----------
-    server_id : str
-        Server ID to join.
+    Args:
+        server_id: Server ID to join.
+
+    Attributes:
+        server_id (str): Server ID to join.
 
     """
     header = "server.join"
@@ -384,10 +390,11 @@ class ServerListGetMessage(AbstractMessage):
 class ServerListSendMessage(AbstractMessage):
     """Sent by server containing a list of every server a user can connect to.
 
-    Attributes
-    ----------
-    servers : list(uita.types.DiscordServer)
-        List of servers to connect to.
+    Args:
+        servers: List of servers to connect to.
+
+    Attributes:
+        servers (List[uita.types.DiscordServer]): List of servers to connect to.
 
     """
     header = "server.list.send"
@@ -444,20 +451,14 @@ MAX_URL_LENGTH: Final = 2000
 def parse(message: str) -> AbstractMessage:
     """Parse and validate raw message strings.
 
-    Parameters
-    ----------
-    message : str
-        JSON encoded message to be parsed.
+    Args:
+        message: JSON encoded message to be parsed.
 
-    Returns
-    -------
-    uita.message.AbstractMessage
+    Returns:
         A subclass of `uita.message.AbstractMessage` containing a header and associated data.
 
-    Raises
-    ------
-    uita.exceptions.MalformedMessage
-        If the message string is invalid.
+    Raises:
+        uita.exceptions.MalformedMessage: If the message string is invalid.
     """
     if len(message) > MAX_CLIENT_MESSAGE_LENGTH:
         raise uita.exceptions.MalformedMessage("Message exceeded maximum length")

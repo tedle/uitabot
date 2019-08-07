@@ -1,4 +1,4 @@
-"""Audio queue management."""
+"""Async HTTP requests to the Youtube API"""
 import asyncio
 import re
 import requests
@@ -24,22 +24,15 @@ API_URL: Final = "https://www.googleapis.com/youtube/v3"
 async def scrape(url: str, loop: Optional[asyncio.AbstractEventLoop] = None) -> Dict[str, Any]:
     """Queries YouTube for URL metadata.
 
-    Parameters
-    ----------
-    url : str
-        URL for audio resource to be played.
-    loop : asyncio.AbstractEventLoop, optional
-        Event loop to attach to launch worker threads from.
+    Args:
+        url: URL for audio resource to be played.
+        loop: Event loop to attach to launch worker threads from.
 
-    Returns
-    -------
-    dict
+    Returns:
         YoutubeDL dict soup response.
 
-    Raises
-    ------
-    uita.exceptions.ClientError
-        If called with an unusable audio path.
+    Raises:
+        uita.exceptions.ClientError: If called with an unusable audio path.
 
     """
     loop = loop or asyncio.get_event_loop()
@@ -82,29 +75,19 @@ async def search(
 ) -> List[Dict[str, Any]]:
     """Queries YouTube for search results.
 
-    Parameters
-    ----------
-    query : str
-        Search query for audio resource to be found.
-    api_key : str, optional
-        API key for Youtube searches. Defaults to `None` which performs a much slower search using
-        youtube-dl.
-    referrer : str, optional
-        Referrer for HTTP requests, in case API restrictions are in place.
-    results : int, optional
-        Number of results to retrieve, default ``5``.
-    loop : asyncio.AbstractEventLoop, optional
-        Event loop to attach to launch worker threads from.
+    Args:
+        query: Search query for audio resource to be found.
+        api_key: API key for Youtube searches. Defaults to `None` which performs a much slower
+            search using youtube-dl.
+        referrer: Referrer for HTTP requests, in case API restrictions are in place.
+        results: Number of results to retrieve, default ``5``.
+        loop: Event loop to attach to launch worker threads from.
 
-    Returns
-    -------
-    list
+    Returns:
         List of search results.
 
-    Raises
-    ------
-    uita.exceptions.ClientError
-        If called with an unusable search query.
+    Raises:
+        uita.exceptions.ClientError: If called with an unusable search query.
 
     """
     loop = loop or asyncio.get_event_loop()
@@ -161,14 +144,10 @@ async def search(
 def parse_time(time: str) -> int:
     """Converts a YouTube timestamp into seconds.
 
-    Parameters
-    ----------
-    time : str
-        Timestamp from YouTube API.
+    Args:
+        time: Timestamp from YouTube API.
 
-    Returns
-    -------
-    int
+    Returns:
         Time in seconds.
 
     """
@@ -189,14 +168,10 @@ def parse_time(time: str) -> int:
 def build_url(video_id: str) -> str:
     """Converts a YouTube video ID into a valid URL.
 
-    Parameters
-    ----------
-    video_id : str
-        YouTube video ID.
+    Args:
+        video_id: YouTube video ID.
 
-    Returns
-    -------
-    str
+    Returns:
         YouTube video URL.
 
     """

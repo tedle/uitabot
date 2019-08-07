@@ -4,3 +4,4 @@ youtube-dl==2019.7.30
 flake8==3.7.7
 mypy==0.720
 Sphinx==2.1.2
+sphinx-autodoc-typehints==1.7.0

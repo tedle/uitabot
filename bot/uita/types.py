@@ -13,12 +13,11 @@ log = logging.getLogger(__name__)
 class DiscordState():
     """Container for active Discord data.
 
-    Attributes
-    ----------
-    servers : dict(uita.types.DiscordServer)
-        Dict of servers bot is connected to indexed by server ID.
-    voice_connections : dict(uita.types.DiscordVoiceClient)
-        Dict of voice channels bot is connected to indexed by server ID.
+    Attributes:
+        servers (Dict[str, uita.types.DiscordServer]): Dict of servers bot is connected to indexed
+            by server ID.
+        voice_connections (Dict[str, uita.types.DiscordVoiceClient]): Dict of voice channels bot is
+            connected to indexed by server ID.
 
     """
     def __init__(self) -> None:
@@ -38,10 +37,8 @@ class DiscordState():
     def initialize_from_bot(self, bot: discord.Client) -> None:
         """Initialize Discord state from a `discord.Client`
 
-        Parameters
-        ----------
-        bot : discord.Client
-            Bot containing initial Discord state to copy.
+        Args:
+            bot: Bot containing initial Discord state to copy.
 
         """
         log.info("Bot state synced to Discord")
@@ -75,12 +72,9 @@ class DiscordState():
     def channel_add(self, channel: "DiscordChannel", server_id: str) -> None:
         """Add a server channel to Discord state.
 
-        Parameters
-        ----------
-        channel : uita.types.DiscordChannel
-            Channel to be added to server.
-        server_id : str
-            ID of server that channel belongs to.
+        Args:
+            channel: Channel to be added to server.
+            server_id: ID of server that channel belongs to.
 
         """
         log.debug("channel_add {}".format(channel.id))
@@ -89,12 +83,9 @@ class DiscordState():
     def channel_remove(self, channel_id: str, server_id: str) -> None:
         """Remove a server channel from Discord state.
 
-        Parameters
-        ----------
-        channel_id : str
-            ID of channel to be removed from server.
-        server_id : str
-            ID of server that channel belongs to.
+        Args:
+            channel_id: ID of channel to be removed from server.
+            server_id: ID of server that channel belongs to.
 
         """
         log.debug("channel_remove {}".format(channel_id))
@@ -103,12 +94,9 @@ class DiscordState():
     def server_add(self, server: "DiscordServer", bot: discord.Client) -> None:
         """Add an accessible server to Discord state.
 
-        Parameters
-        ----------
-        server : uita.types.DiscordServer
-            Server that bot has joined.
-        bot : discord.Client
-            Bot that handles voice client connections.
+        Args:
+            server: Server that bot has joined.
+            bot: Bot that handles voice client connections.
 
         """
         log.debug("server_add {}".format(server.id))
@@ -120,10 +108,8 @@ class DiscordState():
     def server_remove(self, server_id: str) -> None:
         """Remove an accessible server from Discord state.
 
-        Parameters
-        ----------
-        server_id : str
-            ID of server that bot has left.
+        Args:
+            server_id: ID of server that bot has left.
 
         """
         log.debug("server_remove {}".format(server_id))
@@ -133,14 +119,10 @@ class DiscordState():
     def server_add_user(self, server_id: str, user_id: str, user_name: str) -> None:
         """Add an accessible server for a user.
 
-        Parameters
-        ----------
-        server_id : str
-            Server that can be accessed.
-        user_id : str
-            User to update.
-        user_name : str
-            New username.
+        Args:
+            server_id: Server that can be accessed.
+            user_id: User to update.
+            user_name: New username.
 
         """
         self.servers[server_id].users[user_id] = user_name
@@ -148,12 +130,9 @@ class DiscordState():
     def server_remove_user(self, server_id: str, user_id: str) -> None:
         """Remove an inaccessible server for a user.
 
-        Parameters
-        ----------
-        server_id : str
-            Server that can no longer be accessed.
-        user_id : str
-            User to update.
+        Args:
+            server_id: Server that can no longer be accessed.
+            user_id: User to update.
 
         """
         del self.servers[server_id].users[user_id]
@@ -161,14 +140,10 @@ class DiscordState():
     def server_get_role(self, server_id: str) -> Optional[str]:
         """Get the role required to use bot commands.
 
-        Parameters
-        ----------
-        server_id : str
-            Server that can no longer be accessed.
+        Args:
+            server_id: Server to get required role from.
 
-        Returns
-        -------
-        str
+        Returns:
             ID of required role. Can be `None` for no requirement.
 
         """
@@ -182,12 +157,9 @@ class DiscordState():
     def server_set_role(self, server_id: str, role_id: Optional[str]) -> None:
         """Set a role required to use bot commands. `None` for free access.
 
-        Parameters
-        ----------
-        server_id : str
-            Server that can no longer be accessed.
-        role_id : str
-            ID of required role. Can be `None` for no requirement.
+        Args:
+            server_id: Server that can no longer be accessed.
+            role_id: ID of required role. Can be `None` for no requirement.
 
         """
         uita.server.database.set_server_role(server_id, role_id)
@@ -200,29 +172,20 @@ class DiscordState():
 class DiscordChannel():
     """Container for Discord channel data.
 
-    Parameters
-    ----------
-    id : str
-        Unique channel ID.
-    name : str
-        Channel name.
-    type : discord.ChannelType
-        Channel type.
-    position : int
-        Ordered position in channel list.
+    Args:
+        id: Unique channel ID.
+        name: Channel name.
+        type: Channel type.
+        category: Unique category channel ID. `None` if not a categorized subchannel.
+        position: Ordered position in channel list.
 
-    Attributes
-    ----------
-    id : str
-        Unique channel ID.
-    name : str
-        Channel name.
-    type : discord.ChannelType
-        Channel type.
-    category : str
-        Unique category channel ID. `None` if not a categorized subchannel.
-    position : int
-        Ordered position in channel list.
+    Attributes:
+        id (str): Unique channel ID.
+        name (str): Channel name.
+        type (discord.ChannelType): Channel type.
+        category (Optional[str]): Unique category channel ID. `None` if not a categorized
+            subchannel.
+        position (int): Ordered position in channel list.
 
     """
     def __init__(
@@ -243,33 +206,21 @@ class DiscordChannel():
 class DiscordServer():
     """Container for Discord server data.
 
-    Parameters
-    ----------
-    id : str
-        Unique server ID.
-    name : str
-        Server name.
-    channels : dict(channel_id: uita.types.DiscordChannel)
-        Dictionary of channels in server.
-    users : dict(user_id: user_name)
-        Dictionary of users in server with access to bot commands.
-    icon : str
-        Server icon hash.
+    Args:
+        id: Unique server ID.
+        name: Server name.
+        channels: Dictionary of channels in server.
+        users: Dictionary of users in server with access to bot commands.
+        icon: Server icon hash.
 
-    Attributes
-    ----------
-    id : str
-        Unique server ID.
-    name : str
-        Server name.
-    channels : dict(channel_id: uita.types.DiscordChannel)
-        Dictionary of channels in server.
-    users : dict(user_id: user_name)
-        Dictionary of users in server with access to bot commands.
-    icon : str
-        Server icon hash. `None` if no custom icon exists.
-    role : str
-        Role ID needed to use bot commands. Set to `None` for unrestricted access.
+    Attributes:
+        id (str): Unique server ID.
+        name (str): Server name.
+        channels (Dict[str, uita.types.DiscordChannel]): Dictionary of channels in server.
+        users (Dict[str, str]): Dictionary of usernames in server with access to bot commands.
+        icon (Optional[str]): Server icon hash. `None` if no custom icon exists.
+        role (Optional[str]): Role ID needed to use bot commands. Set to `None` for unrestricted
+            access.
 
     """
     def __init__(
@@ -290,27 +241,19 @@ class DiscordServer():
 class DiscordUser():
     """Container for Discord user data.
 
-    Parameters
-    ----------
-    id : str
-        Unique user ID.
-    name : str
-        User name.
-    avatar : str
-        URL to user avatar.
-    active_server_id : str
-        Discord server that user has joined. None if user has not joined a server yet.
+    Args:
+        id: Unique user ID.
+        name: User name.
+        avatar: URL to user avatar.
+        active_server_id: Discord server that user has joined. `None` if user has not joined a
+            server yet.
 
-    Attributes
-    ----------
-    id : str
-        Unique user ID.
-    name : str
-        User name.
-    avatar : str
-        URL to user avatar.
-    active_server_id : str
-        Discord server that user has joined. `None` if user has not joined a server yet.
+    Attributes:
+        id (str): Unique user ID.
+        name (str): User name.
+        avatar (str): URL to user avatar.
+        active_server_id (Optional[str]): Discord server that user has joined. `None` if user has
+            not joined a server yet.
 
     """
     def __init__(
@@ -331,19 +274,13 @@ class DiscordUser():
 class DiscordVoiceClient():
     """Container for Discord voice connections.
 
-    Parameters
-    ----------
-    server_id : str
-        Server ID to connect to.
-    loop : asyncio.AbstractEventLoop, optional
-        Event loop for audio tasks to run in.
+    Args:
+        server_id: Server ID to connect to.
+        loop: Event loop for audio tasks to run in.
 
-    Attributes
-    ----------
-    server_id : str
-        Server ID to connect to.
-    loop : asyncio.AbstractEventLoop
-        Event loop for audio tasks to run in.
+    Attributes:
+        server_id (str): Server ID to connect to.
+        loop (Optional[asyncio.AbstractEventLoop]): Event loop for audio tasks to run in.
 
     """
     def __init__(self, server_id: str, loop: Optional[asyncio.AbstractEventLoop] = None) -> None:
@@ -400,10 +337,8 @@ class DiscordVoiceClient():
     async def connect(self, channel_id: str) -> None:
         """Connect bot to a voice a voice channel in this server.
 
-        Parameters
-        ----------
-        channel_id : str
-            ID of channel to connect to.
+        Args:
+            channel_id: ID of channel to connect to.
 
         """
         server = uita.bot.get_guild(int(self.server_id))
@@ -440,17 +375,12 @@ class DiscordVoiceClient():
     async def enqueue_file(self, path: str, user: DiscordUser) -> None:
         """Queues a file to be played by the running playlist task.
 
-        Parameters
-        ----------
-        path : str
-            Path to audio resource to be played.
-        user : uita.types.DiscordUser
-            User that requested track.
+        Args:
+            path: Path to audio resource to be played.
+            user: User that requested track.
 
-        Raises
-        ------
-        uita.exceptions.ClientError
-            If called with an unusable audio URL.
+        Raises:
+            uita.exceptions.ClientError: If called with an unusable audio URL.
 
         """
         await self._playlist.enqueue_file(path, user)
@@ -458,17 +388,12 @@ class DiscordVoiceClient():
     async def enqueue_url(self, url: str, user: DiscordUser) -> None:
         """Queues a URL to be played by the running playlist task.
 
-        Parameters
-        ----------
-        url : str
-            URL for audio resource to be played.
-        user : uita.types.DiscordUser
-            User that requested track.
+        Args:
+            url: URL for audio resource to be played.
+            user: User that requested track.
 
-        Raises
-        ------
-        uita.exceptions.ClientError
-            If called with an unusable audio URL.
+        Raises:
+            uita.exceptions.ClientError: If called with an unusable audio URL.
 
         """
         await self._playlist.enqueue_url(url, user)
@@ -476,9 +401,7 @@ class DiscordVoiceClient():
     def queue(self) -> List[uita.audio.Track]:
         """Retrieves a list of currently queued audio resources for this connection.
 
-        Returns
-        -------
-        list
+        Returns:
             Ordered list of audio resources queued for playback.
 
         """
@@ -487,9 +410,7 @@ class DiscordVoiceClient():
     def queue_full(self) -> bool:
         """Tests if the queue is at capacity.
 
-        Returns
-        -------
-        bool
+        Returns:
             True if the queue is full.
 
         """
@@ -498,9 +419,7 @@ class DiscordVoiceClient():
     def status(self) -> uita.audio.Status:
         """Returns the current playback status.
 
-        Returns
-        -------
-        uita.audio.Status
+        Returns:
             Enum of current playback status (playing, paused, etc).
 
         """
@@ -509,12 +428,9 @@ class DiscordVoiceClient():
     async def move(self, track_id: str, position: int) -> None:
         """Moves a track to a new position in the playback queue.
 
-        Parameters
-        ----------
-        track_id : str
-            Track ID of audio resource to be moved.
-        position : int
-            Index position for the track to be moved to.
+        Args:
+            track_id: Track ID of audio resource to be moved.
+            position: Index position for the track to be moved to.
 
         """
         await self._playlist.move(track_id, position)
@@ -522,10 +438,8 @@ class DiscordVoiceClient():
     async def remove(self, track_id: str) -> None:
         """Removes a track from the playback queue.
 
-        Parameters
-        ----------
-        track_id : str
-            Track ID of audio resource to be removed.
+        Args:
+            track_id: Track ID of audio resource to be removed.
 
         """
         await self._playlist.remove(track_id)

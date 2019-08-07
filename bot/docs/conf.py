@@ -42,6 +42,7 @@ release = uita.__version__
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.napoleon',
+    'sphinx_autodoc_typehints',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -159,3 +160,6 @@ texinfo_documents = [
 
 
 # -- Extension configuration -------------------------------------------------
+napoleon_numpy_docstring = False
+set_type_checking_flag = True
+typehints_fully_qualified = False

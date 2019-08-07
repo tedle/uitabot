@@ -88,14 +88,10 @@ def load(filename: str) -> Config:
 
     Converts empty strings to `None`.
 
-    Parameters
-    ----------
-    filename : str
-        Filename of config file to load.
+    Args:
+        filename: Filename of config file to load.
 
-    Returns
-    -------
-    uita.config.Config
+    Returns:
         Object containing config file values as attributes.
 
     """
