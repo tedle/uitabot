@@ -44,7 +44,7 @@ def command(
 ) -> Callable[[CommandCallbackType], CommandCallbackType]:
     """Decorator to bind bot commands to a given function.
 
-    Callback function should accept a `discord.Message` and `str` as its parameters.
+    Callback function should accept a ``discord.Message`` and ``str`` as its parameters.
 
     Args:
         *args: Commands to be bound to this function.

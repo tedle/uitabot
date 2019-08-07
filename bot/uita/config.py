@@ -87,7 +87,7 @@ _CONFIGNAMES: Final[Dict[str, Type[_ConfigType]]] = {
 def load(filename: str) -> Config:
     """Loads a JSON formatted config file.
 
-    Converts empty strings to `None`.
+    Converts empty strings to ``None``.
 
     Args:
         filename: Filename of config file to load.
@@ -95,6 +95,8 @@ def load(filename: str) -> Config:
     Returns:
         Object containing config file values as attributes.
 
+    Raises:
+        uita.exceptions.MalformedConfig: If config file does not match expected structure.
     """
     with open(filename, "r") as f:
         def convert_types(namespace: List[str], obj: Any) -> _ConfigType:

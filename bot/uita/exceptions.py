@@ -5,8 +5,8 @@ import uita.message
 class ClientError(Exception):
     """Occurs when a server event fails and needs to notify to the client.
 
-    Unlike other uncaught errors caused by a server event, `uita.exceptions.ClientError` will not
-    cause a connection closure.
+    Unlike other uncaught errors caused by a server event, :class:`~uita.exceptions.ClientError`
+    will not cause a connection closure.
 
     Args:
         message: Message to be sent by the connection handler to the client.
@@ -16,7 +16,7 @@ class ClientError(Exception):
             client.
 
     Raises:
-        TypeError: If initialized with a type other than uita.message.AbstractMessage
+        TypeError: If initialized with a type other than :class:`~uita.message.AbstractMessage`
 
     """
     def __init__(self, message: uita.message.AbstractMessage) -> None:
@@ -29,7 +29,8 @@ class ClientError(Exception):
 
 
 class AuthenticationError(Exception):
-    """Occurs when a `uita.types.DiscordUser` resource is accessed without proper credentials."""
+    """Occurs when a :class:`~uita.types.DiscordUser` resource is accessed without proper
+        credentials."""
     pass
 
 
@@ -54,5 +55,5 @@ class NoActiveServer(Exception):
 
 
 class ServerError(Exception):
-    """Occurs when a `uita.ui_server.Server` is configured or used incorrectly."""
+    """Occurs when a :class:`~uita.ui_server.Server` is configured or used incorrectly."""
     pass

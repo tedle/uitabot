@@ -105,7 +105,7 @@ prune_cache_dir.whitelist = set()  # type: ignore
 
 @contextlib.contextmanager
 def prune_cache_guard(path: str) -> Iterator[None]:
-    """Scoped `with` context function for protecting a path from `uita.utils.prune_cache_dir`
+    """Scoped ``with`` context function for protecting a path from :meth:`~uita.utils.prune_cache_dir`
 
     Args:
         path: Absolute path to be exempted from pruning.
@@ -163,7 +163,7 @@ def verify_channel_visibility(channel: discord.abc.GuildChannel, user: discord.M
         user: discord.py server member.
 
     Returns:
-        `True` if the user can view and use the given channel.
+        ``True`` if the user can view and use the given channel.
 
     """
     permissions = channel.permissions_for(user)
@@ -179,11 +179,11 @@ def verify_user_permissions(user: discord.Member, role: Optional[str]) -> bool:
 
     Args:
         user: discord.py server member.
-        role: ID of role to verify against. `None` to allow any role.
+        role: ID of role to verify against. ``None`` to allow any role.
 
     Returns:
-        `True` if the user has the specified role, if the specified role is `None` or if the user
-        is a server administrator.
+        ``True`` if the user has the specified role, if the specified role is ``None`` or if the
+        user is a server administrator.
 
     """
     return (

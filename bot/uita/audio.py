@@ -31,7 +31,7 @@ class Track():
         duration: Track duration in seconds.
         live: Determines if the track is a remote livestream.
         local: Determines if the track is a local file or not.
-        url: The public URL of the track if it exists, `None` otherwise.
+        url: The public URL of the track if it exists, ``None`` otherwise.
 
     Attributes:
         id (str): Unique 32 character long ID.
@@ -41,7 +41,7 @@ class Track():
         duration (int): Track duration in seconds.
         live (bool): Determines if the track is a remote livestream.
         local (bool): Determines if the track is a local file or not.
-        url (typing.Optional[str]): The public URL of the track if it exists, `None` otherwise.
+        url (typing.Optional[str]): The public URL of the track if it exists, ``None`` otherwise.
         offset (float): Offset in seconds to start track from.
 
     """
@@ -77,11 +77,11 @@ class Queue():
     """Queues audio resources to be played by a looping task.
 
     Args:
-        maxlen: Maximum queue size. Default is `None`, which is unlimited.
+        maxlen: Maximum queue size. Default is ``None``, which is unlimited.
         on_queue_change: Callback that is triggered everytime the state of the playback queue
-            changes. Function accepts a list of `uita.audio.Track` as its only argument.
+            changes. Function accepts a list of :class:`~uita.audio.Track` as its only argument.
         on_status_change: Callback that is triggered everytime the playback status changes.
-            Function accepts a `uita.audio.Status` as its only argument.
+            Function accepts a :class:`~uita.audio.Status` as its only argument.
         loop: Event loop for audio tasks to run in.
 
     Attributes:
@@ -409,9 +409,9 @@ class Queue():
 
 
 class FfmpegStream(discord.AudioSource):
-    """Provides a data stream interface from an ffmpeg process for a `discord.StreamPlayer`
+    """Provides a data stream interface from an ffmpeg process for a ``discord.StreamPlayer``
 
-    Compared to the ffmpeg stream player provided by `discord.FFmpegPCMAudio`,
+    Compared to the ffmpeg stream player provided by ``discord.FFmpegPCMAudio``,
     this implementation will attempt to pre-fetch and cache (buffer) a sizable amount of audio
     data in a concurrently running thread to minimize any hiccups while fetching audio data for
     the consumer thread. This noticably cuts down on stuttering during playback, especially for
@@ -419,7 +419,7 @@ class FfmpegStream(discord.AudioSource):
 
     Args:
         track: Track to be played.
-        encoder: discord.py opus encoder is needed to configure sampling rate for FFmpeg.
+        encoder: Opus encoder is needed to configure sampling rate for FFmpeg.
 
     """
 
@@ -468,11 +468,11 @@ class FfmpegStream(discord.AudioSource):
         self._is_ready = threading.Event()
 
     def read(self) -> bytes:
-        """Returns a `bytes` array of raw audio data.
+        """Returns an array of raw audio data.
 
         Returns:
             Array of raw audio data. Size of array is equal to (or less than if EOF has been
-            reached) the `FRAME_SIZE` of the opus Encoder parameter passed into the object
+            reached) the ``FRAME_SIZE`` of the opus Encoder parameter passed into the object
             constructor.
 
         """

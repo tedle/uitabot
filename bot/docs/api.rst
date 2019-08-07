@@ -1,5 +1,5 @@
-uitabot API Reference
-=====================
+API Reference
+=============
 .. module:: uita
 
 Details usage of the uitabot module
@@ -28,6 +28,7 @@ Bot Commands
 .. automodule:: uita.bot_commands
 .. autofunction:: command
 .. autofunction:: parse
+.. autofunction:: set_prefix
 
 Config
 ------

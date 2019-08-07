@@ -106,11 +106,11 @@ class ChannelActiveSendMessage(AbstractMessage):
     """Sent by server containing the currently connected voice channel.
 
     Args:
-        channel: Voice channel currently connected to. `None` if not connected.
+        channel: Voice channel currently connected to. ``None`` if not connected.
 
     Attributes:
-        channel (Optional[uita.types.DiscordChannel]): Voice channel currently connected to. `None`
-            if not connected.
+        channel (Optional[uita.types.DiscordChannel]): Voice channel currently connected to.
+            ``None`` if not connected.
 
     """
     header = "channel.active.send"
@@ -245,7 +245,7 @@ class PlayQueueGetMessage(AbstractMessage):
 
 
 class PlayQueueMoveMessage(AbstractMessage):
-    """Sent by client to move a track to a new position in the queue..
+    """Sent by client to move a track to a new position in the queue.
 
     Args:
         id: ID of track to be removed.
@@ -455,7 +455,8 @@ def parse(message: str) -> AbstractMessage:
         message: JSON encoded message to be parsed.
 
     Returns:
-        A subclass of `uita.message.AbstractMessage` containing a header and associated data.
+        A subclass of :class:`~uita.message.AbstractMessage` containing a header and associated
+        data.
 
     Raises:
         uita.exceptions.MalformedMessage: If the message string is invalid.

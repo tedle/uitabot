@@ -23,11 +23,11 @@ class Connection():
     """Container for Server connections.
 
     Args:
-        user: User connected to server. Can be `None` while connection is unauthenticated.
+        user: User connected to server. Can be ``None`` while connection is unauthenticated.
         socket: Websocket connected to user.
 
     Attributes:
-        user (Optional[uita.types.DiscordUser]): User connected to server. Can be `None` while
+        user (Optional[uita.types.DiscordUser]): User connected to server. Can be ``None`` while
             connection is unauthenticated.
         socket (websockets.WebSocketServerProtocol): Websocket connected to user.
 
@@ -56,7 +56,7 @@ class Event(Generic[_AbstractMessageType]):
         socket: Connection that triggered event.
         config: Configuration options.
         loop: Event loop that task is running in.
-        active_server: Server that user is active in. `None` if not yet selected.
+        active_server: Server that user is active in. ``None`` if not yet selected.
 
     Attributes:
         message (uita.message.AbstractMessage): Message that triggered event.
@@ -64,7 +64,7 @@ class Event(Generic[_AbstractMessageType]):
         socket (websockets.WebSocketProtocol): Connection that triggered event.
         config (uita.config.Config): Configuration options.
         loop (asyncio.AbstractEventLoop): Event loop that task is running in.
-        active_server (Optional[uita.types.DiscordServer]): Server that user is active in. `None`
+        active_server (Optional[uita.types.DiscordServer]): Server that user is active in. ``None``
             if not yet selected.
 
     """
@@ -107,9 +107,9 @@ class Server():
 
     Attributes:
         database (Optional[uita.database.Database]): Database containing user authentication data.
-            `None` if the server has not yet started.
+            ``None`` if the server has not yet started.
         loop (Optional[asyncio.AbstractEventLoop]): Event loop that listen server will attach to.
-            `None` if the server has not yet started.
+            ``None`` if the server has not yet started.
 
     """
     def __init__(self) -> None:
@@ -200,16 +200,18 @@ class Server():
     ) -> Callable[[Event.CallbackType], Event.CallbackType]:
         """Decorator to bind event callbacks.
 
-        Callback function should accept a `uita.ui_server.Event` as its only parameter
+        Callback function should accept a :class:`~uita.ui_server.Event` as its only parameter
 
         Args:
             message_type: Message type to wait for.
-            require_active_server: Verify that `event.active_server` is valid, default `True`.
-            block: Block connection await loop until event callback is completed, default `False`.
+            require_active_server: Verify that :attr:`~uita.ui_server.Event.active_server` is
+                valid, default ``True``.
+            block: Block connection await loop until event callback is completed, default
+                ``False``.
 
         Raises:
-            uita.exceptions.NoActiveServer: If `require_active_server` was set to `True` and
-                callback is sent an `event.active_server` of `None`.
+            uita.exceptions.NoActiveServer: If ``require_active_server`` was set to ``True`` and
+                callback is sent an :attr:`~uita.ui_server.Event.active_server` of ``None``.
 
         """
         def decorator(function: Event.CallbackType) -> Event.CallbackType:
@@ -224,7 +226,8 @@ class Server():
         return decorator
 
     def send_all(self, message: uita.message.AbstractMessage, server_id: str) -> None:
-        """Sends a `uita.message.AbstractMessage` to all `uita.types.DiscordUser` in a server.
+        """Sends a :class:`~uita.message.AbstractMessage` to all :class:`~uita.types.DiscordUser`
+        in a server.
 
         Args:
             message: Message to send to user.

@@ -35,7 +35,7 @@ class DiscordState():
         return dump_str
 
     def initialize_from_bot(self, bot: discord.Client) -> None:
-        """Initialize Discord state from a `discord.Client`
+        """Initialize Discord state from a ``discord.Client``
 
         Args:
             bot: Bot containing initial Discord state to copy.
@@ -144,7 +144,7 @@ class DiscordState():
             server_id: Server to get required role from.
 
         Returns:
-            ID of required role. Can be `None` for no requirement.
+            ID of required role. Can be ``None`` for no requirement.
 
         """
         try:
@@ -155,11 +155,11 @@ class DiscordState():
         return uita.server.database.get_server_role(server_id)
 
     def server_set_role(self, server_id: str, role_id: Optional[str]) -> None:
-        """Set a role required to use bot commands. `None` for free access.
+        """Set a role required to use bot commands. ``None`` for free access.
 
         Args:
             server_id: Server that can no longer be accessed.
-            role_id: ID of required role. Can be `None` for no requirement.
+            role_id: ID of required role. Can be ``None`` for no requirement.
 
         """
         uita.server.database.set_server_role(server_id, role_id)
@@ -176,14 +176,14 @@ class DiscordChannel():
         id: Unique channel ID.
         name: Channel name.
         type: Channel type.
-        category: Unique category channel ID. `None` if not a categorized subchannel.
+        category: Unique category channel ID. ``None`` if not a categorized subchannel.
         position: Ordered position in channel list.
 
     Attributes:
         id (str): Unique channel ID.
         name (str): Channel name.
         type (discord.ChannelType): Channel type.
-        category (Optional[str]): Unique category channel ID. `None` if not a categorized
+        category (Optional[str]): Unique category channel ID. ``None`` if not a categorized
             subchannel.
         position (int): Ordered position in channel list.
 
@@ -218,8 +218,8 @@ class DiscordServer():
         name (str): Server name.
         channels (Dict[str, uita.types.DiscordChannel]): Dictionary of channels in server.
         users (Dict[str, str]): Dictionary of usernames in server with access to bot commands.
-        icon (Optional[str]): Server icon hash. `None` if no custom icon exists.
-        role (Optional[str]): Role ID needed to use bot commands. Set to `None` for unrestricted
+        icon (Optional[str]): Server icon hash. ``None`` if no custom icon exists.
+        role (Optional[str]): Role ID needed to use bot commands. Set to ``None`` for unrestricted
             access.
 
     """
@@ -245,14 +245,14 @@ class DiscordUser():
         id: Unique user ID.
         name: User name.
         avatar: URL to user avatar.
-        active_server_id: Discord server that user has joined. `None` if user has not joined a
+        active_server_id: Discord server that user has joined. ``None`` if user has not joined a
             server yet.
 
     Attributes:
         id (str): Unique user ID.
         name (str): User name.
         avatar (str): URL to user avatar.
-        active_server_id (Optional[str]): Discord server that user has joined. `None` if user has
+        active_server_id (Optional[str]): Discord server that user has joined. ``None`` if user has
             not joined a server yet.
 
     """

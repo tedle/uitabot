@@ -77,7 +77,7 @@ async def search(
 
     Args:
         query: Search query for audio resource to be found.
-        api_key: API key for Youtube searches. Defaults to `None` which performs a much slower
+        api_key: API key for Youtube searches. Defaults to ``None`` which performs a much slower
             search using youtube-dl.
         referrer: Referrer for HTTP requests, in case API restrictions are in place.
         results: Number of results to retrieve, default ``5``.

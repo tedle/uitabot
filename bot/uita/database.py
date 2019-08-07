@@ -71,7 +71,7 @@ class Database():
             session: Session to compare against database.
 
         Returns:
-            Access token if session is valid, `None` otherwise.
+            Access token if session is valid, ``None`` otherwise.
 
         """
         c = self._connection.cursor()
@@ -88,7 +88,7 @@ class Database():
 
         Args:
             server_id: Server ID to change setting for.
-            role_id: Role ID for required role to use bot commands. `None` for free access.
+            role_id: Role ID for required role to use bot commands. ``None`` for free access.
 
         """
         c = self._connection.cursor()
@@ -102,7 +102,7 @@ class Database():
             server_id: Server ID to change setting for.
 
         Returns:
-            Role ID if server has configured this setting, `None` otherwise.
+            Role ID if server has configured this setting, ``None`` otherwise.
 
         """
         c = self._connection.cursor()
