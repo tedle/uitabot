@@ -49,4 +49,4 @@ This will output static asset files to the `web-client/build` folder that can th
 Not supported.
 
 ## License
-[ISC License](https://github.com/tedle/uitabot/blob/master/LICENSE)
+[ISC License](LICENSE)
