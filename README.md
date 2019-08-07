@@ -1,5 +1,5 @@
 # uitabot
-**uitabot** is a [Discord](https://discordapp.com/) music bot that can be controlled both via chat commands and a real time web client.
+**uitabot** is a [Discord](https://discordapp.com/) music bot that can be controlled both via chat commands and a real time web client. For a list of available chat commands see [COMMANDS.md](COMMANDS.md).
 
 ## Requirements
 * [Discord API key](https://discordapp.com/developers)
