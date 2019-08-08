@@ -131,7 +131,7 @@ def build_client_url(config: uita.config.Config) -> str:
     return "http{}://{}{}".format(
         "s" if config.ssl.cert_file is not None else "",
         config.client.domain,
-        (":" + str(config.client.port)) if config.client.port not in (80, 443) else ""
+        f":{config.client.port}" if config.client.port not in (80, 443) else ""
     )
 
 
@@ -148,7 +148,7 @@ def build_websocket_url(config: uita.config.Config) -> str:
     return "ws{}://{}{}".format(
         "s" if config.ssl.cert_file is not None else "",
         config.bot.domain,
-        (":" + str(config.bot.port)) if config.bot.port not in (80, 443) else ""
+        f":{config.bot.port}" if config.bot.port not in (80, 443) else ""
     )
 
 

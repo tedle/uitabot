@@ -25,13 +25,13 @@ class DiscordState():
         self.voice_connections: Dict[str, DiscordVoiceClient] = {}
 
     def __str__(self) -> str:
-        dump_str = "DiscordState() {}:\n".format(hash(self))
+        dump_str = f"DiscordState() {hash(self)}:\n"
         for key, server in self.servers.items():
-            dump_str += "server {}: {}\n".format(server.id, server.name)
+            dump_str += f"server {server.id}: {server.name}\n"
             for key, channel in server.channels.items():
-                dump_str += "\tchannel {}: {}\n".format(channel.id, channel.name)
+                dump_str += f"\tchannel {channel.id}: {channel.name}\n"
             for user_id, user_name in server.users.items():
-                dump_str += "\tuser {}: {}\n".format(user_id, user_name)
+                dump_str += f"\tuser {user_id}: {user_name}\n"
         return dump_str
 
     def initialize_from_bot(self, bot: discord.Client) -> None:
@@ -77,7 +77,7 @@ class DiscordState():
             server_id: ID of server that channel belongs to.
 
         """
-        log.debug("channel_add {}".format(channel.id))
+        log.debug(f"channel_add {channel.id}")
         self.servers[server_id].channels[channel.id] = channel
 
     def channel_remove(self, channel_id: str, server_id: str) -> None:
@@ -88,7 +88,7 @@ class DiscordState():
             server_id: ID of server that channel belongs to.
 
         """
-        log.debug("channel_remove {}".format(channel_id))
+        log.debug(f"channel_remove {channel_id}")
         del self.servers[server_id].channels[channel_id]
 
     def server_add(self, server: "DiscordServer", bot: discord.Client) -> None:
@@ -99,7 +99,7 @@ class DiscordState():
             bot: Bot that handles voice client connections.
 
         """
-        log.debug("server_add {}".format(server.id))
+        log.debug(f"server_add {server.id}")
         self.servers[server.id] = server
         # Non-POD type with persistent connections, doesn't need to be updated
         if server.id not in self.voice_connections:
@@ -112,7 +112,7 @@ class DiscordState():
             server_id: ID of server that bot has left.
 
         """
-        log.debug("server_remove {}".format(server_id))
+        log.debug(f"server_remove {server_id}")
         del self.servers[server_id]
         del self.voice_connections[server_id]
 
@@ -355,7 +355,7 @@ class DiscordVoiceClient():
                 try:
                     self._voice = await channel.connect(timeout=5)
                 except (asyncio.CancelledError, asyncio.TimeoutError):
-                    log.warning("Failed to join channel {}({})".format(channel.name, channel.id))
+                    log.warning(f"Failed to join channel {channel.name}({channel.id})")
                     return
                 await self._playlist.play(self._voice)
             else:

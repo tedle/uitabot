@@ -166,7 +166,7 @@ async def on_guild_join(guild: discord.Guild) -> None:
         guild.icon
     )
     uita.state.server_add(discord_server, uita.bot)
-    log.info("Joined {}".format(discord_server.name))
+    log.info(f"Joined {discord_server.name}")
 
     if (
         uita.server.config.bot.trial_mode.enabled and
@@ -180,17 +180,17 @@ async def on_guild_join(guild: discord.Guild) -> None:
                 await trial_server.leave()
         uita.bot.loop.create_task(trial_leave())
         if guild.system_channel:
-            await guild.system_channel.send((
-                "Hello! This is a trial version of **uitabot** and will leave the server shortly."
-                " If you want unrestricted access, you can host your own instance for free @ {}"
-                ).format(uita.__url__)
+            await guild.system_channel.send(
+                f"Hello! This is a trial version of **uitabot** and will leave the server shortly."
+                f" If you want unrestricted access, you can host your own instance for free @ "
+                f"{uita.__url__}"
             )
 
 
 @uita.bot.event
 @bot_ready
 async def on_guild_remove(guild: discord.Guild) -> None:
-    log.info("Leaving {}".format(guild.name))
+    log.info(f"Leaving {guild.name}")
     uita.state.server_remove(str(guild.id))
     # Kick any displaced users
     await uita.server.verify_active_servers()

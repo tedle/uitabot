@@ -16,7 +16,7 @@ log = logging.getLogger(__name__)
 # API config definitions
 BASE_HEADERS: Final = {
     "Content-Type": "application/x-www-form-urlencoded",
-    "User-Agent": "uitabot ({}, {})".format(uita.__url__, uita.__version__)
+    "User-Agent": f"uitabot ({uita.__url__}, {uita.__version__})"
 }
 API_URL: Final = "https://www.googleapis.com/youtube/v3"
 
@@ -96,13 +96,13 @@ async def search(
         return await _search_slow(query, results, loop)
     # Build and request the initial search results
     url = (
-        "{}/search/?"
-        + "q={}"
-        + "&maxResults={}"
-        + "&part=snippet"
-        + "&type=video"
-        + "&key={}"
-    ).format(API_URL, urllib.parse.quote_plus(query), results, api_key)
+        f"{API_URL}/search/?"
+        f"q={urllib.parse.quote_plus(query)}"
+        f"&maxResults={results}"
+        f"&part=snippet"
+        f"&type=video"
+        f"&key={api_key}"
+    )
     headers = BASE_HEADERS
     if referrer is not None:
         headers["referer"] = referrer
@@ -116,11 +116,11 @@ async def search(
     # Request detailed results for each video (to get the duration)
     video_ids = [r["id"]["videoId"] for r in search_results]
     details_url = (
-        "{}/videos/?"
-        + "id={}"
-        + "&part=contentDetails"
-        + "&key={}"
-    ).format(API_URL, ",".join(video_ids), api_key)
+        f"{API_URL}/videos/?"
+        f"id={','.join(video_ids)}"
+        f"&part=contentDetails"
+        f"&key={api_key}"
+    )
     details_response = await loop.run_in_executor(
         None,
         lambda: requests.get(details_url, headers=headers)
@@ -175,7 +175,7 @@ def build_url(video_id: str) -> str:
         YouTube video URL.
 
     """
-    return "https://youtube.com/watch?v={}".format(video_id)
+    return f"https://youtube.com/watch?v={video_id}"
 
 
 async def _search_slow(
@@ -196,7 +196,7 @@ async def _search_slow(
     try:
         search_results = await loop.run_in_executor(
             None,
-            lambda: scraper.extract_info("ytsearch{}:{}".format(results, query), download=False)
+            lambda: scraper.extract_info(f"ytsearch{results}:{query}", download=False)
         )
         # Filter out any entries that aren't in this whitelist
         whitelist = set([

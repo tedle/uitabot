@@ -479,7 +479,7 @@ def parse(message: str) -> AbstractMessage:
         # Validate that all the required properties for a given message type are here
         for prop in VALID_MESSAGES[header][1]:
             if prop not in msg:
-                raise uita.exceptions.MalformedMessage("Missing {} property".format(prop))
+                raise uita.exceptions.MalformedMessage(f"Missing {prop} property")
         # Construct a message directly with the JSON decoded dictionary
         # Header is hardcoded in and constructor will not accept it
         del msg["header"]

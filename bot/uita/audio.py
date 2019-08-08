@@ -222,12 +222,7 @@ class Queue():
                 tags.get("artist", "Unknown artist"),
                 tags.get("title", "Unknown title")
             )
-        log.info("[{}:{}] Enqueue [Local]{}, {}s".format(
-            user.name,
-            user.id,
-            title,
-            probe["format"]["duration"]
-        ))
+        log.info(f"[{user.name}:{user.id}] Enqueue [Local]{title}, {probe['format']['duration']}s")
         # This check cannot have any awaits between it and the following queue.append()s
         if self.queue_full():
             raise uita.exceptions.ClientError(uita.message.ErrorQueueFullMessage())
@@ -257,15 +252,8 @@ class Queue():
         if self.queue_full():
             raise uita.exceptions.ClientError(uita.message.ErrorQueueFullMessage())
         if info["extractor"] == "Youtube":
-            log.info("[{}:{}] Enqueue [YouTube]{}({}) {}@{}abr, {}s".format(
-                user.name,
-                user.id,
-                info["title"],
-                info["id"],
-                info["acodec"],
-                info["abr"],
-                info["duration"]
-            ))
+            log.info(f"[{user.name}:{user.id}] Enqueue [YouTube]{info['title']}({info['id']}) "
+                     f"{info['acodec']}@{info['abr']}abr, {info['duration']}s")
             self._queue.append(Track(
                 info["url"],
                 user,
@@ -273,14 +261,14 @@ class Queue():
                 info["duration"],
                 info["is_live"] or False,  # is_live is either True or None?? Thanks ytdl
                 local=False,
-                url="https://youtube.com/watch?v={}".format(info["id"])
+                url=f"https://youtube.com/watch?v={info['id']}"
             ))
             await self._notify_queue_change(user)
         elif info["extractor"] == "YoutubePlaylist":
             if info["_type"] != "playlist":
                 raise uita.exceptions.ServerError("Unknown playlist type")
             for entry in info["entries"]:
-                await self.enqueue_url("https://youtube.com/watch?v={}".format(entry["id"]), user)
+                await self.enqueue_url(f"https://youtube.com/watch?v={entry['id']}", user)
         else:
             raise uita.exceptions.ClientError(uita.message.ErrorUrlInvalidMessage())
 
@@ -362,11 +350,8 @@ class Queue():
                 with await self._queue_lock:
                     if self._voice is None and len(self._queue) > 0:
                         self._now_playing = self._queue.popleft()
-                        log.info("[{}:{}] Now playing {}".format(
-                            self._now_playing.user.name,
-                            self._now_playing.user.id,
-                            self._now_playing.title
-                        ))
+                        log.info(f"[{self._now_playing.user.name}:{self._now_playing.user.id}] "
+                                 f"Now playing {self._now_playing.title}")
                         # Launch ffmpeg process
                         self._stream = FfmpegStream(
                             self._now_playing,
@@ -393,7 +378,7 @@ class Queue():
         except asyncio.CancelledError:
             pass
         except Exception as e:
-            log.error("Unhandled exception: {}".format(e))
+            log.error(f"Unhandled exception: {e}")
 
     async def _notify_queue_change(self, user: Optional["uita.types.DiscordUser"] = None) -> None:
         self._queue_update_flag.set()

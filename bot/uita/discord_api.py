@@ -12,7 +12,7 @@ import uita.exceptions
 # API config definitions
 BASE_HEADERS: Final = {
     "Content-Type": "application/x-www-form-urlencoded",
-    "User-Agent": "uitabot ({}, {})".format(uita.__url__, uita.__version__)
+    "User-Agent": f"uitabot ({uita.__url__}, {uita.__version__})"
 }
 BASE_URL: Final = "https://discordapp.com/api"
 AUTH_URL: Final = BASE_URL + "/oauth2/token"
@@ -48,7 +48,7 @@ async def auth(
     redirect = "http{}://{}{}".format(
         "s" if config.ssl.cert_file is not None else "",
         config.client.domain,
-        (":{}".format(config.client.port)) if config.client.port != 80 else ""
+        f":{config.client.port}" if config.client.port != 80 else ""
     )
     data = {
         "code": code,
@@ -92,7 +92,7 @@ async def get(
     """
     loop = loop or asyncio.get_event_loop()
     headers = BASE_HEADERS.copy()
-    headers["Authorization"] = "Bearer {}".format(token)
+    headers["Authorization"] = f"Bearer {token}"
     # requests is not asynchronous, so run in another thread and await it
     response = await loop.run_in_executor(
         None,
@@ -120,6 +120,6 @@ def avatar_url(user: Dict[str, Any]) -> str:
 
     """
     if user["avatar"]:
-        return CDN_URL + "/avatars/{}/{}.png".format(user["id"], user["avatar"])
+        return CDN_URL + f"/avatars/{user['id']}/{user['avatar']}.png"
     else:
-        return CDN_URL + "/embed/avatars/{}.png".format(int(user["discriminator"]) % 5)
+        return CDN_URL + f"/embed/avatars/{int(user['discriminator']) % 5}.png"

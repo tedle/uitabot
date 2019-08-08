@@ -60,14 +60,14 @@ def command(
                 not message.author.guild_permissions.administrator
             ):
                 await message.channel.send(
-                    "{} This command requires administrator privileges".format(_EMOJI["error"])
+                    f"{_EMOJI['error']} This command requires administrator privileges"
                 )
                 return
             # Check if command is role restricted
             role = uita.state.server_get_role(str(message.author.guild.id))
             if not uita.utils.verify_user_permissions(message.author, role):
                 await message.channel.send(
-                    "{} Insufficient privileges for bot commands".format(_EMOJI["error"])
+                    f"{_EMOJI['error']} Insufficient privileges for bot commands"
                 )
                 return
             # Run command
@@ -99,21 +99,12 @@ async def parse(message: discord.Message) -> None:
     command, _, params = message.content[len(_COMMAND_PREFIX):].partition(" ")
     try:
         if command in _COMMANDS:
-            log.debug("[{}:{}] {} -> {}".format(
-                message.author.name,
-                message.author.id,
-                message.content,
-                message.guild.name
-            ))
+            log.debug(f"[{message.author.name}:{message.author.id}] "
+                      f"{message.content} -> {message.guild.name}")
             await _COMMANDS[command](message, params)
     except discord.errors.Forbidden as e:
-        log.warn(
-            "Failure using Discord API in {}({}): {}".format(
-                message.guild.name,
-                message.guild.id,
-                e.text
-            )
-        )
+        log.warn(f"Failure using Discord API in "
+                 f"{message.guild.name}({message.guild.id}): {e.text}")
 
 
 async def set_prefix(prefix: str) -> None:
@@ -127,7 +118,7 @@ async def set_prefix(prefix: str) -> None:
     _COMMAND_PREFIX = prefix
     await uita.bot.change_presence(
         activity=discord.Activity(
-            name="{}help".format(_COMMAND_PREFIX),
+            name=f"{_COMMAND_PREFIX}help",
             type=discord.ActivityType.listening
         )
     )
@@ -144,7 +135,7 @@ async def help(message: discord.Message, params: str) -> None:
         color=_EMBED_COLOUR
     )
     for cmd in _COMMAND_HELP:
-        name = ", ".join(["`{}{}`".format(_COMMAND_PREFIX, c) for c in cmd[0]])
+        name = ", ".join([f"`{_COMMAND_PREFIX}{c}`" for c in cmd[0]])
         help_message.add_field(
             name=name,
             value=cmd[1],
@@ -162,36 +153,26 @@ async def play(message: discord.Message, params: str) -> None:
         str(message.author.avatar_url),
         str(message.guild.id)
     )
-    response = await message.channel.send("{} Processing...".format(_EMOJI["loading"]))
+    response = await message.channel.send(f"{_EMOJI['loading']} Processing...")
     try:
         await voice.enqueue_url(params, user)
-        await response.edit(
-            content="{} Got it!".format(_EMOJI["ok"])
-        )
+        await response.edit(content=f"{_EMOJI['ok']} Got it!")
     except uita.exceptions.ClientError as error:
         if error.message.header == uita.message.ErrorQueueFullMessage.header:
-            await response.edit(
-                content="{} Queue is full, sorry!".format(_EMOJI["error"])
-            )
+            await response.edit(content=f"{_EMOJI['error']} Queue is full, sorry!")
         elif error.message.header == uita.message.ErrorUrlInvalidMessage.header:
-            await response.edit(
-                content="{} That URL was no good, sorry!".format(_EMOJI["error"])
-            )
+            await response.edit(content=f"{_EMOJI['error']} That URL was no good, sorry!")
         else:
-            await response.edit(
-                content="{} Not feeling up to it, sorry!".format(_EMOJI["error"])
-            )
-            log.error("Uncaught exception in play {}".format(error.message.header))
+            await response.edit(content=f"{_EMOJI['error']} Not feeling up to it, sorry!")
+            log.error(f"Uncaught exception in play {error.message.header}")
     except Exception:
-        await response.edit(
-            content="{} Not feeling up to it, sorry!".format(_EMOJI["error"])
-        )
+        await response.edit(content=f"{_EMOJI['error']} Not feeling up to it, sorry!")
         raise
 
 
 @command("search", "s", help="Searches YouTube for a provided `<QUERY>`")
 async def search(message: discord.Message, params: str) -> None:
-    response = await message.channel.send("{} Searching...".format(_EMOJI["loading"]))
+    response = await message.channel.send(f"{_EMOJI['loading']} Searching...")
     try:
         # Scrape YouTube for search result
         result_max = 5
@@ -227,7 +208,7 @@ async def search(message: discord.Message, params: str) -> None:
         )
         # Display the results to the user
         await response.edit(
-            content="{} Choose your future song".format(_EMOJI["wait"]),
+            content=f"{_EMOJI['wait']} Choose your future song",
             embed=embed_results
         )
 
@@ -264,9 +245,7 @@ async def search(message: discord.Message, params: str) -> None:
             if choice == value:
                 choice_index = index - 1
         if choice_index is None or choice_index < 0 or choice_index > results_found:
-            await response.edit(
-                content="{} There were unicode problems, sorry!".format(_EMOJI["error"])
-            )
+            await response.edit(content=f"{_EMOJI['error']} There were unicode problems, sorry!")
             return
         # We finally have a song to queue!
         song = results[choice_index]
@@ -304,27 +283,19 @@ async def search(message: discord.Message, params: str) -> None:
         )
         # Finally display the enqueued song to the user
         await response.edit(
-            content="{} Enqueued".format(_EMOJI["ok"]),
+            content=f"{_EMOJI['ok']} Enqueued",
             embed=song_info
         )
     except uita.exceptions.ClientError as error:
         if error.message.header == uita.message.ErrorQueueFullMessage.header:
-            await response.edit(
-                content="{} Queue is full, sorry!".format(_EMOJI["error"])
-            )
+            await response.edit(content=f"{_EMOJI['error']} Queue is full, sorry!")
         elif error.message.header == uita.message.ErrorUrlInvalidMessage.header:
-            await response.edit(
-                content="{} That URL was no good, sorry!".format(_EMOJI["error"])
-            )
+            await response.edit(content=f"{_EMOJI['error']} That URL was no good, sorry!")
         else:
-            await response.edit(
-                content="{} Not feeling up to it, sorry!".format(_EMOJI["error"])
-            )
-            log.error("Uncaught exception in play {}".format(error.message.header))
+            await response.edit(content=f"{_EMOJI['error']} Not feeling up to it, sorry!")
+            log.error(f"Uncaught exception in play {error.message.header}")
     except Exception:
-        await response.edit(
-            content="{} Not feeling up to it, sorry!".format(_EMOJI["error"])
-        )
+        await response.edit(content=f"{_EMOJI['error']} Not feeling up to it, sorry!")
         raise
 
 
@@ -334,9 +305,9 @@ async def skip(message: discord.Message, params: str) -> None:
     queue = voice.queue()
     if len(queue) > 0:
         await voice.remove(queue[0].id)
-        await message.channel.send("{} Skipped `{}`".format(_EMOJI["ok"], queue[0].title))
+        await message.channel.send(f"{_EMOJI['ok']} Skipped `{queue[0].title}`")
     else:
-        await message.channel.send("{} The queue is already empty".format(_EMOJI["error"]))
+        await message.channel.send(f"{_EMOJI['error']} The queue is already empty")
 
 
 @command("clear", help="Empties the playback queue")
@@ -345,7 +316,7 @@ async def clear(message: discord.Message, params: str) -> None:
     # Start from the back so we don't have to await currently playing songs
     for track in reversed(voice.queue()):
         await voice.remove(track.id)
-    await message.channel.send("{} The queue has been emptied".format(_EMOJI["ok"]))
+    await message.channel.send(f"{_EMOJI['ok']} The queue has been emptied")
 
 
 @command("join", "j", help="Joins your voice channel")
@@ -356,7 +327,7 @@ async def join(message: discord.Message, params: str) -> None:
         await bot_voice.connect(str(message_voice.channel.id))
     else:
         await message.channel.send(
-            "{} You aren't in a voice channel (that I can see)".format(_EMOJI["error"])
+            f"{_EMOJI['error']} You aren't in a voice channel (that I can see)"
         )
 
 
@@ -378,14 +349,10 @@ async def set_role(message: discord.Message, params: str) -> None:
     elif len(params) > 0:
         role_search = discord.utils.get(message.guild.roles, name=params)
         if role_search is None:
-            await message.channel.send(
-                "{} This role does not exist".format(_EMOJI["error"])
-            )
+            await message.channel.send(f"{_EMOJI['error']} This role does not exist")
             return
         role = str(role_search.id)
 
     uita.state.server_set_role(str(message.guild.id), role)
     await uita.bot_events.on_guild_update(message.guild, message.guild)
-    await message.channel.send(
-        "{} Updated role required for using bot commands".format(_EMOJI["ok"])
-    )
+    await message.channel.send(f"{_EMOJI['ok']} Updated role required for using bot commands")

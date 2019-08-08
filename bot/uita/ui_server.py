@@ -175,7 +175,7 @@ class Server():
             self._on_connect, host=config.bot.domain, port=config.bot.port,
             loop=self.loop, origins=origins, ssl=ssl_context
         )
-        log.info("Server listening on {}".format(uita.utils.build_websocket_url(self.config)))
+        log.info(f"Server listening on {uita.utils.build_websocket_url(self.config)}")
 
     async def stop(self) -> None:
         """Closes all active connections and destroys listen server."""
@@ -342,7 +342,7 @@ class Server():
                 except (asyncio.CancelledError, websockets.exceptions.ConnectionClosed):
                     pass
                 except uita.exceptions.ClientError as e:
-                    log.debug("ClientError {}".format(e))
+                    log.debug(f"ClientError {e}")
                     await event.socket.send(str(e))
                 except uita.exceptions.NoActiveServer:
                     await event.socket.send(str(uita.message.ServerKickMessage()))
@@ -360,7 +360,7 @@ class Server():
 
     async def _on_connect(self, websocket: websockets.WebSocketServerProtocol, path: str) -> None:
         """Main loop for each connected client."""
-        log.debug("Websocket connected {} {}".format(websocket.remote_address[0], path))
+        log.debug(f"Websocket connected {websocket.remote_address[0]} {path}")
         try:
             # Connection stub in case server stops during authentication
             conn = Connection(None, websocket)
@@ -370,11 +370,7 @@ class Server():
             conn.user = user
             # Notify client that they authenticated successfully
             await websocket.send(str(uita.message.AuthSucceedMessage(user, session)))
-            log.info("[{}:{}] connected ({})".format(
-                user.name,
-                user.id,
-                websocket.remote_address[0]
-            ))
+            log.info(f"[{user.name}:{user.id}] connected ({websocket.remote_address[0]})")
             # Main loop, runs for the life of each connection
             while True:
                 # 90 second timeout to cull zombie connections, expects client heartbeats
@@ -392,13 +388,13 @@ class Server():
                 self._dispatch_event(event)
                 await event.wait()
         except websockets.exceptions.ConnectionClosed as error:
-            log.debug("Websocket disconnected: code {},reason {}".format(error.code, error.reason))
+            log.debug(f"Websocket disconnected: code {error.code},reason {error.reason}")
         except asyncio.CancelledError:
             log.debug("Websocket cancelled")
         except asyncio.TimeoutError:
             log.debug("Websocket missed heartbeat")
         except uita.exceptions.AuthenticationError as error:
-            log.debug("Websocket failed to authenticate: {}".format(error))
+            log.debug(f"Websocket failed to authenticate: {error}")
             try:
                 # Notify client that their authentication failed before closing connection
                 await asyncio.wait_for(
@@ -413,13 +409,13 @@ class Server():
             ):
                 pass
         except uita.exceptions.MalformedMessage as error:
-            log.debug("Websocket sent malformed message: {}".format(error))
+            log.debug(f"Websocket sent malformed message: {error}")
         except Exception:
             log.error("Uncaught exception", exc_info=True)
         finally:
             # Close and cleanup connection
             if conn.user is not None:
-                log.info("[{}:{}] disconnected".format(conn.user.name, conn.user.id))
+                log.info(f"[{conn.user.name}:{conn.user.id}] disconnected")
             del self.connections[websocket]
             await websocket.close()
             log.debug("Websocket closed")
