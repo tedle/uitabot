@@ -4,6 +4,7 @@
 import "./SearchBox.scss";
 
 import React from "react";
+import PropTypes from "prop-types";
 import {CSSTransition} from "react-transition-group";
 import TouchButton from "components/TouchButton/TouchButton";
 import * as Message from "utils/Message";
@@ -228,3 +229,9 @@ class SearchBox extends React.Component {
 }
 
 export default ContextAsProp(SearchBox, Error.Context, "onError");
+
+SearchBox.propTypes = {
+    eventDispatcher: PropTypes.instanceOf(Message.EventDispatcher).isRequired,
+    socket: PropTypes.instanceOf(WebSocket).isRequired,
+    onError: PropTypes.func.isRequired
+};

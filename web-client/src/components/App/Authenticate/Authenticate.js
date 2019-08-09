@@ -2,6 +2,7 @@
 // Component for doing backend authentication
 
 import React from "react";
+import PropTypes from "prop-types";
 import * as QueryString from "query-string";
 import * as Message from "utils/Message";
 import * as Session from "utils/Session";
@@ -57,3 +58,8 @@ export default class Authenticate extends React.Component {
         return <Loading>Authenticating</Loading>;
     }
 }
+
+Authenticate.propTypes = {
+    socket: PropTypes.instanceOf(WebSocket).isRequired,
+    onAuthFail: PropTypes.func.isRequired
+};

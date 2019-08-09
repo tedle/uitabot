@@ -4,6 +4,7 @@
 import "./VoiceChannelSelect.scss";
 
 import React from "react";
+import PropTypes from "prop-types";
 import * as DiscordApi from "utils/DiscordApi";
 import * as Message from "utils/Message";
 
@@ -137,3 +138,8 @@ export default class VoiceChannelSelect extends React.Component {
         );
     }
 }
+
+VoiceChannelSelect.propTypes = {
+    eventDispatcher: PropTypes.instanceOf(Message.EventDispatcher).isRequired,
+    socket: PropTypes.instanceOf(WebSocket).isRequired,
+};

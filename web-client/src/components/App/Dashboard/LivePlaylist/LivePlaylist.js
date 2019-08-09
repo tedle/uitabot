@@ -4,6 +4,7 @@
 import "./LivePlaylist.scss";
 
 import React from "react";
+import PropTypes from "prop-types";
 import {CSSTransition, TransitionGroup} from "react-transition-group";
 import {SortableContainer, SortableElement, arrayMove} from "react-sortable-hoc";
 import * as Message from "utils/Message";
@@ -223,3 +224,8 @@ const Playlist = SortableContainer(({
         </TransitionGroup>
     );
 });
+
+LivePlaylist.propTypes = {
+    eventDispatcher: PropTypes.instanceOf(Message.EventDispatcher).isRequired,
+    socket: PropTypes.instanceOf(WebSocket).isRequired
+};

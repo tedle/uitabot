@@ -4,6 +4,7 @@
 import "./Login.scss";
 
 import React from "react";
+import PropTypes from "prop-types";
 
 export default function Login({url}) {
     return (
@@ -13,3 +14,7 @@ export default function Login({url}) {
         </div>
     );
 }
+
+Login.propTypes = {
+    url: PropTypes.string.isRequired
+};

@@ -4,12 +4,14 @@
 import "./Dashboard.scss";
 
 import React from "react";
+import PropTypes from "prop-types";
 import FileUploadDropZone from "./FileUpload/FileUpload";
 import Header from "./Header/Header";
 import TabSelect from "./TabSelect/TabSelect";
 import LivePlaylist from "./LivePlaylist/LivePlaylist";
 import SearchBox from "./SearchBox/SearchBox";
 import VoiceChannelSelect from "./VoiceChannelSelect/VoiceChannelSelect";
+import {EventDispatcher} from "utils/Message";
 
 export default class Dashboard extends React.Component {
     constructor(props) {
@@ -77,3 +79,11 @@ export default class Dashboard extends React.Component {
         );
     }
 }
+
+Dashboard.propTypes = {
+    // Use empty shapes instead of objects to strictly validate any potential future properties
+    discordServer: PropTypes.shape({}).isRequired,
+    discordUser: PropTypes.shape({}).isRequired,
+    eventDispatcher: PropTypes.instanceOf(EventDispatcher).isRequired,
+    socket: PropTypes.instanceOf(WebSocket).isRequired
+};

@@ -4,6 +4,7 @@
 import "./TabSelect.scss";
 
 import React from "react";
+import PropTypes from "prop-types";
 
 export default function TabSelect(props) {
     const tabs = props.tabs.map(tab => {
@@ -20,3 +21,12 @@ export default function TabSelect(props) {
         </div>
     );
 }
+
+TabSelect.propTypes = {
+    tabs: PropTypes.arrayOf(PropTypes.shape({
+        id: PropTypes.string,
+        display: PropTypes.string
+    })).isRequired,
+    active: PropTypes.string.isRequired,
+    onSelect: PropTypes.func.isRequired
+};

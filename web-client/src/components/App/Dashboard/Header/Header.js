@@ -4,6 +4,7 @@
 import "./Header.scss";
 
 import React from "react";
+import PropTypes from "prop-types";
 import * as Session from "utils/Session";
 
 export default function Header(props) {
@@ -20,3 +21,13 @@ export default function Header(props) {
         </div>
     );
 }
+
+Header.propTypes = {
+    discordServer: PropTypes.shape({
+        name: PropTypes.string
+    }).isRequired,
+    discordUser: PropTypes.shape({
+        avatar: PropTypes.string,
+        name: PropTypes.string
+    }).isRequired
+};

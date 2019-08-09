@@ -4,6 +4,7 @@
 import "./Error.scss";
 
 import React from "react";
+import PropTypes from "prop-types";
 import {CSSTransition, TransitionGroup} from "react-transition-group";
 
 const Context = React.createContext(() => {});
@@ -53,3 +54,15 @@ export class List extends React.Component {
         );
     }
 }
+
+Fatal.propTypes = {
+    children: PropTypes.node.isRequired
+};
+
+List.propTypes = {
+    errors: PropTypes.arrayOf(PropTypes.shape({
+        id: PropTypes.string,
+        message: PropTypes.string
+    })).isRequired,
+    onRemove: PropTypes.func.isRequired
+};

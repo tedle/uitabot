@@ -4,6 +4,7 @@
 import "./FileUpload.scss";
 
 import React from "react";
+import PropTypes from "prop-types";
 import {CSSTransition} from "react-transition-group";
 import * as Config from "config";
 import * as Message from "utils/Message";
@@ -357,3 +358,11 @@ class DropZone extends React.Component {
 }
 
 export default ContextAsProp(DropZone, Error.Context, "onError");
+
+DropZone.propTypes = {
+    children: PropTypes.node.isRequired,
+    discordServer: PropTypes.shape({
+        id: PropTypes.string
+    }).isRequired,
+    onError: PropTypes.func.isRequired
+};

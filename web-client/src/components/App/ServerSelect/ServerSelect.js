@@ -4,6 +4,7 @@
 import "./ServerSelect.scss";
 
 import React from "react";
+import PropTypes from "prop-types";
 import * as DiscordApi from "utils/DiscordApi";
 import * as Message from "utils/Message";
 import * as Session from "utils/Session";
@@ -79,3 +80,9 @@ export default class ServerSelect extends React.Component {
         );
     }
 }
+
+ServerSelect.propTypes = {
+    eventDispatcher: PropTypes.instanceOf(Message.EventDispatcher).isRequired,
+    socket: PropTypes.instanceOf(WebSocket).isRequired,
+    onServerSelect: PropTypes.func.isRequired
+};
