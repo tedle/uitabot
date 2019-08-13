@@ -34,6 +34,10 @@ class DiscordState():
                 dump_str += f"\tuser {user_id}: {user_name}\n"
         return dump_str
 
+    def _clear(self) -> None:
+        self.servers = {}
+        self.voice_connections = {}
+
     def initialize_from_bot(self, bot: discord.Client) -> None:
         """Initialize Discord state from a ``discord.Client``
 
@@ -41,7 +45,9 @@ class DiscordState():
             bot: Bot containing initial Discord state to copy.
 
         """
-        log.info("Bot state synced to Discord")
+        # Clear data before initializing
+        self._clear()
+
         for server in bot.guilds:
             discord_channels = {
                 str(channel.id): DiscordChannel(
@@ -68,6 +74,7 @@ class DiscordState():
                 server.icon
             )
             self.voice_connections[str(server.id)] = DiscordVoiceClient(str(server.id), bot.loop)
+        log.info("Bot state synced to Discord")
 
     def channel_add(self, channel: "DiscordChannel", server_id: str) -> None:
         """Add a server channel to Discord state.

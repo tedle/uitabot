@@ -1,0 +1,34 @@
+{
+ "items": [
+  {
+   "id": "vid1",
+   "contentDetails": {
+    "duration": "PT5S"
+   }
+  },
+  {
+   "id": "vid2",
+   "contentDetails": {
+    "duration": "PT1M0S"
+   }
+  },
+  {
+   "id": "vid3",
+   "contentDetails": {
+    "duration": "PT10M30S"
+   }
+  },
+  {
+   "id": "vid4",
+   "contentDetails": {
+    "duration": "PT1H0M0S"
+   }
+  },
+  {
+   "id": "vid5",
+   "contentDetails": {
+    "duration": "PT10H10M10S"
+   }
+  }
+ ]
+}

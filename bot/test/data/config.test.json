@@ -1,0 +1,34 @@
+{
+    "discord": {
+        "client": {
+            "id": "9a9a9a9a9a9a",
+            "secret": "9b9b9b9b9b9b"
+        },
+        "token": "9c9c9c9c9c9c"
+    },
+    "youtube": {
+        "api_key": ""
+    },
+    "bot": {
+        "domain": "localhost",
+        "port": 23230,
+        "database": ":memory:",
+        "verbose_logging": false,
+        "trial_mode": {
+            "enabled": false,
+            "server_whitelist": []
+        }
+    },
+    "client": {
+        "domain": "localhost",
+        "port": 23231
+    },
+    "ssl": {
+        "cert_file": "",
+        "key_file": ""
+    },
+    "file": {
+        "upload_max_size": 50000000,
+        "cache_max_size": 100000000
+    }
+}

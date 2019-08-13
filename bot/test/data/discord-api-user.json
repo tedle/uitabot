@@ -1,0 +1,9 @@
+{
+    "username": "User Name",
+    "locale": "en-US",
+    "mfa_enabled": false,
+    "flags": 0,
+    "avatar": "ffffffffffffffffffffffffffffffff",
+    "discriminator": "9999",
+    "id": "111111111111111111"
+}

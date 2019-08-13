@@ -1,0 +1,89 @@
+{
+ "items": [
+  {
+   "id": {
+    "videoId": "vid1"
+   },
+   "snippet": {
+    "title": "Video 1",
+    "thumbnails": {
+     "default": {
+      "url": "http://example.com/vid1/default.jpg",
+      "width": 120,
+      "height": 90
+     }
+    },
+    "channelTitle": "Uploader 1",
+    "liveBroadcastContent": "none"
+   }
+  },
+  {
+   "id": {
+    "videoId": "vid2"
+   },
+   "snippet": {
+    "title": "Video 2",
+    "thumbnails": {
+     "default": {
+      "url": "http://example.com/vid2/default.jpg",
+      "width": 120,
+      "height": 90
+     }
+    },
+    "channelTitle": "Uploader 2",
+    "liveBroadcastContent": "none"
+   }
+  },
+  {
+   "id": {
+    "videoId": "vid3"
+   },
+   "snippet": {
+    "title": "Video 3",
+    "thumbnails": {
+     "default": {
+      "url": "http://example.com/vid3/default.jpg",
+      "width": 120,
+      "height": 90
+     }
+    },
+    "channelTitle": "Uploader 3",
+    "liveBroadcastContent": "none"
+   }
+  },
+  {
+   "id": {
+    "videoId": "vid4"
+   },
+   "snippet": {
+    "title": "Video 4",
+    "thumbnails": {
+     "default": {
+      "url": "http://example.com/vid4/default.jpg",
+      "width": 120,
+      "height": 90
+     }
+    },
+    "channelTitle": "Uploader 4",
+    "liveBroadcastContent": "none"
+   }
+  },
+  {
+   "id": {
+    "videoId": "vid5"
+   },
+   "snippet": {
+    "title": "Video 5",
+    "thumbnails": {
+     "default": {
+      "url": "http://example.com/vid5/default.jpg",
+      "width": 120,
+      "height": 90
+     }
+    },
+    "channelTitle": "Uploader 5",
+    "liveBroadcastContent": "none"
+   }
+  }
+ ]
+}
