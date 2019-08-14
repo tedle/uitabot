@@ -50,7 +50,7 @@ class Track():
         path: str,
         user: "uita.types.DiscordUser",
         title: str,
-        duration: int,
+        duration: float,
         live: bool,
         local: bool,
         url: Optional[str] = None
@@ -59,11 +59,11 @@ class Track():
         self.path = path
         self.user = user
         self.title = title
-        self.duration = duration
+        self.duration = float(duration)
         self.live = live
         self.local = local
         self.url = url
-        self.offset = 0.0
+        self.offset: float = 0.0
 
 
 # NOTE: These values must be synced with the enum used in utils/Message.js:PlayStatusSendMessage
@@ -230,7 +230,7 @@ class Queue():
             filename,
             user,
             title,
-            probe["format"]["duration"],
+            float(probe["format"]["duration"]),
             live=False,
             local=True
         ))
@@ -258,7 +258,7 @@ class Queue():
                 info["url"],
                 user,
                 info["title"],
-                info["duration"],
+                float(info["duration"]),
                 info["is_live"] or False,  # is_live is either True or None?? Thanks ytdl
                 local=False,
                 url=f"https://youtube.com/watch?v={info['id']}"
