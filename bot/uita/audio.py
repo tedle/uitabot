@@ -322,16 +322,6 @@ class Queue():
                     await self._notify_queue_change()
                     return
 
-    async def track_from_url(self, url: str) -> Track:
-        """Probes the audio resource at a given URL for audio metadata.
-
-        Args:
-            url: URL to audio resource.
-
-        Returns:
-            Container for track metadata.
-
-        """
     async def _after_song(self) -> None:
         with await self._queue_lock:
             self._now_playing = None
