@@ -224,7 +224,8 @@ class DiscordServer():
 
     """
     def __init__(
-        self, id: str,
+        self,
+        id: str,
         name: str,
         channels: Dict[str, DiscordChannel],
         users: Dict[str, str],
