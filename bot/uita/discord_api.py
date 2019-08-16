@@ -7,6 +7,7 @@ from typing_extensions import Final
 
 import uita
 import uita.exceptions
+import uita.utils
 
 
 # API config definitions
@@ -44,18 +45,12 @@ async def auth(
     # Since these are passed by the client, sanitize to expected format
     if VALID_CODE_REGEX.match(code) is None:
         raise uita.exceptions.AuthenticationError("Passed an invalidly formatted auth code")
-    # Generate a redirect URL since it is required, even though we aren't being redirected anywhere
-    redirect = "http{}://{}{}".format(
-        "s" if config.ssl.cert_file is not None else "",
-        config.client.domain,
-        f":{config.client.port}" if config.client.port != 80 else ""
-    )
     data = {
         "code": code,
         "grant_type": "authorization_code",
         "client_id": config.discord.client.id,
         "client_secret": config.discord.client.secret,
-        "redirect_uri": redirect
+        "redirect_uri": uita.utils.build_client_url(config)
     }
     # requests is not asynchronous, so run in another thread and await it
     response = await loop.run_in_executor(
