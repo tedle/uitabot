@@ -86,7 +86,7 @@ class AuthSucceedMessage(AbstractMessage):
 
     def __init__(self, user: uita.types.DiscordUser, session: "uita.auth.Session") -> None:
         self.user = {
-            "id": int(user.id),
+            "id": str(user.id),
             "name": str(user.name),
             "avatar": str(user.avatar)
         }
