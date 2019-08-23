@@ -8,8 +8,9 @@ env/
 _build/
 .mypy_cache/
 *.pyc
-# npm
+# javascript
 node_modules/
+coverage/
 # vim
 *.swp
 # ssl
