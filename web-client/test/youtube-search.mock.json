@@ -1,0 +1,101 @@
+{
+  "kind": "youtube#searchListResponse",
+  "items": [
+    {
+      "kind": "youtube#searchResult",
+      "id": {
+        "kind": "youtube#video",
+        "videoId": "id1id1id1id"
+      },
+      "snippet": {
+        "publishedAt": "2010-01-01T00:00:00.000Z",
+        "channelId": "ch1ch1ch1ch1ch1ch1ch1ch1",
+        "title": "Title 1",
+        "description": "Description 1",
+        "thumbnails": {
+          "default": {
+            "url": "https://example.com/vi/id1id1id1id/default.jpg",
+            "width": 120,
+            "height": 90
+          },
+          "medium": {
+            "url": "https://example.com/vi/id1id1id1id/mqdefault.jpg",
+            "width": 320,
+            "height": 180
+          },
+          "high": {
+            "url": "https://example.com/vi/id1id1id1id/hqdefault.jpg",
+            "width": 480,
+            "height": 360
+          }
+        },
+        "channelTitle": "Channel 1",
+        "liveBroadcastContent": "none"
+      }
+    },
+    {
+      "kind": "youtube#searchResult",
+      "id": {
+        "kind": "youtube#playlist",
+        "playlistId": "id2id2id2id2id2id2id2id2id2id2id2i"
+      },
+      "snippet": {
+        "publishedAt": "2010-01-01T00:00:00.000Z",
+        "channelId": "ch2ch2ch2ch2ch2ch2ch2ch2",
+        "title": "Title 2",
+        "description": "",
+        "thumbnails": {
+          "default": {
+            "url": "https://example.com/vi/id2id2id2id/default.jpg",
+            "width": 120,
+            "height": 90
+          },
+          "medium": {
+            "url": "https://example.com/vi/id2id2id2id/mqdefault.jpg",
+            "width": 320,
+            "height": 180
+          },
+          "high": {
+            "url": "https://example.com/vi/id2id2id2id/hqdefault.jpg",
+            "width": 480,
+            "height": 360
+          }
+        },
+        "channelTitle": "Channel 2",
+        "liveBroadcastContent": "none"
+      }
+    },
+    {
+      "kind": "youtube#searchResult",
+      "id": {
+        "kind": "youtube#video",
+        "videoId": "id3id3id3id"
+      },
+      "snippet": {
+        "publishedAt": "2010-01-01T00:00:00.000Z",
+        "channelId": "ch3ch3ch3ch3ch3ch3ch3ch3",
+        "title": "Title 3",
+        "description": "Description 3",
+        "thumbnails": {
+          "default": {
+            "url": "https://example.com/vi/id3id3id3id/default_live.jpg",
+            "width": 120,
+            "height": 90
+          },
+          "medium": {
+            "url": "https://example.com/vi/id3id3id3id/mqdefault_live.jpg",
+            "width": 320,
+            "height": 180
+          },
+          "high": {
+            "url": "https://example.com/vi/id3id3id3id/hqdefault_live.jpg",
+            "width": 480,
+            "height": 360
+          }
+        },
+        "channelTitle": "Channel 3",
+        "liveBroadcastContent": "live"
+      }
+    }
+  ]
+}
