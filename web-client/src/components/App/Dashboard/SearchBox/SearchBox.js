@@ -10,7 +10,7 @@ import TouchButton from "components/TouchButton/TouchButton";
 import * as Message from "utils/Message";
 import * as Youtube from "utils/YoutubeApi";
 import {FileUploadContext} from "components/App/Dashboard/FileUpload/FileUpload";
-import * as Error from "components/App/Error/Error";
+import * as Errors from "components/App/Errors/Errors";
 import ContextAsProp from "utils/ContextAsProp";
 
 class SearchBox extends React.Component {
@@ -228,7 +228,7 @@ class SearchBox extends React.Component {
     }
 }
 
-export default ContextAsProp(SearchBox, Error.Context, "onError");
+export default ContextAsProp(SearchBox, Errors.Context, "onError");
 
 SearchBox.propTypes = {
     eventDispatcher: PropTypes.instanceOf(Message.EventDispatcher).isRequired,

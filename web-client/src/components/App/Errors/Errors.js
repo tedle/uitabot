@@ -1,7 +1,7 @@
-// --- Error.js ----------------------------------------------------------------
+// --- Errors.js ---------------------------------------------------------------
 // Components for displaying fatal errors or a list of error-related popups
 
-import "./Error.scss";
+import "./Errors.scss";
 
 import React from "react";
 import PropTypes from "prop-types";
@@ -12,7 +12,7 @@ export {Context};
 
 export function Fatal({children}) {
     return (
-        <div className="Error">
+        <div className="Errors">
             <i className="fas fa-times"></i> {children}
         </div>
     );
@@ -32,10 +32,10 @@ export class List extends React.Component {
                 <CSSTransition
                     key={error.id}
                     timeout={300}
-                    classNames="Error-List-Item"
+                    classNames="Errors-List-Item"
                 >
-                    <li key={error.id} className="Error-List-Item">
-                        <div className="Error-Message">
+                    <li key={error.id} className="Errors-List-Item">
+                        <div className="Errors-Message">
                             {error.message}
                         </div>
                         <button onClick={() => this.props.onRemove(error.id)}>
@@ -46,7 +46,7 @@ export class List extends React.Component {
             );
         });
         return (
-            <div className="Error-List">
+            <div className="Errors-List">
                 <TransitionGroup component={"ul"}>
                     {errors}
                 </TransitionGroup>

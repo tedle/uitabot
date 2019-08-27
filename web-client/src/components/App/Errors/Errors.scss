@@ -1,6 +1,6 @@
 @import "~styles/common";
 
-.Error {
+.Errors {
     @include modal;
 
     @include desktop {
@@ -25,7 +25,7 @@
     }
 }
 
-.Error-List {
+.Errors-List {
     @include desktop {
         width: 500px;
     }
@@ -58,7 +58,7 @@
     }
 }
 
-.Error-List-Item {
+.Errors-List-Item {
     @include desktop {
         border-radius: 3px;
         box-shadow: 0 0 10px rgba($shadow, 0.3);
@@ -81,7 +81,7 @@
 
     color: $font-color;
 
-    .Error-Message {
+    .Errors-Message {
         flex-grow: 1;
 
         padding: 20px;

@@ -9,7 +9,7 @@ import {CSSTransition} from "react-transition-group";
 import * as Config from "config";
 import * as Message from "utils/Message";
 import * as Session from "utils/Session";
-import * as Error from "components/App/Error/Error";
+import * as Errors from "components/App/Errors/Errors";
 import ContextAsProp from "utils/ContextAsProp";
 
 var UploadStatus = {
@@ -357,7 +357,7 @@ class DropZone extends React.Component {
     }
 }
 
-export default ContextAsProp(DropZone, Error.Context, "onError");
+export default ContextAsProp(DropZone, Errors.Context, "onError");
 
 DropZone.propTypes = {
     children: PropTypes.node.isRequired,

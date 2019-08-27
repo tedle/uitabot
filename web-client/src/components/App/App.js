@@ -11,7 +11,7 @@ import * as DiscordApi from "utils/DiscordApi";
 import RandomString from "utils/RandomString";
 import Authenticate from "./Authenticate/Authenticate";
 import Dashboard from "./Dashboard/Dashboard";
-import * as Error from "./Error/Error";
+import * as Errors from "./Errors/Errors";
 import Loading from "./Loading/Loading";
 import Login from "./Login/Login";
 import ServerSelect from "./ServerSelect/ServerSelect";
@@ -124,7 +124,7 @@ export default class App extends React.Component {
 
         // Connection error displays when server closes connection
         if (this.state.connection != WebSocket.OPEN) {
-            return <Error.Fatal>Connection error. <a href="/">Refresh</a>?</Error.Fatal>;
+            return <Errors.Fatal>Connection error. <a href="/">Refresh</a>?</Errors.Fatal>;
         }
 
         // Attempt authentication with stored credentials (if they exist)
@@ -155,10 +155,10 @@ export default class App extends React.Component {
 
     render() {
         return (
-            <Error.Context.Provider value={(error) => this.onError(error)}>
+            <Errors.Context.Provider value={(error) => this.onError(error)}>
                 {this.renderView()}
-                <Error.List errors={this.state.errors} onRemove={id => this.onErrorRemove(id)}/>
-            </Error.Context.Provider>
+                <Errors.List errors={this.state.errors} onRemove={id => this.onErrorRemove(id)}/>
+            </Errors.Context.Provider>
         );
     }
 }
