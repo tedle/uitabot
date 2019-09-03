@@ -67,14 +67,17 @@ export default class App extends React.Component {
             this.setState({connection: this.socket.readyState});
         }
         catch (e) {
-            this.onError(e);
+            this.onError(e.message);
             this.setState({connection: WebSocket.CLOSED});
         }
     }
 
     componentWillUnmount() {
+        // Can be undefined if WebSocket constructor throws
+        if (this.socket) {
+            this.socket.close();
+        }
         this.setState({errors: Array()});
-        this.socket.close();
         this.eventDispatcher.clearMessageHandler("auth.fail");
         this.eventDispatcher.clearMessageHandler("auth.succeed");
         this.eventDispatcher.clearMessageHandler("server.kick");
