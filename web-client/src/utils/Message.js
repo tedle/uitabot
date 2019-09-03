@@ -10,12 +10,8 @@ export class AbstractMessage {
 
     // Serializes object for network transfer
     str() {
-        let obj = Object();
-        obj.header = this.constructor.header;
-        for(let property in this) {
-            obj[property] = String(this[property]);
-        }
-        return JSON.stringify(obj);
+        const header = this.constructor.header;
+        return JSON.stringify({header, ...this});
     }
 }
 
