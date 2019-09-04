@@ -3,12 +3,11 @@
 
 export default function(length) {
     // Each byte is encoded as 2 characters, so half length
-    let byteArray = new Uint8Array(length / 2);
+    let byteArray = new Uint8Array(Math.ceil(length / 2));
     window.crypto.getRandomValues(byteArray);
-    let str = String();
-    // Byte for byte, converts array into a hex string
-    for (let byte of byteArray) {
-        str += byte.toString(16);
-    }
-    return str;
+    return byteArray
+        // Byte for byte, converts array into a hex string
+        .reduce((str, byte) => str + byte.toString(16).padStart(2, "0"), "")
+        // Odd lengths produce an extra character because they are generated in pairs
+        .slice(0, length);
 }
