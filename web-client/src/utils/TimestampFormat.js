@@ -5,7 +5,8 @@
 export default function(seconds) {
     let display = "";
     seconds = Math.round(seconds);
-    if (seconds > 60 * 60) {
+    seconds = Math.max(seconds, 0);
+    if (seconds >= 60 * 60) {
         display += `${Math.floor(seconds / (60 * 60))}:`;
         display += `${Math.floor(seconds / 60) % 60}:`.padStart(3, "0");
     } else {
