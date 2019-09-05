@@ -56,14 +56,14 @@ async def on_guild_channel_create(channel: discord.abc.GuildChannel) -> None:
     discord_channel = uita.types.DiscordChannel(
         str(channel.id), channel.name, channel.type, str(channel.category_id), channel.position
     )
-    uita.state.channel_add(discord_channel, str(channel.guild.id))
+    uita.state.server_add_channel(str(channel.guild.id), discord_channel)
     _sync_channels(channel.guild)
 
 
 @uita.bot.event
 @bot_ready
 async def on_guild_channel_delete(channel: discord.abc.GuildChannel) -> None:
-    uita.state.channel_remove(str(channel.id), str(channel.guild.id))
+    uita.state.server_remove_channel(str(channel.guild.id), str(channel.id))
     _sync_channels(channel.guild)
 
 

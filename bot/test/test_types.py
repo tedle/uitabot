@@ -49,14 +49,14 @@ def test_channel(event_loop):
     state = uita.types.DiscordState()
 
     with pytest.raises(KeyError):
-        state.channel_add(channel, server.id)
+        state.server_add_channel(server.id, channel)
 
     state.server_add(server, Mock(loop=event_loop))
-    state.channel_add(channel, server.id)
+    state.server_add_channel(server.id, channel)
     assert channel.id in state.servers[server.id].channels
     assert state.servers[server.id].channels[channel.id].name == channel.name
 
-    state.channel_remove(channel.id, server.id)
+    state.server_remove_channel(server.id, channel.id)
     assert channel.id not in state.servers[server.id].channels
 
 

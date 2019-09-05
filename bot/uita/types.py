@@ -76,28 +76,6 @@ class DiscordState():
             self.voice_connections[str(server.id)] = DiscordVoiceClient(str(server.id), bot.loop)
         log.info("Bot state synced to Discord")
 
-    def channel_add(self, channel: "DiscordChannel", server_id: str) -> None:
-        """Add a server channel to Discord state.
-
-        Args:
-            channel: Channel to be added to server.
-            server_id: ID of server that channel belongs to.
-
-        """
-        log.debug(f"channel_add {channel.id}")
-        self.servers[server_id].channels[channel.id] = channel
-
-    def channel_remove(self, channel_id: str, server_id: str) -> None:
-        """Remove a server channel from Discord state.
-
-        Args:
-            channel_id: ID of channel to be removed from server.
-            server_id: ID of server that channel belongs to.
-
-        """
-        log.debug(f"channel_remove {channel_id}")
-        del self.servers[server_id].channels[channel_id]
-
     def server_add(self, server: "DiscordServer", bot: discord.Client) -> None:
         """Add an accessible server to Discord state.
 
@@ -122,6 +100,28 @@ class DiscordState():
         log.debug(f"server_remove {server_id}")
         del self.servers[server_id]
         del self.voice_connections[server_id]
+
+    def server_add_channel(self, server_id: str, channel: "DiscordChannel") -> None:
+        """Add a server channel to Discord state.
+
+        Args:
+            server_id: ID of server that channel belongs to.
+            channel: Channel to be added to server.
+
+        """
+        log.debug(f"server_add_channel {channel.id}")
+        self.servers[server_id].channels[channel.id] = channel
+
+    def server_remove_channel(self, server_id: str, channel_id: str) -> None:
+        """Remove a server channel from Discord state.
+
+        Args:
+            server_id: ID of server that channel belongs to.
+            channel_id: ID of channel to be removed from server.
+
+        """
+        log.debug(f"server_remove_channel {channel_id}")
+        del self.servers[server_id].channels[channel_id]
 
     def server_add_user(self, server_id: str, user_id: str, user_name: str) -> None:
         """Add an accessible server for a user.
