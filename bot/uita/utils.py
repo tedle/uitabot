@@ -3,8 +3,10 @@ import asyncio
 import contextlib
 import discord
 import os
+import re
+import subprocess
 import sys
-from typing import Iterator, List, Optional
+from typing import Iterator, List, Optional, Tuple
 
 import uita.config
 
@@ -191,3 +193,31 @@ def verify_user_permissions(user: discord.Member, role: Optional[str]) -> bool:
         user.guild_permissions.administrator or
         discord.utils.get(user.roles, id=int(role)) is not None
     )
+
+
+def ffmpeg_version() -> Optional[Tuple[int, int]]:
+    """Get the version of the currently installed FFmpeg binary.
+
+    Returns:
+        A tuple of ints describing the version as ``(major, minor)``, or ``None`` if the version
+        could not be determined.
+
+    Raises:
+        FileNotFoundError: If FFmpeg could not be found.
+    """
+    try:
+        r = subprocess.run(
+            ["ffmpeg", "-version"],
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            encoding="UTF-8"
+        )
+        match = re.search(r"ffmpeg version (\d+)\.(\d+)", r.stdout)
+        if match is None:
+            return None
+        return int(match.groups()[0]), int(match.groups()[1])
+    except subprocess.CalledProcessError:
+        return None
+    except FileNotFoundError:
+        raise

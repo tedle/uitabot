@@ -26,11 +26,25 @@ def initialize_logging(level: int = logging.DEBUG) -> None:
     log.info("uitabot@{}".format(uita.__version__))
 
 
+def check_ffmpeg() -> None:
+    try:
+        version = uita.utils.ffmpeg_version()
+        if version is None:
+            log.error("FFmpeg version is unknown, may affect audio streaming")
+        elif version[0] < 4:
+            log.warn("FFmpeg version is older than 4.0, may affect audio streaming")
+    except FileNotFoundError:
+        log.fatal("FFmpeg not found, must be installed to stream audio")
+        sys.exit(0)
+
+
 if __name__ == "__main__":
     try:
         # Initialization
         config = uita.config.load(uita.utils.config_file())
         initialize_logging(level=logging.INFO if not config.bot.verbose_logging else logging.DEBUG)
+        check_ffmpeg()
+        # Main loop
         uita.loop.create_task(uita.server.start(
             config.bot.database,
             config,
@@ -38,7 +52,6 @@ if __name__ == "__main__":
             loop=uita.loop
         ))
         uita.loop.create_task(uita.bot.start(config.discord.token))
-        # Main loop
         uita.loop.run_forever()
     except KeyboardInterrupt:
         pass

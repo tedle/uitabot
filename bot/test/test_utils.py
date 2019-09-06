@@ -94,3 +94,10 @@ def test_verify_user_permissions():
 
     user_mock.roles = [role_mock]
     assert uita.utils.verify_user_permissions(user_mock, role)
+
+
+def test_ffmpeg_version():
+    # Test relies on external environment, but good for raising alarms about ffmpeg configurations
+    # that fail to be parsed or are not found.
+    version = uita.utils.ffmpeg_version()
+    assert version is not None
