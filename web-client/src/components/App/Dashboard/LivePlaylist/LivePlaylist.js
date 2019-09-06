@@ -6,7 +6,7 @@ import "./LivePlaylist.scss";
 import React from "react";
 import PropTypes from "prop-types";
 import {CSSTransition, TransitionGroup} from "react-transition-group";
-import {SortableContainer, SortableElement, arrayMove} from "react-sortable-hoc";
+import {SortableContainer, SortableElement} from "react-sortable-hoc";
 import * as Message from "utils/Message";
 import TimestampFormat from "utils/TimestampFormat";
 
@@ -72,12 +72,14 @@ export default class LivePlaylist extends React.Component {
     }
 
     queueMove(oldIndex, newIndex) {
-        const trackId = this.state.queue[oldIndex].id;
+        const track = this.state.queue[oldIndex];
         // Update server
-        this.props.socket.send(new Message.PlayQueueMoveMessage(trackId, newIndex).str());
+        this.props.socket.send(new Message.PlayQueueMoveMessage(track.id, newIndex).str());
         // Predictively update client
+        const queue = [...this.state.queue].filter(t => t.id != track.id);
+        queue.splice(newIndex, 0, track);
         this.setState({
-            queue: arrayMove(this.state.queue, oldIndex, newIndex)
+            queue: queue
         });
     }
 
