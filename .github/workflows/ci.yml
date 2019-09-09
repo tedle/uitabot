@@ -1,0 +1,58 @@
+on: [push, pull_request]
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        name: Frontend build
+        steps:
+            - uses: actions/checkout@v1
+            - uses: actions/setup-node@v1
+              with:
+                  node-version: '10.x'
+            - name: Create empty config file
+              run: cp config.example.json config.json
+            - name: Install dependencies
+              working-directory: web-client
+              run: npm install
+            - name: Build frontend
+              working-directory: web-client
+              run: npm run build
+    backend-test:
+        runs-on: ubuntu-latest
+        name: Backend tests
+        steps:
+            - uses: actions/checkout@v1
+            - uses: actions/setup-python@v1
+              with:
+                  python-version: '3.6'
+            - name: Install dependencies
+              working-directory: bot
+              run: |
+                  sudo apt-get update
+                  sudo apt-get install ffmpeg
+                  pip install -r requirements.txt
+            - name: Linting
+              working-directory: bot
+              run: python -m flake8 uitabot.py uita test type-stubs
+            - name: Type checking
+              working-directory: bot
+              run: mypy
+            - name: Testing
+              working-directory: bot
+              run: pytest
+    frontend-test:
+        runs-on: ubuntu-latest
+        name: Frontend tests
+        steps:
+            - uses: actions/checkout@v1
+            - uses: actions/setup-node@v1
+              with:
+                  node-version: '10.x'
+            - name: Install dependencies
+              working-directory: web-client
+              run: npm install
+            - name: Linting
+              working-directory: web-client
+              run: npm run lint
+            - name: Testing
+              working-directory: web-client
+              run: npm run test
