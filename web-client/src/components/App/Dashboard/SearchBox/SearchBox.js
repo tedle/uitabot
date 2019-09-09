@@ -189,7 +189,7 @@ class SearchBox extends React.Component {
                             <input
                                 id="SearchBox-Upload"
                                 type="file"
-                                accept="audio/*"
+                                accept="audio/*,video/*"
                                 multiple
                                 onChange={(e) => upload(Array.from(e.target.files))}
                             />

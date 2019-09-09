@@ -49,12 +49,16 @@ class DropZone extends React.Component {
         this._cancelUploadFlag = true;
     }
 
+    checkMimeType(type) {
+        return /^(audio|video)\//.test(type);
+    }
+
     handleFileDrop(event) {
         // Prevent default required to stop the browser from opening files in a new tab
         event.preventDefault();
         this.setState({showOverlay: false});
         const files = Array.from(event.dataTransfer.files)
-            .filter(file => /^audio\//.test(file.type));
+            .filter(file => this.checkMimeType(file.type));
         this.upload(files);
     }
 
@@ -62,9 +66,9 @@ class DropZone extends React.Component {
         // Prevent default required to change drop effect
         event.preventDefault();
         event.dataTransfer.dropEffect = "none";
-        // Only allow drop payloads with an item that has an audio/* mime type
+        // Only allow drop payloads with an item that has an audio/* or video/* mime type
         for (let item of event.dataTransfer.items) {
-            if (/^audio\//.test(item.type)) {
+            if (this.checkMimeType(item.type)) {
                 event.dataTransfer.dropEffect = "copy";
                 break;
             }

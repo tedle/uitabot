@@ -205,6 +205,8 @@ class Queue():
                 filename,
                 "-of", "json",
                 "-show_format",
+                "-show_streams",
+                "-select_streams", "a",
                 "-show_error",
                 "-loglevel", "quiet"
             ], stdout=subprocess.PIPE)
@@ -213,6 +215,10 @@ class Queue():
         if "format" not in probe:
             raise uita.exceptions.ClientError(
                 uita.message.ErrorFileInvalidMessage("Invalid audio format")
+            )
+        if "streams" not in probe or len(probe["streams"]) == 0:
+            raise uita.exceptions.ClientError(
+                uita.message.ErrorFileInvalidMessage("No audio track found")
             )
         title = "untagged file upload"
         if "tags" in probe["format"]:

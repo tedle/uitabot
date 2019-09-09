@@ -120,8 +120,13 @@ test("drop effects change with file type", () => {
     Simulate.dragOver(container.querySelector(".FileUpload-DropZone"), mockEvent);
     expect(mockEvent.dataTransfer.dropEffect).toBe("none");
 
-    // Check drop effect with an audio file
+    // Check drop effect with an audio file and invalid file
     mockEvent.dataTransfer.items.push({type: "audio/mp3"});
+    Simulate.dragOver(container.querySelector(".FileUpload-DropZone"), mockEvent);
+    expect(mockEvent.dataTransfer.dropEffect).toBe("copy");
+
+    // Check drop effect with a video file
+    mockEvent.dataTransfer.items = [{type: "video/mp4"}];
     Simulate.dragOver(container.querySelector(".FileUpload-DropZone"), mockEvent);
     expect(mockEvent.dataTransfer.dropEffect).toBe("copy");
 });
