@@ -32,6 +32,9 @@
             "error",
             { "code": 100 }
         ],
+        "no-trailing-spaces": [
+            "error"
+        ],
         "no-unused-vars": [
             "error",
             { "args": "none" }
