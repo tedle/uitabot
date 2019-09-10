@@ -1,7 +1,7 @@
 // --- FileUpload.test.js ------------------------------------------------------
 // Test suite for FileUpload.js
 
-import FileUpload, {FileUploadContext} from "components/App/DashBoard/FileUpload/FileUpload";
+import FileUpload, {FileUploadContext} from "components/App/Dashboard/FileUpload/FileUpload";
 import * as Errors from "components/App/Errors/Errors";
 import * as Message from "utils/Message";
 import * as Session from "utils/Session";
