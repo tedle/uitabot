@@ -286,7 +286,7 @@ class Queue():
             position: Index position for the track to be moved to.
 
         """
-        with await self._queue_lock:
+        async with self._queue_lock:
             if position >= len(self.queue()) or position < 0:
                 log.debug("Requested queue index out of bounds")
                 return
@@ -317,7 +317,7 @@ class Queue():
             track_id: Track ID of audio resource to be removed.
 
         """
-        with await self._queue_lock:
+        async with self._queue_lock:
             if self._now_playing is not None and self._now_playing.id == track_id:
                 if self._voice is not None:
                     self._voice.stop()
@@ -329,7 +329,7 @@ class Queue():
                     return
 
     async def _after_song(self) -> None:
-        with await self._queue_lock:
+        async with self._queue_lock:
             self._now_playing = None
             self._change_status(Status.PAUSED)
             await self._notify_queue_change()
@@ -343,7 +343,7 @@ class Queue():
         try:
             while voice.is_connected():
                 self._queue_update_flag.clear()
-                with await self._queue_lock:
+                async with self._queue_lock:
                     if self._voice is None and len(self._queue) > 0:
                         self._now_playing = self._queue.popleft()
                         log.info(f"[{self._now_playing.user.name}:{self._now_playing.user.id}] "

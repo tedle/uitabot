@@ -38,7 +38,7 @@ async def dir_size(
             for f in files:
                 size += os.path.getsize(os.path.join(directory, f))
         return size
-    with await dir_size.lock:  # type: ignore
+    async with dir_size.lock:  # type: ignore
         return await loop.run_in_executor(None, lambda: walk(path))
 dir_size.lock = asyncio.Lock()  # type: ignore
 

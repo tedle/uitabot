@@ -358,7 +358,7 @@ class DiscordVoiceClient():
         ):
             raise uita.exceptions.MalformedMessage("Tried to join invalid channel")
 
-        with await self._voice_lock:
+        async with self._voice_lock:
             if self._voice is None:
                 try:
                     self._voice = await channel.connect(timeout=5)
@@ -371,7 +371,7 @@ class DiscordVoiceClient():
 
     async def disconnect(self) -> None:
         """Disconnect bot from the voice channels in this server."""
-        with await self._voice_lock:
+        async with self._voice_lock:
             if self._voice is not None:
                 await self._playlist.stop()
                 try:
