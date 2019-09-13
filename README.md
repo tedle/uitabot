@@ -10,36 +10,37 @@
 
 ## Linux Installation from Source
 ### Setup
-```
+```sh
+# Tested on Ubuntu 18.04
+sudo apt-get install git python3 python3-dev libffi-dev ffmpeg npm
 git clone https://github.com/tedle/uitabot.git
-sudo apt-get install python3 python3-dev lib-ffi-dev npm
-cd bot
-pip install -r requirements.txt
+cd uitabot/bot
+python3 -m pip install -r requirements.txt
 cd ../web-client
 npm install
 ```
 
 ### Configuration
 Make a copy of the `config.example.json` in the root folder.
-```
+```sh
 cp config.example.json config.json
 ```
 Edit the new `config.json` file and fill in all the variables as needed. Documentation for every option can be found in [CONFIG.md](CONFIG.md).
 
 ### Building
 #### Backend
-```
+```sh
 cd bot
-python uitabot.py
+python3 uitabot.py
 ```
 #### Frontend (development)
-```
+```sh
 cd web-client
 npm run dev
 ```
 This will run a local web server that supports hot-reloading for development.
 #### Frontend (production)
-```
+```sh
 cd web-client
 npm run build
 ```
