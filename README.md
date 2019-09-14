@@ -1,6 +1,11 @@
 # uitabot
 **uitabot** is a [Discord](https://discordapp.com/) music bot that can be controlled both via chat commands and a real time web client. For a list of available chat commands see [COMMANDS.md](COMMANDS.md).
 
+## Demo
+You can try a publically hosted instance of uitabot a trial basis. This public bot will automatically leave your server after a short while. If you want a permanent bot, keep reading for instructions on how to install your own instance.
+
+**[Invite trial uitabot](https://discordapp.com/api/oauth2/authorize?client_id=414704937122004992&permissions=3165248&scope=bot)**
+
 ## Requirements
 * [Discord API key](https://discordapp.com/developers)
 * [YouTube API key](https://developers.google.com/youtube/v3/)
