@@ -172,7 +172,7 @@ class Server():
             ssl_context = ssl.create_default_context(purpose=ssl.Purpose.CLIENT_AUTH)
             ssl_context.load_cert_chain(config.ssl.cert_file, config.ssl.key_file)
         self._server = await websockets.serve(
-            self._on_connect, host=config.bot.domain, port=config.bot.port,
+            self._on_connect, port=config.bot.port,
             loop=self.loop, origins=origins, ssl=ssl_context
         )
         log.info(f"Server listening on {uita.utils.build_websocket_url(self.config)}")
