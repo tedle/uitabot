@@ -1,3 +1,10 @@
+## 1.0.1 (Oct 19, 2019)
+
+- Update backend dependencies
+  - Fixes voice channel connection timeouts
+  - Fixes Youtube audio playback
+- Fix IP binding in isolated networks
+
 ## 1.0.0 (Sep 13, 2019)
 
 ### New features & changes
