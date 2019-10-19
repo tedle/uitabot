@@ -1,6 +1,6 @@
-discord.py[voice]==1.2.2
+discord.py[voice]
 websockets==8.0.1
-youtube-dl==2019.7.30
+youtube-dl
 flake8==3.7.7
 mypy==0.720
 pytest==5.0.1
