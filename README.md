@@ -1,4 +1,6 @@
 # uitabot
+![ci badge](https://github.com/tedle/uitabot/workflows/Continuous%20Integration/badge.svg)
+
 **uitabot** is a [Discord](https://discordapp.com/) music bot that can be controlled both via chat commands and a real time web client. For a list of available chat commands see [COMMANDS.md](COMMANDS.md).
 
 ![uitabot showcase](https://user-images.githubusercontent.com/810467/64900982-c7874b00-d649-11e9-8560-efd07a582497.gif)

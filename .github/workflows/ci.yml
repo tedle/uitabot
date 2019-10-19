@@ -1,4 +1,9 @@
-on: [push, pull_request]
+name: Continuous Integration
+on:
+  push:
+    branches:
+      - master
+      - dev
 jobs:
     build:
         runs-on: ubuntu-latest
