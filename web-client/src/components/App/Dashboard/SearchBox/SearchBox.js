@@ -79,7 +79,7 @@ class SearchBox extends React.Component {
                 this.setState({searchResults: detailedResults});
             }
         } catch (error) {
-            this.props.onError(error);
+            this.props.onError(error.message);
         }
     }
 

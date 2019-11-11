@@ -237,7 +237,7 @@ class DropZone extends React.Component {
             }
             // Initialize socket callbacks
             socket.onmessage = e => eventDispatcher.dispatch(Message.parse(e.data));
-            socket.onerror = e => this.props.onError(e);
+            socket.onerror = e => this.props.onError("Websocket failed due to unknown error");
             socket.onopen = e => {
                 socket.send(new Message.AuthSessionMessage(session.handle, session.secret).str());
             };
