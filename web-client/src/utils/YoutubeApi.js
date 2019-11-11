@@ -85,7 +85,7 @@ export async function search(query) {
         }
         return new Result(
             id,
-            result.snippet.thumbnails.medium.url,
+            result.snippet.thumbnails ? result.snippet.thumbnails.medium.url : "",
             result.snippet.title,
             type,
             null
