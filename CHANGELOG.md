@@ -1,3 +1,7 @@
+## 1.0.2 (Nov 19, 2019)
+
+- Fix client error when Youtube videos have no thumbnails
+
 ## 1.0.1 (Oct 19, 2019)
 
 - Update backend dependencies
