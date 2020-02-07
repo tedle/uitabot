@@ -1,6 +1,6 @@
 {
   "name": "uitabot-client",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Web frontend for uitabot",
   "repository": "https://github.com/tedle/uitabot",
   "main": "index.js",

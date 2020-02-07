@@ -1,3 +1,7 @@
+## 1.0.3 (Feb 7, 2020)
+
+- Fix playback regression of audio streams
+
 ## 1.0.2 (Nov 19, 2019)
 
 - Fix client error when Youtube videos have no thumbnails

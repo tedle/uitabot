@@ -1,6 +1,6 @@
 """Music bot for Discord that can be controlled via websockets"""
 
-__version__ = "1.0.2"
+__version__ = "1.0.3"
 __author__ = "Dominic Bowden"
 __copyright__ = "2018, Dominic Bowden"
 __license__ = "ISC"
