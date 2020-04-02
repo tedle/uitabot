@@ -361,7 +361,7 @@ class DiscordVoiceClient():
         async with self._voice_lock:
             if self._voice is None:
                 try:
-                    self._voice = await channel.connect(timeout=5)
+                    self._voice = await channel.connect(timeout=5, reconnect=False)
                 except (asyncio.CancelledError, asyncio.TimeoutError):
                     log.warning(f"Failed to join channel {channel.name}({channel.id})")
                     return
@@ -375,7 +375,7 @@ class DiscordVoiceClient():
             if self._voice is not None:
                 await self._playlist.stop()
                 try:
-                    await self._voice.disconnect()
+                    await self._voice.disconnect(force=True)
                 except asyncio.CancelledError:
                     log.warning("Failed to disconnect from channel")
                 self._voice = None
