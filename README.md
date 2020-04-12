@@ -36,6 +36,7 @@ cp config.example.json config.json
 ```
 Edit the new `config.json` file and fill in all the variables as needed. Documentation for every option can be found in [CONFIG.md](CONFIG.md).
 
+Finally, make sure the client URL that is being used is whitelisted in the Discord API OAuth settings for redirects.
 ### Building
 #### Backend
 ```sh
