@@ -10,4 +10,5 @@ Chat commands are prefixed by a single "`.`" (e.g., `.help`).
 - `clear` Empties the playback queue.
 - `join`, `j` Joins the voice channel you are currently in.
 - `leave`, `l` Leaves the voice channel.
+- `nowplaying`, `np` Shows currently playing song.
 - `set-role` (Admin) Set a `<ROLE>` needed to use bot commands. Leave empty for free access.

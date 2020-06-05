@@ -24,6 +24,7 @@ _EMOJI: Final[Dict[str, Any]] = {
     "error": "\u274C",
     "loading": "\U0001F504",
     "wait": "\u2753",
+    "sound": "\U0001F3B5",
     "numbers": {
         1: b"1\xe2\x83\xa3".decode("utf-8"),
         2: b"2\xe2\x83\xa3".decode("utf-8"),
@@ -335,6 +336,29 @@ async def join(message: discord.Message, params: str) -> None:
 async def leave(message: discord.Message, params: str) -> None:
     voice = uita.state.voice_connections[str(message.guild.id)]
     await voice.disconnect()
+
+
+@command("nowplaying", "np", help="Shows currently playing song")
+async def nowplaying(message: discord.Message, params: str) -> None:
+    voice = uita.state.voice_connections[str(message.guild.id)]
+    queue = voice.queue()
+    description = ""
+
+    if voice.status() == uita.audio.Status.PLAYING and len(queue) > 0:
+        track = queue[0]
+        source = ""
+        if track.local:
+            source = "File upload"
+        elif track.url is not None:
+            source = f"[URL]({track.url})"
+        else:
+            source = "Unknown"
+        description = f"{_EMOJI['sound']} Now playing **{track.title}** ({source})"
+    else:
+        description = f"{_EMOJI['sound']} Now playing **John Cage - 4'33**"
+
+    track_message = discord.Embed(description=description, color=_EMBED_COLOUR)
+    await message.channel.send("", embed=track_message)
 
 
 @command(
