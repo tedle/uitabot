@@ -1,3 +1,12 @@
+## 1.1.0 (Jun 6, 2020)
+
+### New features
+- Add `.nowplaying` command to show currently playing song in chat
+
+### Fixes
+- Better voice connection logic for fewer stalls in poor network conditions
+- Update frontend dependencies for various security fixes
+
 ## 1.0.3 (Feb 7, 2020)
 
 - Fix playback regression of audio streams
