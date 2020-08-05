@@ -1,17 +1,17 @@
 # uitabot
 ![ci badge](https://github.com/tedle/uitabot/workflows/Continuous%20Integration/badge.svg)
 
-**uitabot** is a [Discord](https://discordapp.com/) music bot that can be controlled both via chat commands and a real time web client. For a list of available chat commands see [COMMANDS.md](COMMANDS.md).
+**uitabot** is a [Discord](https://discord.com/) music bot that can be controlled both via chat commands and a real time web client. For a list of available chat commands see [COMMANDS.md](COMMANDS.md).
 
 ![uitabot showcase](https://user-images.githubusercontent.com/810467/64900982-c7874b00-d649-11e9-8560-efd07a582497.gif)
 
 ## Demo
 You can try a publically hosted instance of uitabot on a trial basis. This public bot will automatically leave your server after a short while. If you want a permanent bot, keep reading for instructions on how to install your own instance.
 
-**[Invite trial uitabot](https://discordapp.com/api/oauth2/authorize?client_id=414704937122004992&permissions=3165248&scope=bot)**
+**[Invite trial uitabot](https://discord.com/api/oauth2/authorize?client_id=414704937122004992&permissions=3165248&scope=bot)**
 
 ## Requirements
-* [Discord API key](https://discordapp.com/developers)
+* [Discord API key](https://discord.com/developers)
 * [YouTube API key](https://developers.google.com/youtube/v3/)
 * Python 3.6
 * npm

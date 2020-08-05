@@ -20,8 +20,8 @@ test("OAuth URLs match official API spec", () => {
     const parsed = QueryString.parseUrl(oauthUrl, {decode: false});
 
     // Spec defined here:
-    // https://discordapp.com/developers/docs/topics/oauth2
-    expect(parsed.url).toBe("https://discordapp.com/api/oauth2/authorize");
+    // https://discord.com/developers/docs/topics/oauth2
+    expect(parsed.url).toBe("https://discord.com/api/oauth2/authorize");
     expect(parsed.query.client_id).toBe(clientId);
     expect(parsed.query.redirect_uri).toBe(encodeURIComponent(redirectUrl));
     expect(parsed.query.response_type).toBe("code");
@@ -36,7 +36,7 @@ test("icon URLs match official API spec", () => {
     const iconUrl = DiscordApi.createServerIconUrl(serverId, iconHash);
 
     // Spec defined here:
-    // https://discordapp.com/developers/docs/reference#image-formatting
+    // https://discord.com/developers/docs/reference#image-formatting
     const re = new RegExp(
         `^https:\\/\\/cdn\\.discordapp\\.com\\/icons\\/` +
         `${serverId}\\/${iconHash}\\.(png|webp|jpe?g|gif)$`

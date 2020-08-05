@@ -15,7 +15,7 @@ BASE_HEADERS: Final = {
     "Content-Type": "application/x-www-form-urlencoded",
     "User-Agent": f"uitabot ({uita.__url__}, {uita.__version__})"
 }
-BASE_URL: Final = "https://discordapp.com/api"
+BASE_URL: Final = "https://discord.com/api"
 AUTH_URL: Final = BASE_URL + "/oauth2/token"
 API_URL: Final = BASE_URL + "/v6"
 CDN_URL: Final = "https://cdn.discordapp.com"

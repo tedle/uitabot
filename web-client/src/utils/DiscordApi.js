@@ -19,7 +19,7 @@ Object.freeze(ChannelType);
 export function createOauthUrl(clientId, redirectUrl) {
     const encodedUrl = encodeURIComponent(redirectUrl);
     const scope = encodeURIComponent("identify");
-    return "https://discordapp.com/api/oauth2/authorize"
+    return "https://discord.com/api/oauth2/authorize"
         // Identifies our app to Discord
         + `?client_id=${clientId}`
         // URI that Discord redirects to after authentication (this site)
