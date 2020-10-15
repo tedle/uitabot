@@ -17,7 +17,7 @@ BASE_HEADERS: Final = {
 }
 BASE_URL: Final = "https://discord.com/api"
 AUTH_URL: Final = BASE_URL + "/oauth2/token"
-API_URL: Final = BASE_URL + "/v6"
+API_URL: Final = BASE_URL + "/v8"
 CDN_URL: Final = "https://cdn.discordapp.com"
 VALID_CODE_REGEX: Final = re.compile("^([a-zA-Z0-9]+)$")
 
