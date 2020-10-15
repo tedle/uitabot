@@ -32,7 +32,12 @@ class ChannelType(enum.Enum):
 
 
 class Client:
-    def __init__(self, *, loop: Optional[asyncio.AbstractEventLoop] = ...) -> None: ...
+    def __init__(
+        self,
+        *,
+        loop: Optional[asyncio.AbstractEventLoop] = ...,
+        intents: Optional["Intents"] = ...
+    ) -> None: ...
     def event(self, coro: Callable[..., Awaitable[None]]) -> Callable[..., Awaitable[None]]: ...
     def get_guild(self, id: int) -> "Optional[Guild]": ...
 
@@ -116,6 +121,31 @@ class Guild:
     icon: Optional[str]
     roles: List["Role"]
     system_channel: Optional["TextChannel"]
+
+
+class Intents:
+    def __init__(
+        self,
+        *,
+        guilds: bool = ...,
+        members: bool = ...,
+        bans: bool = ...,
+        emojis: bool = ...,
+        integrations: bool = ...,
+        webhooks: bool = ...,
+        invites: bool = ...,
+        voice_states: bool = ...,
+        presences: bool = ...,
+        messages: bool = ...,
+        guild_messages: bool = ...,
+        dm_messages: bool = ...,
+        reactions: bool = ...,
+        guild_reactions: bool = ...,
+        dm_reactions: bool = ...,
+        typing: bool = ...,
+        guild_typing: bool = ...,
+        dm_typing: bool = ...
+    ) -> None: ...
 
 
 class Member:
