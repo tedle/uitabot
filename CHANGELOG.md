@@ -1,3 +1,8 @@
+## 1.1.1 (Oct 15, 2020)
+
+- Fix user verification to work under new Discord intents API
+- Update frontend dependencies for various security fixes
+
 ## 1.1.0 (Jun 6, 2020)
 
 ### New features
