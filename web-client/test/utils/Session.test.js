@@ -25,7 +25,8 @@ test("logout removes session", () => {
 });
 
 test("logout redirects to base path", () => {
-    jest.spyOn(window.location, "assign");
+    delete window.location;
+    window.location = { assign: jest.fn() };
 
     Session.logout();
     expect(window.location.assign).toHaveBeenCalledWith("/");

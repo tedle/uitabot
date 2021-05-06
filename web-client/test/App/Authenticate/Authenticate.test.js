@@ -12,7 +12,15 @@ import MockWebSocket from "WebSocket.mock";
 
 // Reminder in case jsdom adds location.assign support
 expect(window.location.assign).toThrow();
-window.location.assign = jest.fn();
+const location = window.location;
+delete window.location;
+window.location = Object.defineProperties({}, {
+    ...Object.getOwnPropertyDescriptors(location),
+    assign: {
+        configurable: true,
+        value: jest.fn()
+    }
+});
 
 let socket = null;
 const onAuthFail = jest.fn();
