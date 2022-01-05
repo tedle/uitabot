@@ -52,7 +52,7 @@ class Client:
     async def start(self, token: str, *, bot: bool = ...) -> None: ...
 
     @overload  # noqa: F811
-    async def wait_for(
+    async def wait_for(  # noqa: F811
         self,
         event: Literal["reaction_add"],
         *,
@@ -61,7 +61,7 @@ class Client:
     ) -> Tuple["Reaction", Any]: ...
 
     @overload  # noqa: F811
-    async def wait_for(
+    async def wait_for(  # noqa: F811
         self,
         event: str,
         *,
