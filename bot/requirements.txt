@@ -1,4 +1,4 @@
-discord.py[voice]
+discord.py[voice]==1.7.3
 websockets==8.0.1
 youtube-dl
 flake8==3.7.7
