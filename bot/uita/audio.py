@@ -270,7 +270,7 @@ class Queue():
                 url=f"https://youtube.com/watch?v={info['id']}"
             ))
             await self._notify_queue_change(user)
-        elif info["extractor"] == "YoutubePlaylist":
+        elif info["extractor"] == "YoutubePlaylist" or info["extractor"] == "YoutubeTab":
             if info["_type"] != "playlist":
                 raise uita.exceptions.ServerError("Unknown playlist type")
             for entry in info["entries"]:

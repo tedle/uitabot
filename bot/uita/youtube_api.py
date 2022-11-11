@@ -51,7 +51,7 @@ async def scrape(url: str, loop: Optional[asyncio.AbstractEventLoop] = None) -> 
         "skip_download": True
     }
     scraper = youtube_dl.YoutubeDL(opts)
-    valid_extractors = ["Youtube", "YoutubePlaylist"]
+    valid_extractors = ["Youtube", "YoutubePlaylist", "YoutubeTab"]
     for extractor in valid_extractors:
         try:
             info = await loop.run_in_executor(
