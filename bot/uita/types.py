@@ -320,7 +320,7 @@ class DiscordVoiceClient():
             uita.server.send_all(message, self.server_id)
 
         self._playlist = uita.audio.Queue(
-            maxlen=100,
+            maxlen=1000,
             on_queue_change=on_queue_change,
             on_status_change=on_status_change,
             loop=self.loop
