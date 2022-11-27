@@ -451,3 +451,7 @@ class DiscordVoiceClient():
 
         """
         await self._playlist.remove(track_id)
+
+    async def shuffle(self) -> None:
+        """Shuffles the queue, excluding currently playing song."""
+        await self._playlist.shuffle()

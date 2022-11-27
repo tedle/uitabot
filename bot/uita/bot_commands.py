@@ -311,6 +311,17 @@ async def skip(message: discord.Message, params: str) -> None:
         await message.channel.send(f"{_EMOJI['error']} The queue is already empty")
 
 
+@command("shuffle", "sh", help="Shuffles the playback queue")
+async def shuffle(message: discord.Message, params: str) -> None:
+    voice = uita.state.voice_connections[str(message.guild.id)]
+    queue = voice.queue()
+    if len(queue) > 0:
+        await voice.shuffle()
+        await message.channel.send(f"{_EMOJI['ok']} Shuffled queue")
+    else:
+        await message.channel.send(f"{_EMOJI['error']} The queue is currently empty")
+
+
 @command("clear", help="Empties the playback queue")
 async def clear(message: discord.Message, params: str) -> None:
     voice = uita.state.voice_connections[str(message.guild.id)]

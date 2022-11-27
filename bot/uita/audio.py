@@ -8,6 +8,7 @@ import enum
 import json
 import os
 import queue
+import random
 import subprocess
 import threading
 import time
@@ -327,6 +328,13 @@ class Queue():
                     self._queue.remove(track)
                     await self._notify_queue_change()
                     return
+
+    async def shuffle(self) -> None:
+        """Shuffles the queue, excluding currently playing song."""
+        async with self._queue_lock:
+            # Ignore typing because mypy doesn't recognize that shuffle works with deques
+            random.shuffle(self._queue)  # type: ignore
+            await self._notify_queue_change()
 
     async def _after_song(self) -> None:
         async with self._queue_lock:
