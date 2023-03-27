@@ -163,7 +163,7 @@ async def on_guild_join(guild: discord.Guild) -> None:
         guild.name,
         channels,
         users,
-        guild.icon
+        guild.icon.url if guild.icon else None
     )
     uita.state.server_add(discord_server, uita.bot)
     log.info(f"Joined {discord_server.name}")
@@ -218,7 +218,7 @@ async def on_guild_update(before: discord.Guild, after: discord.Guild) -> None:
         after.name,
         channels,
         users,
-        after.icon
+        after.icon.url if after.icon else None
     )
     uita.state.server_add(discord_server, uita.bot)
     # In case any channel visibilities changed

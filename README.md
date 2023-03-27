@@ -13,7 +13,7 @@ You can try a publically hosted instance of uitabot on a trial basis. This publi
 ## Requirements
 * [Discord API key](https://discord.com/developers)
 * [YouTube API key](https://developers.google.com/youtube/v3/)
-* Python 3.6
+* Python 3.8
 * npm
 * ffmpeg & ffprobe (version 4 or newer needed for some live streams)
 

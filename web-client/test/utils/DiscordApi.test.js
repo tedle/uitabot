@@ -30,20 +30,6 @@ test("OAuth URLs match official API spec", () => {
     expect(Object.keys(parsed.query).length).toBe(5);
 });
 
-test("icon URLs match official API spec", () => {
-    const serverId = "1a1a1a1a1a";
-    const iconHash = "2b2b2b2b2b";
-    const iconUrl = DiscordApi.createServerIconUrl(serverId, iconHash);
-
-    // Spec defined here:
-    // https://discord.com/developers/docs/reference#image-formatting
-    const re = new RegExp(
-        `^https:\\/\\/cdn\\.discordapp\\.com\\/icons\\/` +
-        `${serverId}\\/${iconHash}\\.(png|webp|jpe?g|gif)$`
-    );
-    expect(re.exec(iconUrl)).not.toBeNull();
-});
-
 test("state verification only matches created state", () => {
     const badState = "1a1a1a1a";
     expect(DiscordApi.verifyState(badState)).toBe(false);

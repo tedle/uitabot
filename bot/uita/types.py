@@ -71,7 +71,7 @@ class DiscordState():
                 server.name,
                 discord_channels,
                 discord_users,
-                server.icon
+                server.icon.url if server.icon else None
             )
             self.voice_connections[str(server.id)] = DiscordVoiceClient(str(server.id), bot.loop)
         log.info("Bot state synced to Discord")
@@ -304,6 +304,7 @@ class DiscordVoiceClient():
             # User is None for queue change callbacks that should not cause the bot to join a
             # channel, such as queue re-ordering and removal
             if self._voice is None and user is not None and len(queue) > 0:
+
                 discord_server = uita.bot.get_guild(int(self.server_id))
                 discord_user = discord_server.get_member(int(user.id)) if discord_server else None
                 if discord_user is not None and discord_user.voice is not None:

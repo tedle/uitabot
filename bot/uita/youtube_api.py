@@ -3,7 +3,7 @@ import asyncio
 import re
 import requests
 import urllib.parse
-import youtube_dl
+import yt_dlp
 from typing import Any, Dict, List, Optional
 from typing_extensions import Final
 
@@ -50,7 +50,7 @@ async def scrape(url: str, loop: Optional[asyncio.AbstractEventLoop] = None) -> 
         "logger": null_log,
         "skip_download": True
     }
-    scraper = youtube_dl.YoutubeDL(opts)
+    scraper = yt_dlp.YoutubeDL(opts)
     valid_extractors = ["Youtube", "YoutubePlaylist", "YoutubeTab"]
     for extractor in valid_extractors:
         try:
@@ -61,7 +61,7 @@ async def scrape(url: str, loop: Optional[asyncio.AbstractEventLoop] = None) -> 
             info["extractor"] = extractor
             return info
         # Triggers when URL doesnt match extractor used
-        except youtube_dl.utils.DownloadError:
+        except yt_dlp.utils.DownloadError:
             pass
     raise uita.exceptions.ClientError(uita.message.ErrorUrlInvalidMessage())
 
@@ -192,7 +192,7 @@ async def _search_slow(
         "logger": null_log,
         "skip_download": True
     }
-    scraper = youtube_dl.YoutubeDL(opts)
+    scraper = yt_dlp.YoutubeDL(opts)
     try:
         search_results = await loop.run_in_executor(
             None,
@@ -217,6 +217,6 @@ async def _search_slow(
             entry["url"] = build_url(entry["id"])
         return entries
     # Triggers when query doesnt match extractor used
-    except youtube_dl.utils.DownloadError:
+    except yt_dlp.utils.DownloadError:
         pass
     raise uita.exceptions.ClientError(uita.message.ErrorUrlInvalidMessage())

@@ -1,6 +1,6 @@
 from typing import Any, Dict, Optional
 
-from youtube_dl import utils as utils  # noqa: F401
+from yt_dlp import utils as utils  # noqa: F401
 
 
 class YoutubeDL:

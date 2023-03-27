@@ -151,7 +151,7 @@ async def play(message: discord.Message, params: str) -> None:
     user = uita.types.DiscordUser(
         str(message.author.id),
         message.author.name,
-        str(message.author.avatar_url),
+        str(message.author.display_avatar.url),
         str(message.guild.id)
     )
     response = await message.channel.send(f"{_EMOJI['loading']} Processing...")
@@ -255,7 +255,7 @@ async def search(message: discord.Message, params: str) -> None:
         user = uita.types.DiscordUser(
             str(message.author.id),
             message.author.name,
-            str(message.author.avatar_url),
+            str(message.author.display_avatar.url),
             str(message.guild.id)
         )
         await voice.enqueue_url(song["url"], user)

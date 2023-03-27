@@ -21,6 +21,7 @@ class ActivityType(enum.Enum):
 
 class Asset:
     def __str__(self) -> str: ...
+    url: str
 
 
 class AudioSource:
@@ -118,7 +119,7 @@ class Guild:
     me: "Member"
     members: List["Member"]
     name: str
-    icon: Optional[str]
+    icon: Optional[Asset]
     roles: List["Role"]
     system_channel: Optional["TextChannel"]
 
@@ -137,6 +138,7 @@ class Intents:
         voice_states: bool = ...,
         presences: bool = ...,
         messages: bool = ...,
+        message_content: bool = ...,
         guild_messages: bool = ...,
         dm_messages: bool = ...,
         reactions: bool = ...,
@@ -149,7 +151,7 @@ class Intents:
 
 
 class Member:
-    avatar_url: Asset
+    display_avatar: Asset
     guild: Guild
     guild_permissions: "Permissions"
     id: int

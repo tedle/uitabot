@@ -16,11 +16,12 @@ loop: asyncio.AbstractEventLoop = asyncio.get_event_loop()
 bot: Client = Client(
     loop=loop,
     intents=Intents(
-        guilds=True,          # List which guilds bot is in
-        members=True,         # Web UI verification of user permissions
-        voice_states=True,    # Auto-pause when voice channel is empty
-        guild_messages=True,  # Chat commands
-        guild_reactions=True  # Chat command UI
+        guilds=True,           # List which guilds bot is in
+        members=True,          # Web UI verification of user permissions
+        voice_states=True,     # Auto-pause when voice channel is empty
+        guild_messages=True,   # Chat commands
+        message_content=True,  # Chat commands
+        guild_reactions=True   # Chat command UI
     )
 )
 server: Server = Server()

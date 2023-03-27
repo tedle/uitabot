@@ -5,7 +5,6 @@ import "./ServerSelect.scss";
 
 import React from "react";
 import PropTypes from "prop-types";
-import * as DiscordApi from "utils/DiscordApi";
 import * as Message from "utils/Message";
 import * as Session from "utils/Session";
 
@@ -51,7 +50,7 @@ export default class ServerSelect extends React.Component {
                             {server.icon === null ? (
                                 <i className="NullLogo fab fa-discord"></i>
                             ) : (
-                                <img src={DiscordApi.createServerIconUrl(server.id, server.icon)}/>
+                                <img src={server.icon}/>
                             )}
                             <span>{server.name}</span>
                             <i className="EndIcon fas fa-angle-right"></i>

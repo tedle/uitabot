@@ -2,7 +2,6 @@
 // Test suite for ServerSelect.js
 
 import ServerSelect from "components/App/ServerSelect/ServerSelect";
-import * as DiscordApi from "utils/DiscordApi";
 import * as Message from "utils/Message";
 import * as Session from "utils/Session";
 
@@ -100,7 +99,7 @@ test("server list renders given and default icons", () => {
 
     eventDispatcher.dispatch(new Message.ServerListSendMessage([iconServer]));
     expect(container.querySelector("li img").src)
-        .toBe(DiscordApi.createServerIconUrl(iconServer.id, iconServer.icon));
+        .toBe("http://localhost/" + iconServer.icon);
 });
 
 test("onServerSelect callbacks are triggered", () => {
